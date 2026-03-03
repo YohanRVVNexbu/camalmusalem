@@ -49,7 +49,7 @@ export function Features() {
     return (
         <section
             id="features"
-            className="flex flex-col items-center gap-10 self-stretch bg-[#EEEFF2] p-15"
+            className="flex flex-col items-center gap-10 self-stretch rounded-[30px] bg-[#EEEFF2] p-15"
         >
             <h2 className="text-[40px] leading-normal text-black">
                 Encuentra todo en un solo lugar
