@@ -2,9 +2,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import bz4xImg from '@images/BZ4X.png?format=webp';
 import fourRunnerImg from '@images/4RUNNER.png?format=webp';
 import hiluxImg from '@images/HILUX.png?format=webp';
+import hiluxBg from '@images/video.png?format=webp';
 import bz4xVideo from '@videos/BZ4X.mp4';
 import fourRunnerVideo from '@videos/4RUNNER.mp4';
-import hiluxVideo from '@videos/HILUX.mp4';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 
 type Vehicle = {
@@ -12,7 +12,9 @@ type Vehicle = {
     subtitle: string;
     headline: string;
     image: string;
-    video: string;
+    video?: string;
+    backgroundImage?: string;
+    duration?: number;
 };
 
 const vehicles: Vehicle[] = [
@@ -35,7 +37,8 @@ const vehicles: Vehicle[] = [
         subtitle: 'La más vendida,',
         headline: 'POTENCIA Y DURABILIDAD\nEN CADA CAMINO.',
         image: hiluxImg,
-        video: hiluxVideo,
+        backgroundImage: hiluxBg,
+        duration: 5,
     },
 ];
 
@@ -98,18 +101,57 @@ export function About() {
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const activeVehicle = vehicles[activeIndex];
+    const hasVideo = !!activeVehicle.video;
+    const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+    const startTimeRef = useRef(0);
+    const elapsedRef = useRef(0);
 
-    // When activeIndex changes, reset and play the new video
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video) return;
-
-        video.load();
-        setProgress(0);
-
-        if (isPlaying) {
-            video.play().catch(() => {});
+    // Clear image timer
+    const clearImageTimer = useCallback(() => {
+        if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
         }
+    }, []);
+
+    // Start image timer for vehicles without video
+    const startImageTimer = useCallback(() => {
+        const duration = activeVehicle.duration ?? 5;
+        startTimeRef.current = Date.now() - elapsedRef.current * 1000;
+
+        timerRef.current = setInterval(() => {
+            const elapsed = (Date.now() - startTimeRef.current) / 1000;
+            const p = Math.min(elapsed / duration, 1);
+            setProgress(p);
+            if (p >= 1) {
+                clearImageTimer();
+                setProgress(0);
+                elapsedRef.current = 0;
+                setActiveIndex((prev) => (prev + 1) % vehicles.length);
+            }
+        }, 50);
+    }, [activeVehicle, clearImageTimer]);
+
+    // When activeIndex changes, reset and play the new video or start timer
+    useEffect(() => {
+        setProgress(0);
+        elapsedRef.current = 0;
+
+        if (hasVideo) {
+            clearImageTimer();
+            const video = videoRef.current;
+            if (!video) return;
+            video.load();
+            if (isPlaying) {
+                video.play().catch(() => {});
+            }
+        } else {
+            if (isPlaying) {
+                startImageTimer();
+            }
+        }
+
+        return () => clearImageTimer();
     }, [activeIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Track video time → update progress ring
@@ -126,15 +168,27 @@ export function About() {
     }, []);
 
     const togglePlayPause = () => {
-        const video = videoRef.current;
-        if (!video) return;
+        if (hasVideo) {
+            const video = videoRef.current;
+            if (!video) return;
 
-        if (isPlaying) {
-            video.pause();
-            setIsPlaying(false);
+            if (isPlaying) {
+                video.pause();
+                setIsPlaying(false);
+            } else {
+                video.play().catch(() => {});
+                setIsPlaying(true);
+            }
         } else {
-            video.play().catch(() => {});
-            setIsPlaying(true);
+            if (isPlaying) {
+                // Pause: save elapsed time
+                elapsedRef.current = (Date.now() - startTimeRef.current) / 1000;
+                clearImageTimer();
+                setIsPlaying(false);
+            } else {
+                setIsPlaying(true);
+                startImageTimer();
+            }
         }
     };
 
@@ -159,17 +213,25 @@ export function About() {
 
     return (
         <section id="about" className="relative flex h-dvh flex-col justify-end bg-black">
-            {/* Background video */}
-            <video
-                ref={videoRef}
-                muted
-                playsInline
-                onTimeUpdate={handleTimeUpdate}
-                onEnded={handleEnded}
-                className="absolute inset-0 size-full object-cover"
-            >
-                <source src={activeVehicle.video} type="video/mp4" />
-            </video>
+            {/* Background video or image */}
+            {hasVideo ? (
+                <video
+                    ref={videoRef}
+                    muted
+                    playsInline
+                    onTimeUpdate={handleTimeUpdate}
+                    onEnded={handleEnded}
+                    className="absolute inset-0 size-full object-cover"
+                >
+                    <source src={activeVehicle.video} type="video/mp4" />
+                </video>
+            ) : (
+                <img
+                    src={activeVehicle.backgroundImage}
+                    alt={activeVehicle.name}
+                    className="absolute inset-0 size-full object-cover"
+                />
+            )}
 
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-linear-to-b from-black/0 via-black/20 to-black/80" />
