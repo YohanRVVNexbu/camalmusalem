@@ -1,3 +1,10 @@
+import { useRef, useState } from 'react';
+import imagenNuevos from '@images/imagen_nuevos.png?format=webp';
+import imagenSeminuevos from '@images/imagen_seminuevos.png?format=webp';
+import imagePostventa from '@images/image_postventa.png?format=webp';
+import nuevosVideo from '@videos/nuevos.mp4';
+import usadosVideo from '@videos/usados.mp4';
+import postventaVideo from '@videos/postventa.mp4';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 
 type CardProps = {
@@ -6,6 +13,7 @@ type CardProps = {
     buttonLabel: string;
     href: string;
     image: string;
+    video: string;
     className?: string;
 };
 
@@ -15,17 +23,58 @@ function CategoryCard({
     buttonLabel,
     href,
     image,
+    video,
     className = '',
 }: CardProps) {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const [hovering, setHovering] = useState(false);
+
+    const handleMouseEnter = () => {
+        setHovering(true);
+        videoRef.current?.play();
+    };
+
+    const handleMouseLeave = () => {
+        setHovering(false);
+        if (videoRef.current) {
+            videoRef.current.pause();
+            videoRef.current.currentTime = 0;
+        }
+    };
+
     return (
         <a
             href={href}
-            className={`group flex flex-col items-center justify-end overflow-hidden rounded-[30px] bg-cover bg-center px-8 py-8 ${className}`}
-            style={{
-                backgroundImage: `linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.3) 100%), url(${image})`,
-            }}
+            className={`group relative flex flex-col items-center justify-end overflow-hidden rounded-[30px] px-8 py-8 transition-transform duration-500 ease-out hover:scale-[1.03] ${className}`}
+            onMouseEnter={handleMouseEnter}
+            onMouseLeave={handleMouseLeave}
         >
-            <div className="flex flex-col items-center gap-5">
+            {/* Background image */}
+            <div
+                className={`absolute inset-0 bg-cover bg-center transition-opacity duration-500 ${hovering ? 'opacity-0' : 'opacity-100'}`}
+                style={{ backgroundImage: `url(${image})` }}
+            />
+            {/* Background video */}
+            <video
+                ref={videoRef}
+                muted
+                loop
+                playsInline
+                preload="none"
+                className={`absolute inset-0 size-full object-cover transition-opacity duration-500 ${hovering ? 'opacity-100' : 'opacity-0'}`}
+            >
+                <source src={video} type="video/mp4" />
+            </video>
+            {/* Gradient overlay */}
+            <div
+                className="absolute inset-0"
+                style={{
+                    background:
+                        'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.3) 100%)',
+                }}
+            />
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center gap-5">
                 <div className="flex flex-col items-center gap-2.5 text-center">
                     <h3 className="text-[28px] uppercase text-white">
                         {title}
@@ -63,7 +112,8 @@ export function Features() {
                         description="Explora la gama Toyota disponible en Musalem"
                         buttonLabel="Ir a nuevos"
                         href="#vehiculos"
-                        image="/images/imagen_nuevos.png"
+                        image={imagenNuevos}
+                        video={nuevosVideo}
                         className="h-full"
                     />
                 </div>
@@ -75,7 +125,8 @@ export function Features() {
                         description="Stock certificado por Musalem"
                         buttonLabel="Ir a semi nuevos"
                         href="#seminuevos"
-                        image="/images/imagen_seminuevos.png"
+                        image={imagenSeminuevos}
+                        video={usadosVideo}
                         className="flex-1"
                     />
                     <CategoryCard
@@ -83,7 +134,8 @@ export function Features() {
                         description="Servicios, repuestos y Merch oficial"
                         buttonLabel="Ir a post venta"
                         href="#postventa"
-                        image="/images/image_postventa.png"
+                        image={imagePostventa}
+                        video={postventaVideo}
                         className="flex-1"
                     />
                 </div>

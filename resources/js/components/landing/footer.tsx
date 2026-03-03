@@ -1,3 +1,5 @@
+import logoNegro from '@images/logo_negro.png?format=webp';
+
 const navLinks = [
     { label: 'Vehículos', href: '#vehiculos' },
     { label: 'Seminuevos', href: '#seminuevos' },
@@ -150,7 +152,7 @@ export function Footer() {
                     {/* Logo + socials */}
                     <div className="flex w-67.5 flex-col gap-5">
                         <img
-                            src="/images/logo_negro.png"
+                            src={logoNegro}
                             alt="Toyota Musalem"
                             className="h-12 w-auto object-contain object-left"
                         />

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
+import logoShort from '@images/logo_short.png?format=webp';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 
 const shorts = [
@@ -10,24 +11,6 @@ const shorts = [
     { image: '/images/shorts/short-5.jpg', label: 'DESCUBRE' },
     { image: '/images/shorts/short-6.jpg', label: 'NUEVO' },
 ];
-
-function PlayIcon() {
-    return (
-        <svg
-            width="68"
-            height="48"
-            viewBox="0 0 68 48"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-        >
-            <path
-                d="M66.52 7.74C65.7 4.59 63.24 2.1 60.12 1.27C54.88 0 34 0 34 0C34 0 13.12 0 7.88 1.27C4.76 2.1 2.3 4.59 1.48 7.74C0.24 13.04 0.24 24 0.24 24C0.24 24 0.24 34.96 1.48 40.26C2.3 43.41 4.76 45.9 7.88 46.73C13.12 48 34 48 34 48C34 48 54.88 48 60.12 46.73C63.24 45.9 65.7 43.41 66.52 40.26C67.76 34.96 67.76 24 67.76 24C67.76 24 67.76 13.04 66.52 7.74Z"
-                fill="#FF0000"
-            />
-            <path d="M27.2 34.29L44.88 24L27.2 13.71V34.29Z" fill="white" />
-        </svg>
-    );
-}
 
 function ChevronIcon({ className }: { className?: string }) {
     return (
@@ -129,9 +112,9 @@ export function Shorts() {
                                     backgroundColor: '#333',
                                 }}
                             >
-                                {/* Play icon */}
+                                {/* YouTube Shorts logo */}
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <PlayIcon />
+                                    <img src={logoShort} alt="YouTube Shorts" className="w-17" />
                                 </div>
                                 {/* Label */}
                                 <div className="absolute bottom-6 left-6">

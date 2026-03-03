@@ -1,15 +1,28 @@
+import heroVideo from '@videos/hero_video.mp4';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 
 export function Hero() {
     return (
-        <section
-            className="relative flex h-dvh flex-col items-center justify-end self-stretch px-15 pb-20"
-            style={{
-                background:
-                    'linear-gradient(180deg, rgba(0,0,0,0) 47.96%, #000 100%), radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.40) 100%)',
-            }}
-        >
-            <div className="flex w-full items-end justify-between">
+        <section className="relative flex h-dvh flex-col items-center justify-end self-stretch px-15 pb-20">
+            {/* Background video */}
+            <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="absolute inset-0 size-full object-cover"
+            >
+                <source src={heroVideo} type="video/mp4" />
+            </video>
+            {/* Gradient overlay */}
+            <div
+                className="absolute inset-0"
+                style={{
+                    background:
+                        'linear-gradient(180deg, rgba(0,0,0,0) 47.96%, #000 100%), radial-gradient(50% 50% at 50% 50%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.40) 100%)',
+                }}
+            />
+            <div className="relative z-10 flex w-full items-end justify-between">
                 {/* Left content */}
                 <div className="flex flex-col gap-4">
                     <span className="text-lg text-white/80">

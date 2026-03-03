@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import logoBlanco from '@images/logo_blanco.png?format=webp';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
 import { dashboard } from '@/routes';
@@ -21,7 +22,7 @@ export function Navbar({
             <div className="flex items-center justify-between px-8 py-6 lg:px-15">
                 <Link href="/">
                     <img
-                        src="/images/logo_blanco.png"
+                        src={logoBlanco}
                         alt="Toyota Musalem"
                         className="h-10 w-auto object-contain"
                     />

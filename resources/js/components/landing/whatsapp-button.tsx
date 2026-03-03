@@ -1,11 +1,28 @@
+import { useEffect, useState } from 'react';
+
 export function WhatsappButton() {
+    const [hidden, setHidden] = useState(false);
+
+    useEffect(() => {
+        const target = document.getElementById('about');
+        if (!target) return;
+
+        const observer = new IntersectionObserver(
+            ([entry]) => setHidden(entry.isIntersecting),
+            { threshold: 0.3 },
+        );
+
+        observer.observe(target);
+        return () => observer.disconnect();
+    }, []);
+
     return (
         <a
             href="https://wa.me/"
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Contactar por WhatsApp"
-            className="fixed right-8 bottom-8 z-50 flex size-14 items-center justify-center rounded-full border border-white bg-black/40 backdrop-blur-[10px] transition hover:bg-black/60"
+            className={`fixed right-8 bottom-8 z-50 flex size-14 items-center justify-center rounded-full border border-white bg-black/40 backdrop-blur-[10px] transition-all duration-300 hover:bg-black/60 ${hidden ? 'pointer-events-none scale-0 opacity-0' : 'scale-100 opacity-100'}`}
         >
             <svg
                 xmlns="http://www.w3.org/2000/svg"
