@@ -1,16 +1,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import logoShort from '@images/logo_short.png?format=webp';
+import yt1 from '@images/imagen_youtube1.png?format=webp';
+import yt2 from '@images/imagen_youtube2.png?format=webp';
+import yt3 from '@images/imagen_youtube3.png?format=webp';
+import yt4 from '@images/imagen_youtube4.png?format=webp';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 
-const shorts = [
-    { image: '/images/shorts/short-1.jpg', label: 'TENEMOS' },
-    { image: '/images/shorts/short-2.jpg', label: 'A PARTIR DE AHORA' },
-    { image: '/images/shorts/short-3.jpg', label: '¿Chequeo gratuito para tu Toyota?' },
-    { image: '/images/shorts/short-4.jpg', label: 'VIAJA' },
-    { image: '/images/shorts/short-5.jpg', label: 'DESCUBRE' },
-    { image: '/images/shorts/short-6.jpg', label: 'NUEVO' },
-];
+const shorts = [yt1, yt2, yt3, yt4, yt1, yt2, yt3, yt4];
 
 function ChevronIcon({ className }: { className?: string }) {
     return (
@@ -101,12 +98,12 @@ export function Shorts() {
             <div className="flex flex-col gap-10">
                 <div className="overflow-hidden" ref={emblaRef}>
                     <div className="flex gap-5">
-                        {shorts.map((short, index) => (
+                        {shorts.map((image, index) => (
                             <div
                                 key={index}
                                 className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
                                 style={{
-                                    backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${short.image})`,
+                                    backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`,
                                     backgroundSize: 'cover',
                                     backgroundPosition: 'center',
                                     backgroundColor: '#333',
@@ -115,12 +112,6 @@ export function Shorts() {
                                 {/* YouTube Shorts logo */}
                                 <div className="absolute inset-0 flex items-center justify-center">
                                     <img src={logoShort} alt="YouTube Shorts" className="w-17" />
-                                </div>
-                                {/* Label */}
-                                <div className="absolute bottom-6 left-6">
-                                    <span className="text-sm font-normal text-white">
-                                        {short.label}
-                                    </span>
                                 </div>
                             </div>
                         ))}

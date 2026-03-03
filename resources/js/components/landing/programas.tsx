@@ -148,7 +148,7 @@ export function Programas() {
                         title=""
                         className="flex-369"
                         image={imageGrid5}
-                        bgPosition="bg-top"
+                        bgPosition="bg-center"
                         showContent={false}
                     />
                 </div>
