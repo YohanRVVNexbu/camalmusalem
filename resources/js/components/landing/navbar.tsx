@@ -7,7 +7,7 @@ import { dashboard } from '@/routes';
 const navLinks = [
     { label: 'Vehículos', href: '#vehiculos' },
     { label: 'Seminuevos', href: '#seminuevos' },
-    { label: 'Servicio Técnico', href: '#servicio-tecnico' },
+    { label: 'Post Venta', href: '#post-venta' },
 ];
 
 export function Navbar({
