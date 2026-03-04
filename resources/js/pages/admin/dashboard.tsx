@@ -5,7 +5,7 @@ export default function AdminDashboard() {
     return (
         <AdminLayout
             breadcrumbs={[
-                { title: 'Dashboard', href: '/admin/dashboard' },
+                { title: 'Dashboard', href: '/admin' },
             ]}
         >
             <Head title="Admin - Dashboard" />

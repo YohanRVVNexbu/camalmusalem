@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { ChevronsUpDown, LayoutGrid, LogOut, UserCog, Users } from 'lucide-react';
+import { ChevronsUpDown, Home, LayoutGrid, LogOut, UserCog, Users } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import {
     DropdownMenu,
@@ -29,8 +29,13 @@ import type { NavItem } from '@/types';
 const adminNavItems: NavItem[] = [
     {
         title: 'Dashboard',
-        href: '/admin/dashboard',
+        href: '/admin',
         icon: LayoutGrid,
+    },
+    {
+        title: 'Página de inicio',
+        href: '/admin/home',
+        icon: Home,
     },
     {
         title: 'Usuarios',
@@ -107,7 +112,7 @@ export function AdminSidebar() {
                 <SidebarMenu>
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
-                            <Link href="/admin/dashboard" prefetch>
+                            <Link href="/admin" prefetch>
                                 <AppLogo />
                             </Link>
                         </SidebarMenuButton>

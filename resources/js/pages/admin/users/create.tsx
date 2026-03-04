@@ -11,7 +11,7 @@ export default function UsersCreate() {
     return (
         <AdminLayout
             breadcrumbs={[
-                { title: 'Dashboard', href: '/admin/dashboard' },
+                { title: 'Dashboard', href: '/admin' },
                 { title: 'Usuarios', href: '/admin/users' },
                 { title: 'Crear', href: '/admin/users/create' },
             ]}

@@ -19,7 +19,7 @@ export default function UsersEdit({ user }: Props) {
     return (
         <AdminLayout
             breadcrumbs={[
-                { title: 'Dashboard', href: '/admin/dashboard' },
+                { title: 'Dashboard', href: '/admin' },
                 { title: 'Usuarios', href: '/admin/users' },
                 { title: 'Editar', href: `/admin/users/${user.id}/edit` },
             ]}

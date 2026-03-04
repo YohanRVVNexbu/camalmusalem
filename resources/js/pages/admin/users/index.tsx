@@ -43,7 +43,7 @@ export default function UsersIndex({ users }: Props) {
     return (
         <AdminLayout
             breadcrumbs={[
-                { title: 'Dashboard', href: '/admin/dashboard' },
+                { title: 'Dashboard', href: '/admin' },
                 { title: 'Usuarios', href: '/admin/users' },
             ]}
         >

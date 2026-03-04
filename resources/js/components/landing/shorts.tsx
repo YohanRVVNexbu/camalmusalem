@@ -1,13 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
-import logoShort from '@images/logo_short.png?format=webp';
-import yt1 from '@images/imagen_youtube1.png?format=webp';
-import yt2 from '@images/imagen_youtube2.png?format=webp';
-import yt3 from '@images/imagen_youtube3.png?format=webp';
-import yt4 from '@images/imagen_youtube4.png?format=webp';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
-
-const shorts = [yt1, yt2, yt3, yt4, yt1, yt2, yt3, yt4];
 
 function ChevronIcon({ className }: { className?: string }) {
     return (
@@ -30,7 +23,17 @@ function ChevronIcon({ className }: { className?: string }) {
     );
 }
 
-export function Shorts() {
+type ShortsData = {
+    label: string;
+    title: string;
+    description: string;
+    button_text: string;
+    button_href: string;
+    logo: string;
+    images: string[];
+};
+
+export function Shorts({ data }: { data: ShortsData }) {
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: 'start',
         slidesToScroll: 1,
@@ -70,24 +73,27 @@ export function Shorts() {
                     <div className="flex flex-col gap-5">
                         <div className="flex flex-col gap-2.5">
                             <span className="text-xl leading-none text-white">
-                                Shorts
+                                {data.label}
                             </span>
                             <h2 className="text-[32px] leading-none text-white">
-                                Mantente
-                                <br />
-                                actualizado
+                                {data.title.split('\n').map((line, i, arr) => (
+                                    <span key={i}>
+                                        {line}
+                                        {i < arr.length - 1 && <br />}
+                                    </span>
+                                ))}
                             </h2>
                         </div>
                         <p className="text-base leading-none text-white">
-                            Novedades, modelos y todo lo que está pasando
+                            {data.description}
                         </p>
                     </div>
                 </div>
                 <a
-                    href="#shorts"
+                    href={data.button_href}
                     className="flex h-12 items-center gap-2.5 rounded-full bg-white py-1 pr-1 pl-6 text-base leading-none text-black transition hover:bg-white/90"
                 >
-                    Ver todos
+                    {data.button_text}
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
                         <ArrowIcon className="text-white" />
                     </span>
@@ -98,7 +104,7 @@ export function Shorts() {
             <div className="flex flex-col gap-10">
                 <div className="overflow-hidden" ref={emblaRef}>
                     <div className="flex gap-5">
-                        {shorts.map((image, index) => (
+                        {data.images.map((image, index) => (
                             <div
                                 key={index}
                                 className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
@@ -109,9 +115,8 @@ export function Shorts() {
                                     backgroundColor: '#333',
                                 }}
                             >
-                                {/* YouTube Shorts logo */}
                                 <div className="absolute inset-0 flex items-center justify-center">
-                                    <img src={logoShort} alt="YouTube Shorts" className="w-17" />
+                                    <img src={data.logo} alt="YouTube Shorts" className="w-17" />
                                 </div>
                             </div>
                         ))}

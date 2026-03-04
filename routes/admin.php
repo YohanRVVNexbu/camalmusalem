@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -14,7 +15,11 @@ Route::middleware('guest')->group(function () {
 // Rutas protegidas (requiere admin)
 Route::middleware('admin')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('admin.logout');
-    Route::get('dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+    Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Página de inicio
+    Route::get('home', [HomeContentController::class, 'index'])->name('admin.home');
+    Route::put('home/{section}', [HomeContentController::class, 'update'])->name('admin.home.update');
 
     // Usuarios
     Route::resource('users', UserController::class)

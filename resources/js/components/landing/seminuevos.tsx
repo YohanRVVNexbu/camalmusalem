@@ -1,44 +1,27 @@
-import imagenSeminuevos from '@images/imagen_seminuevos.png?format=webp';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { VehicleCard } from '@/components/landing/vehicle-card';
 
-const vehicles = [
-    {
-        image: imagenSeminuevos,
-        badge: 'Seminuevo',
-        year: '2023',
-        brand: 'BMW',
-        name: 'Bmw x1 sdrive 18l 1.5 T\nConfort',
-        km: '53.000 Km',
-        transmission: 'AT',
-        fuel: 'Diesel',
-        price: '$ 29.990.000',
-    },
-    {
-        image: imagenSeminuevos,
-        badge: 'Seminuevo',
-        year: '2022',
-        brand: 'Toyota',
-        name: 'Toyota Corolla Cross\n2.0 SEG CVT',
-        km: '32.000 Km',
-        transmission: 'AT',
-        fuel: 'Bencina',
-        price: '$ 22.490.000',
-    },
-    {
-        image: imagenSeminuevos,
-        badge: 'Seminuevo',
-        year: '2024',
-        brand: 'Toyota',
-        name: 'Toyota Hilux 2.8 SRX\n4x4 AT',
-        km: '12.000 Km',
-        transmission: 'AT',
-        fuel: 'Diesel',
-        price: '$ 35.990.000',
-    },
-];
+type VehicleData = {
+    image: string;
+    badge: string;
+    year: string;
+    brand: string;
+    name: string;
+    km: string;
+    transmission: string;
+    fuel: string;
+    price: string;
+};
 
-export function Seminuevos() {
+type SeminuevosData = {
+    title: string;
+    description: string;
+    button_text: string;
+    button_href: string;
+    vehicles: VehicleData[];
+};
+
+export function Seminuevos({ data }: { data: SeminuevosData }) {
     return (
         <section id="seminuevos" className="bg-black px-15">
             <div className="flex flex-col gap-10 rounded-[30px] bg-[#EAEAF1] p-15">
@@ -46,18 +29,17 @@ export function Seminuevos() {
                 <div className="flex items-end justify-between">
                     <div className="flex flex-col gap-6">
                         <h2 className="text-[32px] leading-none text-black">
-                            Seminuevos
+                            {data.title}
                         </h2>
                         <p className="text-base leading-none text-black">
-                            Seminuevos Certificados y listos para su
-                            entrega.
+                            {data.description}
                         </p>
                     </div>
                     <a
-                        href="#seminuevos"
+                        href={data.button_href}
                         className="flex h-12 items-center gap-2.5 rounded-full bg-black py-1 pr-1 pl-4 text-base leading-none text-white transition hover:bg-black/85"
                     >
-                        Ver todos
+                        {data.button_text}
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white">
                             <ArrowIcon className="text-black" />
                         </span>
@@ -66,7 +48,7 @@ export function Seminuevos() {
 
                 {/* Cards */}
                 <div className="grid w-full grid-cols-3 gap-5">
-                    {vehicles.map((vehicle, i) => (
+                    {data.vehicles.map((vehicle, i) => (
                         <VehicleCard key={i} {...vehicle} />
                     ))}
                 </div>

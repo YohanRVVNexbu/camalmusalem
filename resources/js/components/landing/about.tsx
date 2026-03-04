@@ -1,10 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import bz4xImg from '@images/BZ4X.png?format=webp';
-import fourRunnerImg from '@images/4RUNNER.png?format=webp';
-import hiluxImg from '@images/HILUX.png?format=webp';
-import hiluxBg from '@images/video.png?format=webp';
-import bz4xVideo from '@videos/BZ4X.mp4';
-import fourRunnerVideo from '@videos/4RUNNER.mp4';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 
 type Vehicle = {
@@ -12,35 +6,16 @@ type Vehicle = {
     subtitle: string;
     headline: string;
     image: string;
-    video?: string;
-    backgroundImage?: string;
-    duration?: number;
+    video?: string | null;
+    background_image?: string | null;
+    duration?: number | null;
 };
 
-const vehicles: Vehicle[] = [
-    {
-        name: 'BZ4X',
-        subtitle: '100% Eléctrico, nuevo',
-        headline: 'MÁS QUE UN ELÉCTRICO,\nUN ELÉCTRICO TOYOTA.',
-        image: bz4xImg,
-        video: bz4xVideo,
-    },
-    {
-        name: '4RUNNER',
-        subtitle: 'Nueva generación,',
-        headline: 'AVENTURA SIN LÍMITES\nCON 4RUNNER.',
-        image: fourRunnerImg,
-        video: fourRunnerVideo,
-    },
-    {
-        name: 'HILUX',
-        subtitle: 'La más vendida,',
-        headline: 'POTENCIA Y DURABILIDAD\nEN CADA CAMINO.',
-        image: hiluxImg,
-        backgroundImage: hiluxBg,
-        duration: 5,
-    },
-];
+type AboutData = {
+    cta_text: string;
+    cta_href: string;
+    vehicles: Vehicle[];
+};
 
 const RING_RADIUS = 20;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
@@ -68,13 +43,7 @@ function ChevronIcon({ className }: { className?: string }) {
 
 function PauseIcon() {
     return (
-        <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M6 4h4v16H6V4zm8 0h4v16h-4V4z" />
         </svg>
     );
@@ -82,31 +51,25 @@ function PauseIcon() {
 
 function PlaySmallIcon() {
     return (
-        <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            xmlns="http://www.w3.org/2000/svg"
-        >
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path d="M8 5v14l11-7z" />
         </svg>
     );
 }
 
-export function About() {
+export function About({ data }: { data: AboutData }) {
+    const vehicles = data.vehicles;
     const [activeIndex, setActiveIndex] = useState(0);
     const [isPlaying, setIsPlaying] = useState(true);
     const [progress, setProgress] = useState(0);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     const activeVehicle = vehicles[activeIndex];
-    const hasVideo = !!activeVehicle.video;
+    const hasVideo = !!activeVehicle?.video;
     const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
     const startTimeRef = useRef(0);
     const elapsedRef = useRef(0);
 
-    // Clear image timer
     const clearImageTimer = useCallback(() => {
         if (timerRef.current) {
             clearInterval(timerRef.current);
@@ -114,9 +77,8 @@ export function About() {
         }
     }, []);
 
-    // Start image timer for vehicles without video
     const startImageTimer = useCallback(() => {
-        const duration = activeVehicle.duration ?? 5;
+        const duration = activeVehicle?.duration ?? 5;
         startTimeRef.current = Date.now() - elapsedRef.current * 1000;
 
         timerRef.current = setInterval(() => {
@@ -130,9 +92,8 @@ export function About() {
                 setActiveIndex((prev) => (prev + 1) % vehicles.length);
             }
         }, 50);
-    }, [activeVehicle, clearImageTimer]);
+    }, [activeVehicle, clearImageTimer, vehicles.length]);
 
-    // When activeIndex changes, reset and play the new video or start timer
     useEffect(() => {
         setProgress(0);
         elapsedRef.current = 0;
@@ -154,18 +115,16 @@ export function About() {
         return () => clearImageTimer();
     }, [activeIndex]); // eslint-disable-line react-hooks/exhaustive-deps
 
-    // Track video time → update progress ring
     const handleTimeUpdate = useCallback(() => {
         const video = videoRef.current;
         if (!video || !video.duration) return;
         setProgress(video.currentTime / video.duration);
     }, []);
 
-    // When video ends → go to next vehicle
     const handleEnded = useCallback(() => {
         setProgress(0);
         setActiveIndex((prev) => (prev + 1) % vehicles.length);
-    }, []);
+    }, [vehicles.length]);
 
     const togglePlayPause = () => {
         if (hasVideo) {
@@ -181,7 +140,6 @@ export function About() {
             }
         } else {
             if (isPlaying) {
-                // Pause: save elapsed time
                 elapsedRef.current = (Date.now() - startTimeRef.current) / 1000;
                 clearImageTimer();
                 setIsPlaying(false);
@@ -198,9 +156,7 @@ export function About() {
     };
 
     const goPrev = () => {
-        setActiveIndex(
-            (prev) => (prev - 1 + vehicles.length) % vehicles.length,
-        );
+        setActiveIndex((prev) => (prev - 1 + vehicles.length) % vehicles.length);
         setIsPlaying(true);
     };
 
@@ -211,9 +167,10 @@ export function About() {
 
     const strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress);
 
+    if (!activeVehicle) return null;
+
     return (
         <section id="about" className="relative flex h-dvh flex-col justify-end bg-black">
-            {/* Background video or image */}
             {hasVideo ? (
                 <video
                     ref={videoRef}
@@ -223,92 +180,59 @@ export function About() {
                     onEnded={handleEnded}
                     className="absolute inset-0 size-full object-cover"
                 >
-                    <source src={activeVehicle.video} type="video/mp4" />
+                    <source src={activeVehicle.video!} type="video/mp4" />
                 </video>
             ) : (
                 <img
-                    src={activeVehicle.backgroundImage}
+                    src={activeVehicle.background_image ?? ''}
                     alt={activeVehicle.name}
                     className="absolute inset-0 size-full object-cover"
                 />
             )}
 
-            {/* Gradient overlay */}
             <div className="absolute inset-0 bg-linear-to-b from-black/0 via-black/20 to-black/80" />
 
-            {/* Content overlay */}
             <div className="relative z-10 flex items-end justify-between px-15 pb-15">
-                {/* Left - text content */}
                 <div className="flex w-147 flex-col gap-7.5">
                     <div className="flex flex-col gap-5">
                         <p className="text-base leading-none text-white">
                             <span>{activeVehicle.subtitle} </span>
-                            <span className="font-bold">
-                                {activeVehicle.name}
-                            </span>
+                            <span className="font-bold">{activeVehicle.name}</span>
                         </p>
                         <h2 className="text-5xl leading-none text-white">
-                            {activeVehicle.headline
-                                .split('\n')
-                                .map((line, i) => (
-                                    <span key={i}>
-                                        {line}
-                                        {i === 0 && <br />}
-                                    </span>
-                                ))}
+                            {activeVehicle.headline.split('\n').map((line, i) => (
+                                <span key={i}>
+                                    {line}
+                                    {i === 0 && <br />}
+                                </span>
+                            ))}
                         </h2>
                     </div>
                     <a
-                        href="#detalles"
+                        href={data.cta_href}
                         className="flex h-11 w-fit items-center gap-2.5 rounded-full bg-white py-0.5 pr-0.5 pl-4 text-base leading-none text-black transition hover:bg-white/90"
                     >
-                        Más detalles
+                        {data.cta_text}
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
                             <ArrowIcon className="text-white" />
                         </span>
                     </a>
                 </div>
 
-                {/* Right - vehicle selector + controls */}
                 <div className="flex flex-col items-end gap-5">
-                    {/* Play/Pause button with progress ring */}
                     <button
                         onClick={togglePlayPause}
                         className="relative flex size-12 cursor-pointer items-center justify-center"
                     >
-                        <svg
-                            className="absolute inset-0 size-full -rotate-90"
-                            viewBox="0 0 48 48"
-                        >
-                            {/* Background track */}
-                            <circle
-                                cx="24"
-                                cy="24"
-                                r={RING_RADIUS}
-                                fill="none"
-                                stroke="rgba(255,255,255,0.3)"
-                                strokeWidth="2"
-                            />
-                            {/* Progress arc */}
-                            <circle
-                                cx="24"
-                                cy="24"
-                                r={RING_RADIUS}
-                                fill="none"
-                                stroke="white"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeDasharray={RING_CIRCUMFERENCE}
-                                strokeDashoffset={strokeDashoffset}
-                                style={{ transition: 'stroke-dashoffset 0.15s linear' }}
-                            />
+                        <svg className="absolute inset-0 size-full -rotate-90" viewBox="0 0 48 48">
+                            <circle cx="24" cy="24" r={RING_RADIUS} fill="none" stroke="rgba(255,255,255,0.3)" strokeWidth="2" />
+                            <circle cx="24" cy="24" r={RING_RADIUS} fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeDasharray={RING_CIRCUMFERENCE} strokeDashoffset={strokeDashoffset} style={{ transition: 'stroke-dashoffset 0.15s linear' }} />
                         </svg>
                         <span className="relative z-10 text-white">
                             {isPlaying ? <PauseIcon /> : <PlaySmallIcon />}
                         </span>
                     </button>
 
-                    {/* Vehicle cards */}
                     <div className="flex gap-2.5">
                         {vehicles.map((vehicle, index) => {
                             const isActive = index === activeIndex;
@@ -337,18 +261,11 @@ export function About() {
                         })}
                     </div>
 
-                    {/* Navigation arrows */}
                     <div className="flex w-full items-center justify-between">
-                        <button
-                            onClick={goPrev}
-                            className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-white/10 backdrop-blur-[10px] transition hover:bg-white/20"
-                        >
+                        <button onClick={goPrev} className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-white/10 backdrop-blur-[10px] transition hover:bg-white/20">
                             <ChevronIcon className="rotate-180 text-white" />
                         </button>
-                        <button
-                            onClick={goNext}
-                            className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-white/10 backdrop-blur-[10px] transition hover:bg-white/20"
-                        >
+                        <button onClick={goNext} className="flex size-10 cursor-pointer items-center justify-center rounded-full bg-white/10 backdrop-blur-[10px] transition hover:bg-white/20">
                             <ChevronIcon className="text-white" />
                         </button>
                     </div>

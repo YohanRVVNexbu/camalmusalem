@@ -9,7 +9,11 @@ import { Seminuevos } from '@/components/landing/seminuevos';
 import { Shorts } from '@/components/landing/shorts';
 import { WhatsappButton } from '@/components/landing/whatsapp-button';
 
-export default function Welcome() {
+type WelcomeProps = {
+    sections: Record<string, unknown>;
+};
+
+export default function Welcome({ sections }: WelcomeProps) {
     const { auth } = usePage().props;
 
     return (
@@ -17,13 +21,13 @@ export default function Welcome() {
             <Head title="Inicio" />
             <div className="min-h-screen bg-background text-foreground">
                 <Navbar isAuthenticated={!!auth.user} />
-                <Hero />
-                <Features />
-                <About />
-                <Seminuevos />
-                <Programas />
-                <Shorts />
-                <Footer />
+                {sections.hero && <Hero data={sections.hero as any} />}
+                {sections.features && <Features data={sections.features as any} />}
+                {sections.about && <About data={sections.about as any} />}
+                {sections.seminuevos && <Seminuevos data={sections.seminuevos as any} />}
+                {sections.programas && <Programas data={sections.programas as any} />}
+                {sections.shorts && <Shorts data={sections.shorts as any} />}
+                {sections.footer && <Footer data={sections.footer as any} />}
                 <WhatsappButton />
             </div>
         </>
