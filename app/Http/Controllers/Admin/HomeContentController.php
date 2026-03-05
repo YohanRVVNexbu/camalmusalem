@@ -33,6 +33,18 @@ class HomeContentController extends Controller
 
         $data = $request->input('data');
 
+        // Ensure grid_items positions are integers
+        if (isset($data['grid_items']) && is_array($data['grid_items'])) {
+            foreach ($data['grid_items'] as &$item) {
+                foreach (['x', 'y', 'w', 'h'] as $key) {
+                    if (isset($item[$key])) {
+                        $item[$key] = (int) $item[$key];
+                    }
+                }
+            }
+            unset($item);
+        }
+
         // Process file uploads
         $files = $request->allFiles();
         $data = $this->processFiles($files, $data, $section, $siteSection->data);

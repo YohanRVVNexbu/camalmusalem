@@ -9,11 +9,19 @@ import { Seminuevos } from '@/components/landing/seminuevos';
 import { Shorts } from '@/components/landing/shorts';
 import { WhatsappButton } from '@/components/landing/whatsapp-button';
 
-type WelcomeProps = {
-    sections: Record<string, unknown>;
+type YouTubeShort = {
+    id: string;
+    title: string;
+    thumbnail: string;
+    url: string;
 };
 
-export default function Welcome({ sections }: WelcomeProps) {
+type WelcomeProps = {
+    sections: Record<string, unknown>;
+    youtubeShorts: YouTubeShort[];
+};
+
+export default function Welcome({ sections, youtubeShorts }: WelcomeProps) {
     const { auth } = usePage().props;
 
     return (
@@ -26,7 +34,7 @@ export default function Welcome({ sections }: WelcomeProps) {
                 {sections.about && <About data={sections.about as any} />}
                 {sections.seminuevos && <Seminuevos data={sections.seminuevos as any} />}
                 {sections.programas && <Programas data={sections.programas as any} />}
-                {sections.shorts && <Shorts data={sections.shorts as any} />}
+                {sections.shorts && <Shorts data={sections.shorts as any} videos={youtubeShorts || []} />}
                 {sections.footer && <Footer data={sections.footer as any} />}
                 <WhatsappButton />
             </div>

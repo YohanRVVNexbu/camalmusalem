@@ -53,25 +53,29 @@ function ProgramCard({
     );
 }
 
+type GridItem = {
+    id: string;
+    type: 'mundo_toyota' | 'card' | 'image';
+    x: number;
+    y: number;
+    w: number;
+    h: number;
+    content: Record<string, string>;
+};
+
 type ProgramasData = {
     title: string;
     button_text: string;
     button_href: string;
-    mundo_toyota: {
-        title_line1: string;
-        title_line2: string;
-        description: string;
-        subtitle: string;
-        button_text: string;
-        button_href: string;
-        image: string;
-    };
-    promo_image: string;
-    cards: { title: string; description: string; image: string; href: string }[];
-    bottom_image: string;
+    grid_items: GridItem[];
 };
 
 export function Programas({ data }: { data: ProgramasData }) {
+    const mundoToyota = data.grid_items.find((i) => i.type === 'mundo_toyota');
+    const cards = data.grid_items.filter((i) => i.type === 'card');
+    const promoImage = data.grid_items.find((i) => i.id === 'promo-image');
+    const bottomImage = data.grid_items.find((i) => i.id === 'bottom-image');
+
     return (
         <section className="flex flex-col gap-10 self-stretch bg-black px-15 pt-25 pb-15">
             {/* Header */}
@@ -94,66 +98,72 @@ export function Programas({ data }: { data: ProgramasData }) {
             <div className="flex h-211.5 gap-5">
                 {/* Left column */}
                 <div className="flex w-101 shrink-0 flex-col gap-5">
-                    <div className="group relative flex flex-513 flex-col items-start justify-end gap-2.5 self-stretch overflow-hidden rounded-[20px] px-5 py-7.5">
-                        <div
-                            className="absolute inset-0 bg-cover bg-center transition-all duration-700 ease-out group-hover:scale-105 group-hover:opacity-80"
-                            style={{ backgroundImage: `url(${data.mundo_toyota.image})` }}
-                        />
-                        <div
-                            className="absolute inset-0"
-                            style={{
-                                background:
-                                    'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.2) 100%)',
-                            }}
-                        />
-                        <div className="relative z-10 flex flex-col gap-2.5">
-                            <h3 className="text-xl font-semibold leading-none text-white">
-                                {data.mundo_toyota.title_line1}
-                                <br />
-                                <span className="text-[#EB0A1E]">{data.mundo_toyota.title_line2}</span>
-                            </h3>
-                            <p className="text-base font-normal leading-none text-white">
-                                {data.mundo_toyota.description}
-                            </p>
-                            <p className="text-xs font-normal leading-none text-white/60">
-                                {data.mundo_toyota.subtitle}
-                            </p>
+                    {mundoToyota && (
+                        <div className="group relative flex flex-513 flex-col items-start justify-end gap-2.5 self-stretch overflow-hidden rounded-[20px] px-5 py-7.5">
+                            <div
+                                className="absolute inset-0 bg-cover bg-center transition-all duration-700 ease-out group-hover:scale-105 group-hover:opacity-80"
+                                style={{ backgroundImage: `url(${mundoToyota.content.image})` }}
+                            />
+                            <div
+                                className="absolute inset-0"
+                                style={{
+                                    background:
+                                        'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.1) 60%, rgba(0,0,0,0.2) 100%)',
+                                }}
+                            />
+                            <div className="relative z-10 flex flex-col gap-2.5">
+                                <h3 className="text-xl font-semibold leading-none text-white">
+                                    {mundoToyota.content.title_line1}
+                                    <br />
+                                    <span className="text-[#EB0A1E]">{mundoToyota.content.title_line2}</span>
+                                </h3>
+                                <p className="text-base font-normal leading-none text-white">
+                                    {mundoToyota.content.description}
+                                </p>
+                                <p className="text-xs font-normal leading-none text-white/60">
+                                    {mundoToyota.content.subtitle}
+                                </p>
+                            </div>
+                            <a
+                                href={mundoToyota.content.button_href}
+                                className="relative z-10 flex h-11 items-center justify-center self-stretch rounded-[60px] bg-[#EB0A1E] px-5 py-3 text-base font-normal leading-none text-white transition hover:bg-[#c0000f]"
+                            >
+                                {mundoToyota.content.button_text}
+                            </a>
                         </div>
-                        <a
-                            href={data.mundo_toyota.button_href}
-                            className="relative z-10 flex h-11 items-center justify-center self-stretch rounded-[60px] bg-[#EB0A1E] px-5 py-3 text-base font-normal leading-none text-white transition hover:bg-[#c0000f]"
-                        >
-                            {data.mundo_toyota.button_text}
-                        </a>
-                    </div>
-                    <ProgramCard
-                        title=""
-                        className="flex-313"
-                        image={data.promo_image}
-                        showContent={false}
-                    />
+                    )}
+                    {promoImage && (
+                        <ProgramCard
+                            title=""
+                            className="flex-313"
+                            image={promoImage.content.image}
+                            showContent={false}
+                        />
+                    )}
                 </div>
 
                 {/* Right column */}
                 <div className="flex flex-1 flex-col gap-5">
                     <div className="flex flex-457 gap-5">
-                        {data.cards.map((card, i) => (
+                        {cards.map((card) => (
                             <ProgramCard
-                                key={i}
-                                title={card.title}
-                                description={card.description}
+                                key={card.id}
+                                title={card.content.title}
+                                description={card.content.description}
                                 className="flex-1"
-                                image={card.image}
+                                image={card.content.image}
                             />
                         ))}
                     </div>
-                    <ProgramCard
-                        title=""
-                        className="flex-369"
-                        image={data.bottom_image}
-                        bgPosition="bg-center"
-                        showContent={false}
-                    />
+                    {bottomImage && (
+                        <ProgramCard
+                            title=""
+                            className="flex-369"
+                            image={bottomImage.content.image}
+                            bgPosition="bg-center"
+                            showContent={false}
+                        />
+                    )}
                 </div>
             </div>
         </section>

@@ -33,7 +33,25 @@ type ShortsData = {
     images: string[];
 };
 
-export function Shorts({ data }: { data: ShortsData }) {
+type YouTubeShort = {
+    id: string;
+    title: string;
+    thumbnail: string;
+    url: string;
+};
+
+export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShort[] }) {
+    const [activeVideo, setActiveVideo] = useState<YouTubeShort | null>(null);
+
+    useEffect(() => {
+        if (activeVideo) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+        }
+        return () => { document.body.style.overflow = ''; };
+    }, [activeVideo]);
+
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: 'start',
         slidesToScroll: 1,
@@ -64,6 +82,9 @@ export function Shorts({ data }: { data: ShortsData }) {
             emblaApi.off('select', onSelect);
         };
     }, [emblaApi, onSelect]);
+
+    // Usar videos de YouTube si hay, sino fallback a imágenes estáticas
+    const hasVideos = videos && videos.length > 0;
 
     return (
         <section className="flex flex-col gap-10 self-stretch bg-black px-15 pt-15 pb-25">
@@ -104,22 +125,40 @@ export function Shorts({ data }: { data: ShortsData }) {
             <div className="flex flex-col gap-10">
                 <div className="overflow-hidden" ref={emblaRef}>
                     <div className="flex gap-5">
-                        {data.images.map((image, index) => (
-                            <div
-                                key={index}
-                                className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
-                                style={{
-                                    backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: 'center',
-                                    backgroundColor: '#333',
-                                }}
-                            >
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <img src={data.logo} alt="YouTube Shorts" className="w-17" />
-                                </div>
-                            </div>
-                        ))}
+                        {hasVideos
+                            ? videos.map((video) => (
+                                  <button
+                                      key={video.id}
+                                      onClick={() => setActiveVideo(video)}
+                                      className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
+                                      style={{
+                                          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${video.thumbnail})`,
+                                          backgroundSize: 'cover',
+                                          backgroundPosition: 'center',
+                                          backgroundColor: '#333',
+                                      }}
+                                  >
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                          <img src={data.logo} alt="YouTube Shorts" className="w-17" />
+                                      </div>
+                                  </button>
+                              ))
+                            : data.images.map((image, index) => (
+                                  <div
+                                      key={index}
+                                      className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
+                                      style={{
+                                          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`,
+                                          backgroundSize: 'cover',
+                                          backgroundPosition: 'center',
+                                          backgroundColor: '#333',
+                                      }}
+                                  >
+                                      <div className="absolute inset-0 flex items-center justify-center">
+                                          <img src={data.logo} alt="YouTube Shorts" className="w-17" />
+                                      </div>
+                                  </div>
+                              ))}
                     </div>
                 </div>
 
@@ -152,6 +191,35 @@ export function Shorts({ data }: { data: ShortsData }) {
                     </button>
                 </div>
             </div>
+
+            {/* Modal */}
+            {activeVideo && (
+                <div
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+                    onClick={() => setActiveVideo(null)}
+                >
+                    <div
+                        className="relative"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <button
+                            onClick={() => setActiveVideo(null)}
+                            className="absolute -top-12 right-0 flex size-10 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
+                        >
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18" />
+                                <line x1="6" y1="6" x2="18" y2="18" />
+                            </svg>
+                        </button>
+                        <iframe
+                            src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1&loop=1`}
+                            className="h-[80vh] w-[45vh] rounded-2xl"
+                            allow="autoplay; encrypted-media"
+                            allowFullScreen
+                        />
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
