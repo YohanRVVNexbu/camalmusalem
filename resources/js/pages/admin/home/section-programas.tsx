@@ -33,10 +33,10 @@ type Props = {
 
 const DEFAULT_LAYOUT: Pick<GridItem, 'id' | 'x' | 'y' | 'w' | 'h'>[] = [
     { id: 'mundo-toyota', x: 0, y: 0, w: 2, h: 6 },
-    { id: 'card-1', x: 2, y: 0, w: 2, h: 5 },
-    { id: 'card-2', x: 4, y: 0, w: 2, h: 5 },
+    { id: 'card-1', x: 2, y: 0, w: 2, h: 6 },
+    { id: 'card-2', x: 4, y: 0, w: 2, h: 6 },
     { id: 'promo-image', x: 0, y: 6, w: 2, h: 4 },
-    { id: 'bottom-image', x: 2, y: 5, w: 4, h: 5 },
+    { id: 'bottom-image', x: 2, y: 6, w: 4, h: 4 },
 ];
 
 function getItemLabel(item: GridItem): string {

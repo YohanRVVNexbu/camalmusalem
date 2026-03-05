@@ -168,7 +168,7 @@ class SiteSectionsSeeder extends Seeder
                     [
                         'id' => 'card-1',
                         'type' => 'card',
-                        'x' => 2, 'y' => 0, 'w' => 2, 'h' => 5,
+                        'x' => 2, 'y' => 0, 'w' => 2, 'h' => 6,
                         'content' => [
                             'title' => 'Llamado a revisión',
                             'description' => 'Ingresa y conoce si tu Toyota puede acceder a una revisión gratuita de seguridad.',
@@ -179,7 +179,7 @@ class SiteSectionsSeeder extends Seeder
                     [
                         'id' => 'card-2',
                         'type' => 'card',
-                        'x' => 4, 'y' => 0, 'w' => 2, 'h' => 5,
+                        'x' => 4, 'y' => 0, 'w' => 2, 'h' => 6,
                         'content' => [
                             'title' => 'Reserva tu hora',
                             'description' => 'Servicio técnico',
@@ -198,7 +198,7 @@ class SiteSectionsSeeder extends Seeder
                     [
                         'id' => 'bottom-image',
                         'type' => 'image',
-                        'x' => 2, 'y' => 5, 'w' => 4, 'h' => 5,
+                        'x' => 2, 'y' => 6, 'w' => 4, 'h' => 4,
                         'content' => [
                             'image' => $url('home/programas/image_grid5.png'),
                         ],
