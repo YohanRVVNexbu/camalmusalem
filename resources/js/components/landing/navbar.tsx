@@ -1,28 +1,45 @@
 import { Link } from '@inertiajs/react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
+import logoNegro from '@images/logo_negro.png?format=webp';
 import { Menu } from 'lucide-react';
 import { useState } from 'react';
-import { dashboard } from '@/routes';
 
 const navLinks = [
-    { label: 'Vehículos', href: '#vehiculos' },
-    { label: 'Seminuevos', href: '#seminuevos' },
+    { label: 'Nuevos', href: '/nuevos' },
+    { label: 'Seminuevos', href: '/seminuevos' },
     { label: 'Post Venta', href: '#post-venta' },
+    { label: 'Arriendo Kinto', href: '#arriendo-kinto' },
 ];
 
-export function Navbar({
-    isAuthenticated,
-}: {
-    isAuthenticated: boolean;
-}) {
+function NavLink({ label, href, dark = false }: { label: string; href: string; dark?: boolean }) {
+    const colorClass = dark ? 'text-black' : 'text-white';
+    const cls = `text-base leading-none ${colorClass} transition hover:opacity-80`;
+    if (href.startsWith('/')) {
+        return <Link href={href} className={cls}>{label}</Link>;
+    }
+    return <a href={href} className={cls}>{label}</a>;
+}
+
+type NavbarProps = {
+    variant?: 'transparent' | 'white';
+};
+
+export function Navbar({ variant = 'transparent' }: NavbarProps) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const isWhite = variant === 'white';
 
     return (
-        <nav className="fixed top-0 z-50 w-full backdrop-blur-[10px]">
+        <nav
+            className={`fixed top-0 z-50 w-full backdrop-blur-[10px] ${
+                isWhite
+                    ? 'rounded-b-[30px] border-b border-black/20 bg-white'
+                    : ''
+            }`}
+        >
             <div className="flex items-center justify-between px-8 py-6 lg:px-15">
                 <Link href="/">
                     <img
-                        src={logoBlanco}
+                        src={isWhite ? logoNegro : logoBlanco}
                         alt="Toyota Musalem"
                         className="h-10 w-auto object-contain"
                     />
@@ -32,33 +49,12 @@ export function Navbar({
                 <div className="hidden items-center gap-10 lg:flex">
                     <div className="flex items-center gap-10">
                         {navLinks.map((link) => (
-                            <a
-                                key={link.label}
-                                href={link.href}
-                                className="text-base leading-none text-white transition hover:opacity-80"
-                            >
-                                {link.label}
-                            </a>
+                            <NavLink key={link.label} {...link} dark={isWhite} />
                         ))}
                     </div>
-                    {isAuthenticated ? (
-                        <Link
-                            href={dashboard()}
-                            className="text-base leading-none text-white transition hover:opacity-80"
-                        >
-                            Dashboard
-                        </Link>
-                    ) : (
-                        <a
-                            href="#cotizar"
-                            className="text-base leading-none text-white transition hover:opacity-80"
-                        >
-                            Cotizar
-                        </a>
-                    )}
                     <button
                         onClick={() => setMenuOpen(!menuOpen)}
-                        className="text-white transition hover:opacity-80"
+                        className={`transition hover:opacity-80 ${isWhite ? 'text-black' : 'text-white'}`}
                         aria-label="Abrir menú"
                     >
                         <Menu className="size-6" />
@@ -68,7 +64,7 @@ export function Navbar({
                 {/* Mobile toggle */}
                 <button
                     onClick={() => setMenuOpen(!menuOpen)}
-                    className="text-white lg:hidden"
+                    className={`lg:hidden ${isWhite ? 'text-black' : 'text-white'}`}
                     aria-label="Abrir menú"
                 >
                     <Menu className="size-6" />
@@ -77,24 +73,12 @@ export function Navbar({
 
             {/* Mobile menu */}
             {menuOpen && (
-                <div className="flex flex-col gap-6 border-t border-white/10 px-8 py-6 lg:hidden">
+                <div className={`flex flex-col gap-6 border-t px-8 py-6 lg:hidden ${
+                    isWhite ? 'border-black/10' : 'border-white/10'
+                }`}>
                     {navLinks.map((link) => (
-                        <a
-                            key={link.label}
-                            href={link.href}
-                            className="text-base text-white transition hover:opacity-80"
-                            onClick={() => setMenuOpen(false)}
-                        >
-                            {link.label}
-                        </a>
+                        <NavLink key={link.label} {...link} dark={isWhite} />
                     ))}
-                    <a
-                        href="#cotizar"
-                        className="text-base text-white transition hover:opacity-80"
-                        onClick={() => setMenuOpen(false)}
-                    >
-                        Cotizar
-                    </a>
                 </div>
             )}
         </nav>

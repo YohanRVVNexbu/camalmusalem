@@ -28,7 +28,7 @@ export default function Welcome({ sections, youtubeShorts }: WelcomeProps) {
         <>
             <Head title="Inicio" />
             <div className="min-h-screen bg-background text-foreground">
-                <Navbar isAuthenticated={!!auth.user} />
+                <Navbar />
                 {sections.hero && <Hero data={sections.hero as any} />}
                 {sections.features && <Features data={sections.features as any} />}
                 {sections.about && <About data={sections.about as any} />}

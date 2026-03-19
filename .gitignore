@@ -26,3 +26,7 @@ yarn-error.log
 /.nova
 /.vscode
 /.zed
+
+# Sección prueba WordPress
+/public/seccion-prueba.html
+/public/images/frutas/
