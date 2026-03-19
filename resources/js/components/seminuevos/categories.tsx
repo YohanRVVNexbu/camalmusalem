@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { CompareIcon } from '@/components/icons/compare-icon';
 import { PillButton } from '@/components/ui/pill-button';
 
@@ -20,10 +21,13 @@ export function Categories() {
                     <PillButton key={cat}>{cat}</PillButton>
                 ))}
             </div>
-            <PillButton variant="solid" className="flex h-11 items-center gap-2.5 text-sm">
+            <Link
+                href="/seminuevos/comparar?from=/seminuevos"
+                className="flex h-11 shrink-0 cursor-pointer items-center gap-2.5 rounded-[60px] bg-black px-5 py-2.5 text-sm leading-none text-white transition hover:bg-black/85"
+            >
                 <CompareIcon className="text-white" />
                 Comparar
-            </PillButton>
+            </Link>
         </div>
     );
 }

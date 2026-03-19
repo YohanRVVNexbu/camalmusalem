@@ -18,6 +18,15 @@ class SeminuevosController extends Controller
         ]);
     }
 
+    public function compare()
+    {
+        $footer = SiteSection::where('section', 'footer')->first();
+
+        return Inertia::render('seminuevos/compare', [
+            'footer' => $footer?->data ?? [],
+        ]);
+    }
+
     public function show(string $id)
     {
         $footer = SiteSection::where('section', 'footer')->first();

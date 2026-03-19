@@ -110,10 +110,10 @@ export default function SeminuevosShow({ vehicleId, footer }: { vehicleId: strin
                             Volver
                         </Link>
                         <div className="flex items-center gap-2.5">
-                            <button className="flex h-9.5 cursor-pointer items-center gap-2.5 rounded-[60px] border border-black px-5 py-2.5 text-sm leading-none text-black transition hover:bg-black hover:text-white">
+                            <Link href={`/seminuevos/comparar?from=/seminuevos/${vehicleId}`} className="flex h-9.5 cursor-pointer items-center gap-2.5 rounded-[60px] border border-black px-5 py-2.5 text-sm leading-none text-black transition hover:bg-black hover:text-white">
                                 <CompareDetailIcon className="text-current" />
                                 Comparar
-                            </button>
+                            </Link>
                             <button className="flex h-9.5 cursor-pointer items-center gap-2.5 rounded-[60px] border border-black px-5 py-2.5 text-sm leading-none text-black transition hover:bg-black hover:text-white">
                                 <ShareIcon className="size-6 text-current" />
                                 Compartir
