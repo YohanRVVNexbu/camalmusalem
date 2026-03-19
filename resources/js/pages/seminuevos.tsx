@@ -1,7 +1,6 @@
 import { Head } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { WhatsappButton } from '@/components/landing/whatsapp-button';
 import { Categories } from '@/components/seminuevos/categories';
 import { Filters } from '@/components/seminuevos/filters';
 import { Hero } from '@/components/seminuevos/hero';
@@ -88,7 +87,6 @@ export default function Seminuevos({ data, footer }: { data: SeminuevosData; foo
                 </div>
 
                 {footer && <Footer data={footer} />}
-                <WhatsappButton />
             </div>
         </>
     );

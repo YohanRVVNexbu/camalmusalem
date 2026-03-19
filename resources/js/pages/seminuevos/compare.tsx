@@ -1,7 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { WhatsappButton } from '@/components/landing/whatsapp-button';
 import { vehicles, type Vehicle } from '@/data/vehicles';
 import { SpeedometerIcon } from '@/components/icons/speedometer-icon';
 import { TransmissionIcon } from '@/components/icons/transmission-icon';
@@ -419,62 +418,85 @@ function FilterSelect({
 
 type ModalVehicle = { marca: string; modelo: string; version: string; precio: string; image: string };
 
+function getVehicleId(v?: ModalVehicle) {
+    return v ? `${v.modelo}-${v.version}` : null;
+}
+
 function ModalCard({ vehicle, onRemove }: { vehicle?: ModalVehicle; onRemove: () => void }) {
     const [visible, setVisible] = useState(false);
-    const prevVehicle = useRef<ModalVehicle | undefined>(undefined);
+    const [displayVehicle, setDisplayVehicle] = useState<ModalVehicle | undefined>(vehicle);
+    const prevIdRef = useRef<string | null>(getVehicleId(vehicle));
 
     useEffect(() => {
-        if (vehicle && !prevVehicle.current) {
-            // New vehicle added — trigger enter animation
-            requestAnimationFrame(() => setVisible(true));
-        } else if (!vehicle) {
-            setVisible(false);
-        }
-        prevVehicle.current = vehicle;
-    }, [vehicle]);
+        const newId = getVehicleId(vehicle);
+        const prevId = prevIdRef.current;
 
-    if (!vehicle) {
-        return (
-            <div className="flex h-75 w-75 shrink-0 flex-col items-end gap-2.5 rounded-[20px] bg-[#EAEAF1] p-2.5 transition-all duration-500" />
-        );
-    }
+        if (newId && !prevId) {
+            // Empty → vehicle: fade in
+            setDisplayVehicle(vehicle);
+            requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
+        } else if (!newId && prevId) {
+            // Vehicle → empty: fade out
+            setVisible(false);
+            setTimeout(() => setDisplayVehicle(undefined), 400);
+        } else if (newId && prevId && newId !== prevId) {
+            // Different vehicle: crossfade (fade out, swap, fade in)
+            setVisible(false);
+            setTimeout(() => {
+                setDisplayVehicle(vehicle);
+                requestAnimationFrame(() => requestAnimationFrame(() => setVisible(true)));
+            }, 250);
+        } else if (newId && newId === prevId) {
+            // Same vehicle, ensure visible
+            setDisplayVehicle(vehicle);
+            setVisible(true);
+        }
+
+        prevIdRef.current = newId;
+    }, [vehicle]);
 
     return (
         <div
-            className={`flex h-75 w-75 shrink-0 flex-col items-center justify-between overflow-hidden rounded-[20px] bg-[#EAEAF1] px-2.5 pt-2.5 pb-7.5 transition-all duration-500 ease-out ${
-                visible ? 'scale-100 opacity-100' : 'scale-90 opacity-0'
+            className={`flex h-75 w-75 shrink-0 flex-col items-center justify-between overflow-hidden rounded-[20px] bg-[#EAEAF1] px-2.5 pt-2.5 pb-7.5 transition-all duration-400 ease-out ${
+                displayVehicle && visible ? 'scale-100 opacity-100' : displayVehicle ? 'scale-95 opacity-0' : 'scale-100 opacity-100'
             }`}
         >
-            <div className="flex items-center justify-end self-stretch">
-                <button
-                    onClick={() => {
-                        setVisible(false);
-                        setTimeout(onRemove, 300);
-                    }}
-                    className="cursor-pointer transition hover:opacity-70"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
-                        <path d="M15 1.875C7.6875 1.875 1.875 7.6875 1.875 15C1.875 22.3125 7.6875 28.125 15 28.125C22.3125 28.125 28.125 22.3125 28.125 15C28.125 7.6875 22.3125 1.875 15 1.875ZM15 26.25C8.8125 26.25 3.75 21.1875 3.75 15C3.75 8.8125 8.8125 3.75 15 3.75C21.1875 3.75 26.25 8.8125 26.25 15C26.25 21.1875 21.1875 26.25 15 26.25Z" fill="black" fillOpacity="0.8"/>
-                        <path d="M20.0625 21.5625L15 16.5L9.9375 21.5625L8.4375 20.0625L13.5 15L8.4375 9.9375L9.9375 8.4375L15 13.5L20.0625 8.4375L21.5625 9.9375L16.5 15L21.5625 20.0625L20.0625 21.5625Z" fill="black" fillOpacity="0.8"/>
-                    </svg>
-                </button>
-            </div>
-            <img
-                src={vehicle.image}
-                alt={`${vehicle.marca} ${vehicle.modelo}`}
-                className={`h-25.5 w-55.5 object-cover transition-all delay-150 duration-500 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
-            />
-            <div className={`flex flex-col items-center gap-2.5 self-stretch transition-all delay-300 duration-500 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
-                <span className="text-2xl font-semibold uppercase leading-none text-black">
-                    {vehicle.marca} {vehicle.modelo}
-                </span>
-                <span className="text-sm uppercase leading-none text-black">
-                    {vehicle.version}
-                </span>
-                <span className="text-center text-2xl font-semibold uppercase leading-none text-black">
-                    {vehicle.precio}
-                </span>
-            </div>
+            {displayVehicle ? (
+                <>
+                    <div className="flex items-center justify-end self-stretch">
+                        <button
+                            onClick={() => {
+                                setVisible(false);
+                                setTimeout(onRemove, 350);
+                            }}
+                            className="cursor-pointer transition hover:opacity-70"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" fill="none">
+                                <path d="M15 1.875C7.6875 1.875 1.875 7.6875 1.875 15C1.875 22.3125 7.6875 28.125 15 28.125C22.3125 28.125 28.125 22.3125 28.125 15C28.125 7.6875 22.3125 1.875 15 1.875ZM15 26.25C8.8125 26.25 3.75 21.1875 3.75 15C3.75 8.8125 8.8125 3.75 15 3.75C21.1875 3.75 26.25 8.8125 26.25 15C26.25 21.1875 21.1875 26.25 15 26.25Z" fill="black" fillOpacity="0.8"/>
+                                <path d="M20.0625 21.5625L15 16.5L9.9375 21.5625L8.4375 20.0625L13.5 15L8.4375 9.9375L9.9375 8.4375L15 13.5L20.0625 8.4375L21.5625 9.9375L16.5 15L21.5625 20.0625L20.0625 21.5625Z" fill="black" fillOpacity="0.8"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <img
+                        src={displayVehicle.image}
+                        alt={`${displayVehicle.marca} ${displayVehicle.modelo}`}
+                        className={`h-25.5 w-55.5 object-cover transition-all delay-100 duration-400 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}
+                    />
+                    <div className={`flex flex-col items-center gap-2.5 self-stretch transition-all delay-200 duration-400 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+                        <span className="text-2xl font-semibold uppercase leading-none text-black">
+                            {displayVehicle.marca} {displayVehicle.modelo}
+                        </span>
+                        <span className="text-sm uppercase leading-none text-black">
+                            {displayVehicle.version}
+                        </span>
+                        <span className="text-center text-2xl font-semibold uppercase leading-none text-black">
+                            {displayVehicle.precio}
+                        </span>
+                    </div>
+                </>
+            ) : (
+                <div className="h-full w-full" />
+            )}
         </div>
     );
 }
@@ -876,7 +898,6 @@ export default function Compare({ footer }: { footer: any }) {
                 </div>
 
                 {footer && <Footer data={footer} />}
-                <WhatsappButton />
             </div>
 
             {/* Vehicle selector modal */}

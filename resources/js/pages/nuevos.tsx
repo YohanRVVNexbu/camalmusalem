@@ -2,7 +2,6 @@ import { Head } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { WhatsappButton } from '@/components/landing/whatsapp-button';
 
 type Vehicle = {
     image: string;
@@ -107,7 +106,6 @@ export default function Nuevos({ data, footer }: { data: NuevosData; footer: any
                 </div>
 
                 {footer && <Footer data={footer} />}
-                <WhatsappButton />
             </div>
         </>
     );
