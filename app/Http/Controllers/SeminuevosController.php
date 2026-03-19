@@ -17,4 +17,14 @@ class SeminuevosController extends Controller
             'footer' => $footer?->data ?? [],
         ]);
     }
+
+    public function show(string $id)
+    {
+        $footer = SiteSection::where('section', 'footer')->first();
+
+        return Inertia::render('seminuevos/show', [
+            'vehicleId' => $id,
+            'footer' => $footer?->data ?? [],
+        ]);
+    }
 }

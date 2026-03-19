@@ -1,3 +1,4 @@
+import { Link } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { FuelElectricIcon } from '@/components/icons/fuel-electric-icon';
 import { FuelGasIcon } from '@/components/icons/fuel-gas-icon';
@@ -107,7 +108,7 @@ export function ProductCard({
                             {price}
                         </span>
                     </div>
-                    <a
+                    <Link
                         href={href}
                         className="flex h-10 cursor-pointer items-center gap-2.5 rounded-full bg-black p-1 pl-4 text-sm leading-none text-white transition hover:bg-black/85"
                     >
@@ -115,7 +116,7 @@ export function ProductCard({
                         <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-white">
                             <ArrowIcon className="scale-75 text-black" />
                         </span>
-                    </a>
+                    </Link>
                 </div>
             </div>
         </div>
