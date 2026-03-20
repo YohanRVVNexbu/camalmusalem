@@ -30,7 +30,7 @@ class SiteSettingsService
     {
         $path = $file->store($directory, 'public');
 
-        return Storage::disk('public')->url($path);
+        return '/storage/'.$path;
     }
 
     public function deleteOldFile(?string $url): void
@@ -39,7 +39,9 @@ class SiteSettingsService
             return;
         }
 
-        $path = str_replace('/storage/', '', parse_url($url, PHP_URL_PATH));
+        // Handle both relative paths and legacy absolute URLs
+        $parsed = parse_url($url, PHP_URL_PATH);
+        $path = str_replace('/storage/', '', $parsed ?? $url);
         Storage::disk('public')->delete($path);
     }
 }
