@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Symfony\Component\HttpFoundation\Response;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -47,5 +48,31 @@ class HandleInertiaRequests extends Middleware
                 'error' => $request->session()->get('error'),
             ],
         ];
+    }
+
+    /**
+     * Rewrite storage URLs to match the current host (fixes ngrok/proxy access).
+     */
+    public function handle(Request $request, \Closure $next): Response
+    {
+        $response = parent::handle($request, $next);
+
+        $currentHost = $request->getSchemeAndHttpHost();
+        $localUrl = config('app.url');
+
+        if ($currentHost !== $localUrl) {
+            $content = $response->getContent();
+            if ($content) {
+                $response->setContent(
+                    str_replace(
+                        [str_replace('/', '\/', $localUrl), $localUrl],
+                        [str_replace('/', '\/', $currentHost), $currentHost],
+                        $content
+                    )
+                );
+            }
+        }
+
+        return $response;
     }
 }
