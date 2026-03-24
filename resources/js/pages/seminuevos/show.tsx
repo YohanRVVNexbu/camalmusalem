@@ -20,7 +20,7 @@ import ejemploVideo from '@images/seminuevos/ejemplo-video.png?format=webp';
 import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function FuelIcon({ fuel, className = '' }: { fuel: string; className?: string }) {
     const lower = fuel.toLowerCase();
@@ -56,6 +56,13 @@ type DetailsTab = 'general' | 'equipment' | 'downloads';
 export default function SeminuevosShow({ vehicleId, footer }: { vehicleId: string; footer: any }) {
     const [currentImage, setCurrentImage] = useState(0);
     const [detailsTab, setDetailsTab] = useState<DetailsTab>('general');
+
+    useEffect(() => {
+        const html = document.documentElement;
+        const prev = html.style.backgroundColor;
+        html.style.backgroundColor = '#000';
+        return () => { html.style.backgroundColor = prev; };
+    }, []);
 
     const vehicleFromList = vehicles.find(v => v.id === Number(vehicleId));
 
@@ -403,7 +410,9 @@ export default function SeminuevosShow({ vehicleId, footer }: { vehicleId: strin
                     </div>
                 </div>
 
-                {footer && <Footer data={footer} />}
+                <div className="bg-black">
+                    {footer && <Footer data={footer} />}
+                </div>
             </div>
         </>
     );

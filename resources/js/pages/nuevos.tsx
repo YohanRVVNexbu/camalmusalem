@@ -4,9 +4,9 @@ import { Navbar } from '@/components/landing/navbar';
 import { Filters } from '@/components/seminuevos/filters';
 import { Toolbar, type ViewMode } from '@/components/seminuevos/toolbar';
 import { Pagination } from '@/components/seminuevos/pagination';
-import { ProductCard } from '@/components/seminuevos/product-card';
-import { ProductListItem } from '@/components/seminuevos/product-list-item';
-import { vehicles } from '@/data/vehicles';
+import { NuevosProductCard } from '@/components/nuevos/product-card';
+import { NuevosListItem } from '@/components/nuevos/product-list-item';
+import { Modal360 } from '@/components/nuevos/modal-360';
 import { useEffect, useMemo, useState } from 'react';
 import cardNuevos1 from '@images/nuevos/card_nuevos_1.png?format=webp';
 import cardNuevos2 from '@images/nuevos/card_nuevos_2.png?format=webp';
@@ -16,6 +16,12 @@ import logoCard1 from '@images/nuevos/logo_card_1.png?format=webp';
 import logoCard2 from '@images/nuevos/loco_card_2.png?format=webp';
 import logoCard3 from '@images/nuevos/logo_card_3.png?format=webp';
 import logoCard4 from '@images/nuevos/logo_card_4.png?format=webp';
+import cardGrid1 from '@images/nuevos/card_grid_1.png?format=webp';
+import cardGrid2 from '@images/nuevos/card_grid_2.png?format=webp';
+import cardGrid3 from '@images/nuevos/card_grid_3.png?format=webp';
+import cardGrid4 from '@images/nuevos/card_grid_4.png?format=webp';
+import cardGrid5 from '@images/nuevos/card_grid_5.png?format=webp';
+import cardGrid6 from '@images/nuevos/card_grid_6.png?format=webp';
 
 function ElectricBadge() {
     return (
@@ -38,12 +44,22 @@ const heroCards = [
     { image: cardNuevos4, logo: logoCard4, electric: false, price: '$35.590.000' },
 ];
 
+const nuevosVehicles = [
+    { id: 1, image: cardGrid1, name: 'BZ4X', electric: true, tags: ['Nuevo', 'Sedan', 'Eléctrico', 'MT'], price: '39.990.000', subtitle: 'Más que un eléctrico, un eléctrico Toyota.' },
+    { id: 2, image: cardGrid2, name: 'Corolla', electric: false, tags: ['Nuevo', 'Sedan', 'Bencina', 'CVT'], price: '18.490.000', subtitle: 'Diseño que inspira, tecnología que conecta.' },
+    { id: 3, image: cardGrid3, name: 'Yaris Cross', electric: false, tags: ['Nuevo', 'SUV', 'Bencina', 'CVT'], price: '16.990.000', subtitle: 'Compacto por fuera, gigante por dentro.' },
+    { id: 4, image: cardGrid4, name: 'Hilux', electric: false, tags: ['Nuevo', 'Camioneta', 'Diesel', 'MT'], price: '22.490.000', subtitle: 'Potencia y resistencia sin límites.' },
+    { id: 5, image: cardGrid5, name: 'RAV4', electric: false, tags: ['Nuevo', 'SUV', 'Híbrido', 'CVT'], price: '28.990.000', subtitle: 'Aventura híbrida, rendimiento superior.' },
+    { id: 6, image: cardGrid6, name: '4Runner', electric: false, tags: ['Nuevo', 'SUV', 'Bencina', 'AT'], price: '35.590.000', subtitle: 'Conquista cualquier terreno.' },
+];
+
 export default function Nuevos({ data, footer }: { data: any; footer: any }) {
     const [cardsVisible, setCardsVisible] = useState(false);
     const [contentVisible, setContentVisible] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [currentPage, setCurrentPage] = useState(1);
+    const [modal360, setModal360] = useState<{ open: boolean; name: string; subtitle: string }>({ open: false, name: '', subtitle: '' });
 
     useEffect(() => {
         const t1 = setTimeout(() => setCardsVisible(true), 200);
@@ -55,10 +71,10 @@ export default function Nuevos({ data, footer }: { data: any; footer: any }) {
     const ITEMS_PER_PAGE_LIST = 6;
 
     const itemsPerPage = viewMode === 'grid' ? ITEMS_PER_PAGE_GRID : ITEMS_PER_PAGE_LIST;
-    const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+    const totalPages = Math.ceil(nuevosVehicles.length / itemsPerPage);
     const paginatedVehicles = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return vehicles.slice(start, start + itemsPerPage);
+        return nuevosVehicles.slice(start, start + itemsPerPage);
     }, [currentPage, itemsPerPage]);
 
     const handlePageChange = (page: number) => {
@@ -160,19 +176,38 @@ export default function Nuevos({ data, footer }: { data: any; footer: any }) {
                             <Filters />
                         </div>
                         <div className="flex flex-1 flex-col justify-between transition-all duration-500 ease-in-out">
-                            <div className="relative">
-                                {/* Grid view */}
-                                <div className={`flex flex-wrap items-start gap-5 transition-all duration-500 ease-in-out ${viewMode === 'grid' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'}`}>
-                                    {paginatedVehicles.map((v) => (
-                                        <ProductCard key={`grid-${v.id}`} {...v} href={`/nuevos/${v.id}`} />
-                                    ))}
-                                </div>
-                                {/* List view */}
-                                <div className={`flex flex-col gap-5 transition-all duration-500 ease-in-out ${viewMode === 'list' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'}`}>
-                                    {paginatedVehicles.map((v) => (
-                                        <ProductListItem key={`list-${v.id}`} {...v} href={`/nuevos/${v.id}`} />
-                                    ))}
-                                </div>
+                            <div>
+                                {viewMode === 'grid' ? (
+                                    <div key="grid" className="flex flex-wrap items-start gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                                        {paginatedVehicles.map((v) => (
+                                            <NuevosProductCard
+                                                key={`grid-${v.id}`}
+                                                image={v.image}
+                                                name={v.name}
+                                                electric={v.electric}
+                                                tags={v.tags}
+                                                price={v.price}
+                                                href={`/nuevos/${v.id}`}
+                                                on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle })}
+                                            />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div key="list" className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                                        {paginatedVehicles.map((v) => (
+                                            <NuevosListItem
+                                                key={`list-${v.id}`}
+                                                image={v.image}
+                                                name={v.name}
+                                                electric={v.electric}
+                                                tags={v.tags}
+                                                price={v.price}
+                                                href={`/nuevos/${v.id}`}
+                                                on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle })}
+                                            />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
                         </div>
@@ -181,6 +216,13 @@ export default function Nuevos({ data, footer }: { data: any; footer: any }) {
 
                 {footer && <Footer data={footer} />}
             </div>
+
+            <Modal360
+                open={modal360.open}
+                onClose={() => setModal360({ ...modal360, open: false })}
+                name={modal360.name}
+                subtitle={modal360.subtitle}
+            />
         </>
     );
 }

@@ -1,4 +1,5 @@
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { useInView } from '@/hooks/use-in-view';
 
 type GridItem = {
     id: string;
@@ -102,6 +103,7 @@ function ImageCard({ content }: { content: Record<string, string> }) {
 }
 
 export function Programas({ data }: { data: ProgramasData }) {
+    const { ref, visible } = useInView(0.1);
     const items = data.grid_items.map((item) => ({
         ...item,
         x: Number(item.x),
@@ -113,9 +115,9 @@ export function Programas({ data }: { data: ProgramasData }) {
     const maxRow = Math.max(...items.map((i) => i.y + i.h));
 
     return (
-        <section className="flex flex-col gap-10 self-stretch bg-black px-15 pt-25 pb-15">
+        <section ref={ref} className="flex flex-col gap-10 self-stretch bg-black px-15 pt-25 pb-15">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className={`flex items-center justify-between transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                 <h2 className="text-[32px] leading-none text-white">
                     {data.title}
                 </h2>
@@ -138,12 +140,14 @@ export function Programas({ data }: { data: ProgramasData }) {
                     gridTemplateRows: `repeat(${maxRow}, 1fr)`,
                 }}
             >
-                {items.map((item) => (
+                {items.map((item, i) => (
                     <div
                         key={item.id}
+                        className={`transition-all duration-700 ease-out ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
                         style={{
                             gridColumn: `${item.x + 1} / span ${item.w}`,
                             gridRow: `${item.y + 1} / span ${item.h}`,
+                            transitionDelay: visible ? `${200 + i * 80}ms` : '0ms',
                         }}
                     >
                         {item.type === 'mundo_toyota' && <MundoToyotaCard content={item.content} />}

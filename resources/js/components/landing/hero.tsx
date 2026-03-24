@@ -1,4 +1,5 @@
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { useInView } from '@/hooks/use-in-view';
 
 type HeroData = {
     background_video: string;
@@ -10,8 +11,10 @@ type HeroData = {
 };
 
 export function Hero({ data }: { data: HeroData }) {
+    const { ref, visible } = useInView(0.1);
+
     return (
-        <section className="relative flex h-dvh flex-col items-center justify-end self-stretch px-15 pb-20">
+        <section ref={ref} className="relative flex h-dvh flex-col items-center justify-end self-stretch px-15 pb-20">
             {/* Background video */}
             <video
                 autoPlay
@@ -32,7 +35,7 @@ export function Hero({ data }: { data: HeroData }) {
             />
             <div className="relative z-10 flex w-full items-end justify-between">
                 {/* Left content */}
-                <div className="flex flex-col gap-4">
+                <div className={`flex flex-col gap-4 transition-all duration-1000 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     <span className="text-lg text-white/80">
                         {data.subtitle}
                     </span>
@@ -55,7 +58,7 @@ export function Hero({ data }: { data: HeroData }) {
                 </div>
 
                 {/* Right buttons */}
-                <div className="flex items-center gap-4">
+                <div className={`flex items-center gap-4 transition-all duration-1000 delay-300 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     <a
                         href={data.primary_button.href}
                         className="flex h-12 items-center gap-2.5 rounded-full bg-white py-1 pr-1 pl-6 text-lg leading-none text-black transition hover:bg-white/90"

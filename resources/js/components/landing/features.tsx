@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { useInView } from '@/hooks/use-in-view';
 
 type CardData = {
     title: string;
@@ -91,28 +92,35 @@ type FeaturesData = {
 };
 
 export function Features({ data }: { data: FeaturesData }) {
+    const { ref, visible } = useInView(0.1);
+
     return (
         <section
+            ref={ref}
             id="features"
             className="flex flex-col items-center gap-10 self-stretch rounded-[30px] bg-[#EEEFF2] p-15"
         >
-            <h2 className="text-[40px] leading-normal text-black">
+            <h2 className={`text-[40px] leading-normal text-black transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                 {data.heading}
             </h2>
 
             <div className="flex h-150 w-full gap-5">
                 {data.cards[0] && (
-                    <div className="flex-1">
+                    <div className={`flex-1 transition-all duration-700 delay-200 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
                         <CategoryCard {...data.cards[0]} className="h-full" />
                     </div>
                 )}
 
                 <div className="flex flex-1 flex-col gap-5">
                     {data.cards[1] && (
-                        <CategoryCard {...data.cards[1]} className="flex-1" />
+                        <div className={`flex-1 transition-all duration-700 delay-300 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+                            <CategoryCard {...data.cards[1]} className="h-full" />
+                        </div>
                     )}
                     {data.cards[2] && (
-                        <CategoryCard {...data.cards[2]} className="flex-1" />
+                        <div className={`flex-1 transition-all duration-700 delay-[450ms] ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
+                            <CategoryCard {...data.cards[2]} className="h-full" />
+                        </div>
                     )}
                 </div>
             </div>

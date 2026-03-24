@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { useInView } from '@/hooks/use-in-view';
 
 type Vehicle = {
     name: string;
@@ -167,10 +168,12 @@ export function About({ data }: { data: AboutData }) {
 
     const strokeDashoffset = RING_CIRCUMFERENCE * (1 - progress);
 
+    const { ref: sectionRef, visible } = useInView(0.1);
+
     if (!activeVehicle) return null;
 
     return (
-        <section id="about" className="relative flex h-dvh flex-col justify-end bg-black">
+        <section ref={sectionRef} id="about" className="relative flex h-dvh flex-col justify-end bg-black">
             {hasVideo ? (
                 <video
                     ref={videoRef}
@@ -193,7 +196,7 @@ export function About({ data }: { data: AboutData }) {
             <div className="absolute inset-0 bg-linear-to-b from-black/0 via-black/20 to-black/80" />
 
             <div className="relative z-10 flex items-end justify-between px-15 pb-15">
-                <div className="flex w-147 flex-col gap-7.5">
+                <div className={`flex w-147 flex-col gap-7.5 transition-all duration-1000 ease-out ${visible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
                     <div className="flex flex-col gap-5">
                         <p className="text-base leading-none text-white">
                             <span>{activeVehicle.subtitle} </span>
@@ -219,7 +222,7 @@ export function About({ data }: { data: AboutData }) {
                     </a>
                 </div>
 
-                <div className="flex flex-col items-end gap-5">
+                <div className={`flex flex-col items-end gap-5 transition-all duration-1000 delay-300 ease-out ${visible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}>
                     <button
                         onClick={togglePlayPause}
                         className="relative flex size-12 cursor-pointer items-center justify-center"

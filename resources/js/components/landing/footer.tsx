@@ -1,3 +1,5 @@
+import { useInView } from '@/hooks/use-in-view';
+
 function SocialButton({
     href,
     children,
@@ -75,11 +77,13 @@ const socialIcons: Record<string, React.ComponentType> = {
 };
 
 export function Footer({ data }: { data: FooterData }) {
+    const { ref, visible } = useInView(0.1);
+
     return (
-        <footer className="rounded-t-[30px] bg-white px-15 pt-20 pb-20">
+        <footer ref={ref} className="rounded-t-[30px] bg-white px-15 pt-20 pb-20">
             <div className="flex flex-col gap-15">
                 {/* Top section */}
-                <div className="flex items-start justify-between">
+                <div className={`flex items-start justify-between transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                     {/* Logo + socials */}
                     <div className="flex w-67.5 flex-col gap-5">
                         <img
@@ -151,7 +155,7 @@ export function Footer({ data }: { data: FooterData }) {
                 </div>
 
                 {/* Copyright */}
-                <span className="text-xs leading-none text-[#231F20]">
+                <span className={`text-xs leading-none text-[#231F20] transition-all duration-700 delay-200 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
                     &copy; {new Date().getFullYear()} {data.copyright}
                 </span>
             </div>

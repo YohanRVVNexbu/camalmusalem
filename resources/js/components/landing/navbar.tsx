@@ -48,9 +48,9 @@ const sidebarLinks: Record<SidebarSection, SidebarLink[]> = {
         { label: 'Nosotros', href: '#nosotros' },
     ],
     'post-venta': [
-        { label: 'Agendar mantención', href: '#agendar-mantencion', image: navAgendarMantencion },
-        { label: 'Accesorios / Merch', href: '#accesorios-merch', image: navAccesorios },
-        { label: 'Repuestos', href: '#repuestos', image: navRepuestos },
+        { label: 'Agendar mantención', href: '/post-venta/agendar-mantencion', image: navAgendarMantencion },
+        { label: 'Accesorios / Merch', href: '/post-venta/accesorios', image: navAccesorios },
+        { label: 'Repuestos', href: '/post-venta/repuestos', image: navRepuestos },
     ],
     'arriendo-kinto': [
         { label: 'Arriendo Kinto', href: '#arriendo-kinto' },
@@ -59,9 +59,15 @@ const sidebarLinks: Record<SidebarSection, SidebarLink[]> = {
 
 type NavbarProps = {
     variant?: 'transparent' | 'white';
+    detailBar?: {
+        backHref: string;
+        vehicleName: string;
+        ctaLabel?: string;
+        ctaHref?: string;
+    };
 };
 
-export function Navbar({ variant = 'transparent' }: NavbarProps) {
+export function Navbar({ variant = 'transparent', detailBar }: NavbarProps) {
     const [menuOpen, setMenuOpen] = useState(false);
     const [menuVisible, setMenuVisible] = useState(false);
     const [activeSection, setActiveSection] = useState<SidebarSection>('default');
@@ -250,6 +256,39 @@ export function Navbar({ variant = 'transparent' }: NavbarProps) {
                         <HamburgerIcon open={menuOpen} />
                     </button>
                 </div>
+
+                {/* Detail bar for vehicle pages */}
+                {detailBar && (
+                    <div className="flex items-center justify-between border-t border-black/10 px-8 py-3 lg:px-15">
+                        <Link
+                            href={detailBar.backHref}
+                            className="flex h-9.5 items-center gap-2.5 rounded-[60px] border border-black py-2.5 pr-5 pl-2.5 text-sm leading-none text-black transition hover:bg-black/5"
+                        >
+                            <span className="flex size-6 items-center justify-center rounded-full bg-black" style={{ backdropFilter: 'blur(9.375px)' }}>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="9" viewBox="0 0 12 9" fill="none">
+                                    <path d="M10.6016 4.34961H0.601563M0.601563 4.34961L4.35156 8.09961M0.601563 4.34961L4.35156 0.599609" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                </svg>
+                            </span>
+                            Volver
+                        </Link>
+                        <div className="flex items-center gap-5">
+                            <span className="text-2xl font-semibold leading-none text-black">
+                                {detailBar.vehicleName}
+                            </span>
+                            <a
+                                href={detailBar.ctaHref ?? '#'}
+                                className="flex h-9.5 items-center gap-2.5 rounded-[60px] border border-black bg-black py-2.5 pr-2.5 pl-5 text-sm leading-none text-white transition hover:bg-black/85"
+                            >
+                                {detailBar.ctaLabel ?? 'Cotizar'}
+                                <span className="flex size-6 items-center justify-center rounded-full bg-white">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="9" viewBox="0 0 12 9" fill="none">
+                                        <path d="M1.39844 4.34961H11.3984M11.3984 4.34961L7.64844 0.599609M11.3984 4.34961L7.64844 8.09961" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </span>
+                            </a>
+                        </div>
+                    </div>
+                )}
             </nav>
         </>
     );

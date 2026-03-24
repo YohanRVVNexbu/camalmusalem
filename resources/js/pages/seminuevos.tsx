@@ -67,19 +67,20 @@ export default function Seminuevos({ data, footer }: { data: SeminuevosData; foo
                             <Filters />
                         </div>
                         <div className="flex flex-1 flex-col justify-between transition-all duration-500 ease-in-out">
-                            <div className="relative">
-                                {/* Grid view */}
-                                <div className={`flex flex-wrap items-start gap-5 transition-all duration-500 ease-in-out ${viewMode === 'grid' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'}`}>
-                                    {paginatedVehicles.map((v) => (
-                                        <ProductCard key={`grid-${v.id}`} {...v} href={`/seminuevos/${v.id}`} />
-                                    ))}
-                                </div>
-                                {/* List view */}
-                                <div className={`flex flex-col gap-5 transition-all duration-500 ease-in-out ${viewMode === 'list' ? 'opacity-100' : 'pointer-events-none absolute inset-0 opacity-0'}`}>
-                                    {paginatedVehicles.map((v) => (
-                                        <ProductListItem key={`list-${v.id}`} {...v} href={`/seminuevos/${v.id}`} />
-                                    ))}
-                                </div>
+                            <div>
+                                {viewMode === 'grid' ? (
+                                    <div key="grid" className="flex flex-wrap items-start gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                                        {paginatedVehicles.map((v) => (
+                                            <ProductCard key={`grid-${v.id}`} {...v} href={`/seminuevos/${v.id}`} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div key="list" className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                                        {paginatedVehicles.map((v) => (
+                                            <ProductListItem key={`list-${v.id}`} {...v} href={`/seminuevos/${v.id}`} />
+                                        ))}
+                                    </div>
+                                )}
                             </div>
                             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
                         </div>
