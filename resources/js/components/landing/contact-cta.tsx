@@ -19,7 +19,7 @@ export function ContactCta({ backgroundImage }: ContactCtaProps) {
                         Contáctanos para recibir asesoría personalizada
                     </p>
                     <a
-                        href="#"
+                        href="/contacto"
                         className="flex w-fit cursor-pointer items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 text-base leading-none text-black transition hover:bg-white/90"
                     >
                         Contactar ventas
