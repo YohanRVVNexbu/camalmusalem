@@ -1,6 +1,8 @@
 import { Head } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
+import { ContactCta } from '@/components/landing/contact-cta';
+import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 import heroImg from '@images/navbar/accesorios.png?format=webp';
 import section2Img from '@images/accesorios/image_section2.png?format=webp';
@@ -138,74 +140,8 @@ export default function Accesorios({ footer }: { footer: any }) {
                     </div>
                 </section>
 
-                {/* Contact CTA banner */}
-                <div className="flex flex-col items-center bg-[#EAEAF1] p-15">
-                    <div
-                        className="flex w-full flex-col items-start justify-end rounded-[30px] p-7.5"
-                        style={{
-                            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%), url(${ejemploVideo})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            height: '340px',
-                        }}
-                    >
-                        <div className="flex flex-col gap-7.5">
-                            <p className="w-90 text-2xl leading-[120%] text-white">
-                                Contáctanos para recibir asesoría personalizada
-                            </p>
-                            <a
-                                href="#"
-                                className="flex w-fit cursor-pointer items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 text-base leading-none text-black transition hover:bg-white/90"
-                            >
-                                Contactar ventas
-                                <span className="flex size-10 items-center justify-center rounded-full bg-black">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="9" viewBox="0 0 12 9" fill="none">
-                                        <path d="M1.39844 4.34961H11.3984M11.3984 4.34961L7.64844 0.599609M11.3984 4.34961L7.64844 8.09961" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Branches section */}
-                <div className="flex flex-col items-center gap-10 bg-black px-15 py-20">
-                    <h2 className="text-center text-[32px] leading-[120%] text-white">
-                        Visítanos en
-                        <br />
-                        nuestras sucursales
-                    </h2>
-                    <div className="flex w-full gap-5">
-                        <div className="relative flex-1 overflow-hidden rounded-[20px]">
-                            <img src={visitanos1} alt="Sucursal La Serena" className="h-85 w-full object-cover" />
-                            <div className="absolute bottom-5 left-5 flex w-92.25 flex-col gap-2.5 rounded-2xl p-5" style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), rgba(255,255,255,0.20)', backdropFilter: 'blur(30px)' }}>
-                                <span className="text-xl font-semibold uppercase leading-none text-white">La Serena</span>
-                                <span className="text-sm leading-none text-white">Av. Francisco de Aguirre #70</span>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold leading-none text-white">Ver detalles sucursal</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="17" viewBox="0 0 18 17" fill="none">
-                                        <path d="M0.390625 8H17.1648" stroke="white" />
-                                        <path d="M8.39062 0V16.7742" stroke="white" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="relative flex-1 overflow-hidden rounded-[20px]">
-                            <img src={visitanos2} alt="Sucursal Ovalle" className="h-85 w-full object-cover" />
-                            <div className="absolute bottom-5 left-5 flex w-92.25 flex-col gap-2.5 rounded-2xl p-5" style={{ background: 'linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), rgba(255,255,255,0.20)', backdropFilter: 'blur(30px)' }}>
-                                <span className="text-xl font-semibold uppercase leading-none text-white">Ovalle</span>
-                                <span className="text-sm leading-none text-white">Ariztía #358</span>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-semibold leading-none text-white">Ver detalles sucursal</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="17" viewBox="0 0 18 17" fill="none">
-                                        <path d="M0.390625 8H17.1648" stroke="white" />
-                                        <path d="M8.39062 0V16.7742" stroke="white" />
-                                    </svg>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <ContactCta backgroundImage={ejemploVideo} />
+                <BranchesSection image1={visitanos1} image2={visitanos2} />
 
                 <div className="bg-black">
                     <Footer data={footer} />

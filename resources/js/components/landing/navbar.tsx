@@ -40,12 +40,12 @@ type SidebarLink = { label: string; href: string; image?: string };
 
 const sidebarLinks: Record<SidebarSection, SidebarLink[]> = {
     default: [
-        { label: 'Programas Toyota', href: '#programas-toyota' },
-        { label: 'Shorts', href: '#shorts' },
-        { label: 'Noticias', href: '#noticias' },
+        { label: 'Programas Toyota', href: '/programas' },
+        { label: 'Shorts', href: '/shorts' },
+        { label: 'Noticias', href: '/noticias' },
         { label: 'Comparar', href: '/seminuevos/comparar' },
-        { label: 'Contacto', href: '#contacto' },
-        { label: 'Nosotros', href: '#nosotros' },
+        { label: 'Contacto', href: '/contacto' },
+        { label: 'Nosotros', href: '/nosotros' },
     ],
     'post-venta': [
         { label: 'Agendar mantención', href: '/post-venta/agendar-mantencion', image: navAgendarMantencion },
