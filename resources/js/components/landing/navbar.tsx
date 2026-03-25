@@ -32,7 +32,7 @@ const navLinks = [
     { label: 'Nuevos', href: '/nuevos' },
     { label: 'Seminuevos', href: '/seminuevos' },
     { label: 'Post Venta', href: '#post-venta', sidebarKey: 'post-venta' as const },
-    { label: 'Arriendo Kinto', href: '#arriendo-kinto', sidebarKey: 'arriendo-kinto' as const },
+    { label: 'Arriendo Kinto', href: '/kinto' },
 ];
 
 type SidebarSection = 'default' | 'post-venta' | 'arriendo-kinto';

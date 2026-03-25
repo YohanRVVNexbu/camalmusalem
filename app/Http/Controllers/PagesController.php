@@ -38,6 +38,15 @@ class PagesController extends Controller
         ]);
     }
 
+    public function kinto()
+    {
+        $footer = SiteSection::where('section', 'footer')->first();
+
+        return Inertia::render('kinto', [
+            'footer' => $footer?->data ?? [],
+        ]);
+    }
+
     public function noticiaShow(string $slug)
     {
         $footer = SiteSection::where('section', 'footer')->first();

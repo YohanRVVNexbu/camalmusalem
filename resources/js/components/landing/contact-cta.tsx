@@ -1,10 +1,11 @@
 interface ContactCtaProps {
     backgroundImage: string;
+    bg?: 'gris' | 'negro';
 }
 
-export function ContactCta({ backgroundImage }: ContactCtaProps) {
+export function ContactCta({ backgroundImage, bg = 'gris' }: ContactCtaProps) {
     return (
-        <div className="flex flex-col items-center bg-[#EAEAF1] p-15">
+        <div className={`flex flex-col items-center p-15 ${bg === 'negro' ? 'bg-black' : 'bg-[#EAEAF1]'}`}>
             <div
                 className="flex w-full flex-col items-start justify-end rounded-[30px] p-7.5"
                 style={{
