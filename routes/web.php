@@ -21,6 +21,7 @@ Route::get('/post-venta/repuestos', [PostVentaController::class, 'repuestos'])->
 Route::get('/programas', [PagesController::class, 'programas'])->name('programas');
 Route::get('/shorts', [PagesController::class, 'shorts'])->name('shorts');
 Route::get('/noticias', [PagesController::class, 'noticias'])->name('noticias');
+Route::get('/noticias/{slug}', [PagesController::class, 'noticiaShow'])->name('noticias.show');
 Route::get('/contacto', [PagesController::class, 'contacto'])->name('contacto');
 Route::get('/nosotros', [PagesController::class, 'nosotros'])->name('nosotros');
 

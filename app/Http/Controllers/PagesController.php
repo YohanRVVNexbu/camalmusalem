@@ -36,6 +36,27 @@ class PagesController extends Controller
         ]);
     }
 
+    public function noticiaShow(string $slug)
+    {
+        $footer = SiteSection::where('section', 'footer')->first();
+
+        // Placeholder — reemplazar con modelo Noticia cuando exista
+        $noticia = [
+            'slug'        => $slug,
+            'titulo'      => 'Toyota protagoniza el Japan Mobility Show 2025 con su visión de movilidad global',
+            'categoria'   => 'Mundo Toyota',
+            'fecha'       => '11/12/25',
+            'imagen'      => null,
+            'descripcion' => 'En el evento realizado en Tokio destacó la presentación de la nueva estrategia global de Toyota Motor Corporation',
+            'contenido'   => 'Contenido completo de la noticia...',
+        ];
+
+        return Inertia::render('noticias/show', [
+            'footer'   => $footer?->data ?? [],
+            'noticia'  => $noticia,
+        ]);
+    }
+
     public function contacto()
     {
         $footer = SiteSection::where('section', 'footer')->first();
