@@ -47,6 +47,15 @@ class PagesController extends Controller
         ]);
     }
 
+    public function valoresMantencion()
+    {
+        $footer = SiteSection::where('section', 'footer')->first();
+
+        return Inertia::render('valores-mantencion', [
+            'footer' => $footer?->data ?? [],
+        ]);
+    }
+
     public function noticiaShow(string $slug)
     {
         $footer = SiteSection::where('section', 'footer')->first();

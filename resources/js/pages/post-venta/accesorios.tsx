@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCta } from '@/components/landing/contact-cta';
@@ -118,8 +118,8 @@ export default function Accesorios({ footer }: { footer: any }) {
                                     >
                                         Producto {index + 1}
                                     </h3>
-                                    <a
-                                        href="#"
+                                    <Link
+                                        href={`/post-venta/accesorios/${index + 1}`}
                                         className="flex items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 transition hover:bg-white/90"
                                     >
                                         <span
@@ -133,7 +133,7 @@ export default function Accesorios({ footer }: { footer: any }) {
                                                 <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                             </svg>
                                         </span>
-                                    </a>
+                                    </Link>
                                 </div>
                             </div>
                         ))}

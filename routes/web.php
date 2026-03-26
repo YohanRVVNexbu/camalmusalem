@@ -16,7 +16,9 @@ Route::get('/seminuevos/{id}', [SeminuevosController::class, 'show'])->name('sem
 
 Route::get('/post-venta/agendar-mantencion', [PostVentaController::class, 'agendarMantencion'])->name('post-venta.agendar-mantencion');
 Route::get('/post-venta/accesorios', [PostVentaController::class, 'accesorios'])->name('post-venta.accesorios');
+Route::get('/post-venta/accesorios/{id}', [PostVentaController::class, 'accesorioShow'])->name('post-venta.accesorios.show');
 Route::get('/post-venta/repuestos', [PostVentaController::class, 'repuestos'])->name('post-venta.repuestos');
+Route::get('/post-venta/repuestos/{id}', [PostVentaController::class, 'repuestoShow'])->name('post-venta.repuestos.show');
 
 Route::get('/programas', [PagesController::class, 'programas'])->name('programas');
 Route::get('/shorts', [PagesController::class, 'shorts'])->name('shorts');
@@ -25,6 +27,7 @@ Route::get('/noticias/{slug}', [PagesController::class, 'noticiaShow'])->name('n
 Route::get('/contacto', [PagesController::class, 'contacto'])->name('contacto');
 Route::get('/nosotros', [PagesController::class, 'nosotros'])->name('nosotros');
 Route::get('/kinto', [PagesController::class, 'kinto'])->name('kinto');
+Route::get('/valores-mantencion', [PagesController::class, 'valoresMantencion'])->name('valores-mantencion');
 
 Route::middleware(['auth', 'verified'])->group(function () {
     Route::inertia('dashboard', 'dashboard')->name('dashboard');

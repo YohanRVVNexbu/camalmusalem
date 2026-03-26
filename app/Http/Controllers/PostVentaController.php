@@ -30,4 +30,22 @@ class PostVentaController extends Controller
             'footer' => $footer?->data ?? [],
         ]);
     }
+
+    public function accesorioShow(string $id)
+    {
+        $footer = SiteSection::where('section', 'footer')->first();
+        return Inertia::render('post-venta/accesorio-show', [
+            'accesorioId' => $id,
+            'footer' => $footer?->data ?? [],
+        ]);
+    }
+
+    public function repuestoShow(string $id)
+    {
+        $footer = SiteSection::where('section', 'footer')->first();
+        return Inertia::render('post-venta/repuesto-show', [
+            'repuestoId' => $id,
+            'footer' => $footer?->data ?? [],
+        ]);
+    }
 }

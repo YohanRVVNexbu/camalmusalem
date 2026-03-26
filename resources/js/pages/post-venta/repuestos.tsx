@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCta } from '@/components/landing/contact-cta';
@@ -14,8 +14,15 @@ import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
 type SolicitudStep = 'default' | 'form' | 'success';
 
+const repuestosPlaceholder = Array.from({ length: 9 }, (_, i) => ({
+    id: i + 1,
+    nombre: 'Molduras Cromadas Azul Corolla Cross',
+    precio: '$ 18.000',
+}));
+
 const modelos = ['Hilux', 'Land Cruiser', 'Corolla', 'Yaris', 'RAV4', 'Fortuner', 'SW4', 'Prado', 'Rush', 'Avanza'];
 const marcas = ['Toyota', 'Lexus', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Nissan', 'Volkswagen', 'Mazda', 'Honda'];
+const sucursales = ['La Serena — Av. Francisco de Aguirre #070', 'Ovalle — Aristía #358'];
 
 export default function Repuestos({ footer }: { footer: any }) {
     const [step, setStep] = useState<SolicitudStep>('default');
@@ -98,6 +105,77 @@ export default function Repuestos({ footer }: { footer: any }) {
                             mejorar su vehículo, con opciones en seguridad, conectividad, audio y
                             soluciones certificadas para faenas industriales y mineras.
                         </p>
+                    </div>
+
+                    {/* Grid de repuestos */}
+                    <div className="flex w-full flex-col gap-10 items-end">
+                        {/* Ordenar */}
+                        <div className="flex items-center">
+                            <div className="flex w-65 items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5">
+                                <span className="text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Ordenar:</span>
+                                <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                    <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+                        </div>
+
+                        {/* Cards */}
+                        <div className="grid w-full grid-cols-3 gap-5">
+                            {repuestosPlaceholder.map((item) => (
+                                <div
+                                    key={item.id}
+                                    className="flex flex-col rounded-[20px] border border-black/5 bg-white overflow-hidden"
+                                >
+                                    {/* Imagen placeholder */}
+                                    <div className="h-59.5 w-full rounded-t-[14px] bg-gray-100" />
+
+                                    {/* Info */}
+                                    <div className="flex flex-col gap-5 px-5 py-5">
+                                        <span
+                                            className="px-2.5 text-lg font-semibold leading-[120%] text-black"
+                                            style={{ fontFamily: '"Toyota Type"' }}
+                                        >
+                                            {item.nombre}
+                                        </span>
+                                        <div className="flex items-center justify-between px-2.5">
+                                            <span
+                                                className="text-2xl font-semibold uppercase leading-none text-black"
+                                                style={{ fontFamily: '"Toyota Type"' }}
+                                            >
+                                                {item.precio}
+                                            </span>
+                                            <Link href={`/post-venta/repuestos/${item.id}`} className="flex h-10 items-center gap-2.5 rounded-[60px] bg-black p-1 pl-3.5 transition-opacity hover:opacity-80">
+                                                <span className="pb-0.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>
+                                                    Ver más
+                                                </span>
+                                                <span className="flex size-7.5 items-center justify-center rounded-[60px] bg-white">
+                                                    <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
+                                                        <path d="M0.5 5.5L13.5 5.5M13.5 5.5L8.625 10.5M13.5 5.5L8.625 0.5" stroke="black" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                </span>
+                                            </Link>
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Paginación */}
+                        <div className="flex items-center gap-5 rounded-[60px] border border-black/20 p-2.5">
+                            <button className="flex size-7.5 cursor-pointer items-center justify-center rounded-[60px] opacity-40">
+                                <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+                                    <path d="M7 1L1 7L7 13" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                            <span className="text-sm leading-none text-black/80" style={{ fontFamily: '"Toyota Type"' }}>
+                                Página 1 de 20
+                            </span>
+                            <button className="flex size-7.5 cursor-pointer items-center justify-center rounded-[60px]">
+                                <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
+                                    <path d="M1 1L7 7L1 13" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </button>
+                        </div>
                     </div>
 
                     {/* Image and Card */}
@@ -230,10 +308,15 @@ export default function Repuestos({ footer }: { footer: any }) {
                                                 </div>
                                                 <div className="flex flex-col gap-2.5">
                                                     <label className="text-sm leading-none text-black">Modelo del vehículo</label>
-                                                    <select className="h-10 w-full appearance-none rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none">
-                                                        <option value="">Modelo del vehículo</option>
-                                                        {modelos.map(m => <option key={m} value={m}>{m}</option>)}
-                                                    </select>
+                                                    <div className="relative">
+                                                        <select className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black/60 outline-none">
+                                                            <option value="">Modelo del vehículo</option>
+                                                            {modelos.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        </select>
+                                                        <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                                            <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
                                             {/* Columna derecha */}
@@ -247,21 +330,40 @@ export default function Repuestos({ footer }: { footer: any }) {
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-2.5">
-                                                    <label className="text-sm leading-none text-black">Marca</label>
-                                                    <select className="h-10 w-full appearance-none rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none">
-                                                        <option value="">Marca</option>
-                                                        {marcas.map(m => <option key={m} value={m}>{m}</option>)}
-                                                    </select>
+                                                    <label className="text-sm leading-none text-black">Sucursal</label>
+                                                    <div className="relative">
+                                                        <select className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black/60 outline-none">
+                                                            <option value="">Selecciona la sucursal con la que te quieres comunicar</option>
+                                                            {sucursales.map(s => <option key={s} value={s}>{s}</option>)}
+                                                        </select>
+                                                        <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                                            <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                                 <div className="flex flex-col gap-2.5">
-                                                    <label className="text-sm leading-none text-black">Vin o Chasis</label>
-                                                    <input
-                                                        type="text"
-                                                        placeholder="Vin o Chasis"
-                                                        className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none"
-                                                    />
+                                                    <label className="text-sm leading-none text-black">Marca</label>
+                                                    <div className="relative">
+                                                        <select className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black/60 outline-none">
+                                                            <option value="">Marca</option>
+                                                            {marcas.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        </select>
+                                                        <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                                            <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        </svg>
+                                                    </div>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        {/* Vin o Chasis — full width */}
+                                        <div className="flex flex-col gap-2.5">
+                                            <label className="text-sm leading-none text-black">Vin o Chasis</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Vin o Chasis"
+                                                className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none"
+                                            />
                                         </div>
 
                                         {/* Textarea */}
@@ -275,7 +377,7 @@ export default function Repuestos({ footer }: { footer: any }) {
 
                                         {/* Checkbox */}
                                         <label className="flex cursor-pointer items-center gap-2.5">
-                                            <input type="checkbox" className="size-[18px] shrink-0 cursor-pointer appearance-none rounded border border-black bg-white checked:bg-white checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2012%2010%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M1%205l3.5%203.5L11%201%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] checked:bg-center checked:bg-no-repeat" />
+                                            <input type="checkbox" className="size-[18px] shrink-0 cursor-pointer appearance-none rounded border border-black bg-[#EAEAF1] checked:bg-[#EAEAF1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2012%2010%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M1%205l3.5%203.5L11%201%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] checked:bg-center checked:bg-no-repeat" />
                                             <span className="text-sm leading-none text-black">He leído y acepto la política de privacidad de mis datos personales.</span>
                                         </label>
                                     </div>
