@@ -4,7 +4,7 @@ import { Navbar } from '@/components/landing/navbar';
 import { ContactCta } from '@/components/landing/contact-cta';
 import { useEffect, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
-import heroImg from '@images/kinto/hero_image.png?format=webp';
+import heroImgDefault from '@images/kinto/hero_image.png?format=webp';
 import car1Img from '@images/kinto/car_1.png?format=webp';
 import car2Img from '@images/kinto/car_2.png?format=webp';
 import formImg from '@images/kinto/image_form.jpg?format=webp';
@@ -16,22 +16,15 @@ import card1Img from '@images/kinto/card_1.jpg?format=webp';
 import card2Img from '@images/kinto/card_2.jpg?format=webp';
 import card3Img from '@images/kinto/card_3.jpg?format=webp';
 
-const pasos = [
-    {
-        img: card1Img,
-        titulo: 'Paso 1:',
-        subtitulo: 'Descarga la app KINTO Share y conoce cómo funciona el servicio.',
-    },
-    {
-        img: card2Img,
-        titulo: 'Paso 2:',
-        subtitulo: 'Completa el formulario con tu interés o solicitud para que podamos orientarte.',
-    },
-    {
-        img: card3Img,
-        titulo: 'Paso 3:',
-        subtitulo: 'Un asesor de Musalem te contactará para ayudarte a revisar la disponibilidad y continuar la gestión desde la sucursal correspondiente.',
-    },
+const DEFAULT_PASOS = [
+    { img: card1Img, titulo: 'Paso 1:', subtitulo: 'Descarga la app KINTO Share y conoce cómo funciona el servicio.' },
+    { img: card2Img, titulo: 'Paso 2:', subtitulo: 'Completa el formulario con tu interés o solicitud para que podamos orientarte.' },
+    { img: card3Img, titulo: 'Paso 3:', subtitulo: 'Un asesor de Musalem te contactará para ayudarte a revisar la disponibilidad y continuar la gestión desde la sucursal correspondiente.' },
+];
+
+const DEFAULT_VEHICULOS = [
+    { nombre: 'Corolla Cross', precio: 'Desde $18.300 la hora', img: car1Img },
+    { nombre: 'Rav4', precio: 'Desde $18.300 la hora', img: car2Img },
 ];
 
 function KintoIcon() {
@@ -75,7 +68,11 @@ function SelectField({ label, placeholder, options, value, onChange }: {
     );
 }
 
-export default function Kinto({ footer }: { footer: any }) {
+export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos }: { footer: any; kinto_hero?: any; kinto_pasos?: any; kinto_vehiculos?: any }) {
+    const heroData = kinto_hero ?? {};
+    const heroImg = heroData.hero_image || heroImgDefault;
+    const pasos = kinto_pasos?.pasos ?? DEFAULT_PASOS;
+    const vehiculos = kinto_vehiculos?.vehiculos ?? DEFAULT_VEHICULOS;
     const heroInView = useInView(0.1);
     const comoFuncionaInView = useInView(0.1);
     const vehiculosInView = useInView(0.1);
@@ -121,15 +118,15 @@ export default function Kinto({ footer }: { footer: any }) {
                             <div className="flex flex-col gap-10 items-start">
                                 <h1
                                     className="text-[48px] font-normal leading-[100%] text-white"
-                                    style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}
+                                    style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off', whiteSpace: 'pre-line' }}
                                 >
-                                    Arrienda con KINTO<br />desde Musalem
+                                    {heroData.title || "Arrienda con KINTO\ndesde Musalem"}
                                 </h1>
                                 <p
                                     className="w-124 text-base leading-[120%] text-white"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
-                                    Con KINTO puedes reservar, retirar y usar un Toyota directamente desde la app. En Musalem te orientamos durante el proceso y te ayudamos a encontrar la alternativa disponible que mejor se adapte a tu necesidad, ya sea por horas, días o semanas.
+                                    {heroData.description || 'Con KINTO puedes reservar, retirar y usar un Toyota directamente desde la app. En Musalem te orientamos durante el proceso y te ayudamos a encontrar la alternativa disponible que mejor se adapte a tu necesidad, ya sea por horas, días o semanas.'}
                                 </p>
                             </div>
 
@@ -137,7 +134,7 @@ export default function Kinto({ footer }: { footer: any }) {
                             <div className="flex flex-col gap-5 items-start">
                                 <button className="flex cursor-pointer items-center rounded-[60px] border border-transparent bg-white p-1 transition-opacity hover:opacity-90">
                                     <span className="pl-2.5 text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                        Descargar app KINTO
+                                        {heroData.button_text || 'Descargar app KINTO'}
                                     </span>
                                     <span className="ml-2.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
@@ -160,7 +157,7 @@ export default function Kinto({ footer }: { footer: any }) {
                             className="text-center text-[32px] font-normal leading-[120%] text-black"
                             style={{ fontFamily: '"Toyota Type"' }}
                         >
-                            ¿Cómo funciona KINTO en Musalem?
+                            {kinto_pasos?.title || '¿Cómo funciona KINTO en Musalem?'}
                         </h2>
                         <div className="flex w-full gap-5">
                             {pasos.map((paso, i) => (
@@ -200,7 +197,7 @@ export default function Kinto({ footer }: { footer: any }) {
                                 className="text-[32px] font-normal leading-[120%] text-white"
                                 style={{ fontFamily: '"Toyota Type"' }}
                             >
-                                Vehículos disponibles
+                                {kinto_vehiculos?.title || 'Vehículos disponibles'}
                             </h2>
                             <div className="flex items-center gap-1.5 rounded-[60px] bg-white p-1.5">
                                 {(['la-serena', 'ovalle'] as const).map((key) => (

@@ -14,17 +14,23 @@ import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
 type SolicitudStep = 'default' | 'form' | 'success';
 
-const repuestosPlaceholder = Array.from({ length: 9 }, (_, i) => ({
-    id: i + 1,
-    nombre: 'Molduras Cromadas Azul Corolla Cross',
-    precio: '$ 18.000',
-}));
+type Repuesto = {
+    id: number;
+    name: string;
+    sku: string | null;
+    price: string | null;
+    category: string;
+    images: string[];
+    stock_la_serena: boolean;
+    stock_ovalle: boolean;
+};
 
 const modelos = ['Hilux', 'Land Cruiser', 'Corolla', 'Yaris', 'RAV4', 'Fortuner', 'SW4', 'Prado', 'Rush', 'Avanza'];
 const marcas = ['Toyota', 'Lexus', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Nissan', 'Volkswagen', 'Mazda', 'Honda'];
 const sucursales = ['La Serena — Av. Francisco de Aguirre #070', 'Ovalle — Aristía #358'];
 
-export default function Repuestos({ footer }: { footer: any }) {
+export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { footer: any; repuestos_hero?: any; repuestos: Repuesto[] }) {
+    const hero = repuestos_hero ?? {};
     const [step, setStep] = useState<SolicitudStep>('default');
     const [visible, setVisible] = useState(true);
     const [formKey, setFormKey] = useState(0);
@@ -57,7 +63,7 @@ export default function Repuestos({ footer }: { footer: any }) {
                     <div
                         className="relative h-119.25 shrink-0 overflow-hidden rounded-b-[30px]"
                         style={{
-                            backgroundImage: `url(${heroImg})`,
+                            backgroundImage: `url(${hero.hero_image || heroImg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
@@ -80,7 +86,7 @@ export default function Repuestos({ footer }: { footer: any }) {
                                 whiteSpace: 'nowrap',
                             }}
                         >
-                            Repuestos
+                            {hero.title || 'Repuestos'}
                         </span>
                     </div>
                 </section>
@@ -109,11 +115,32 @@ export default function Repuestos({ footer }: { footer: any }) {
 
                     {/* Grid de repuestos */}
                     <div className="flex w-full flex-col gap-10 items-end">
-                        {/* Ordenar */}
-                        <div className="flex items-center">
-                            <div className="flex w-65 items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5">
-                                <span className="text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Ordenar:</span>
-                                <svg width="6" height="10" viewBox="0 0 6 10" fill="none">
+                        {/* Filtros */}
+                        <div className="flex items-center gap-2.5">
+                            {/* Modelo de vehículo */}
+                            <div className="relative w-80.5">
+                                <select
+                                    className="w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
+                                    style={{ fontFamily: '"Toyota Type"' }}
+                                >
+                                    <option value="">Modelo de vehículo: Todos</option>
+                                    {modelos.map(m => <option key={m} value={m}>Modelo de vehículo: {m}</option>)}
+                                </select>
+                                <svg className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                    <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+                            {/* Ordenar */}
+                            <div className="relative w-65">
+                                <select
+                                    className="w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
+                                    style={{ fontFamily: '"Toyota Type"' }}
+                                >
+                                    <option value="">Ordenar:</option>
+                                    <option value="menor">Menor precio</option>
+                                    <option value="mayor">Mayor precio</option>
+                                </select>
+                                <svg className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
                                     <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
@@ -121,13 +148,19 @@ export default function Repuestos({ footer }: { footer: any }) {
 
                         {/* Cards */}
                         <div className="grid w-full grid-cols-3 gap-5">
-                            {repuestosPlaceholder.map((item) => (
+                            {repuestos.length === 0 && (
+                                <p className="col-span-3 py-10 text-center text-black/50">No hay repuestos disponibles.</p>
+                            )}
+                            {repuestos.map((item) => (
                                 <div
                                     key={item.id}
                                     className="flex flex-col rounded-[20px] border border-black/5 bg-white overflow-hidden"
                                 >
-                                    {/* Imagen placeholder */}
-                                    <div className="h-59.5 w-full rounded-t-[14px] bg-gray-100" />
+                                    {item.images?.[0] ? (
+                                        <img src={item.images[0]} alt={item.name} className="h-59.5 w-full rounded-t-[14px] object-cover" />
+                                    ) : (
+                                        <div className="h-59.5 w-full rounded-t-[14px] bg-gray-100" />
+                                    )}
 
                                     {/* Info */}
                                     <div className="flex flex-col gap-5 px-5 py-5">
@@ -135,14 +168,14 @@ export default function Repuestos({ footer }: { footer: any }) {
                                             className="px-2.5 text-lg font-semibold leading-[120%] text-black"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
-                                            {item.nombre}
+                                            {item.name}
                                         </span>
                                         <div className="flex items-center justify-between px-2.5">
                                             <span
                                                 className="text-2xl font-semibold uppercase leading-none text-black"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
-                                                {item.precio}
+                                                {item.price ?? '—'}
                                             </span>
                                             <Link href={`/post-venta/repuestos/${item.id}`} className="flex h-10 items-center gap-2.5 rounded-[60px] bg-black p-1 pl-3.5 transition-opacity hover:opacity-80">
                                                 <span className="pb-0.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>

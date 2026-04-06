@@ -21,7 +21,8 @@ function PlayIcon() {
     );
 }
 
-export default function Shorts({ footer, videos = [] }: { footer: any; videos: YouTubeShort[] }) {
+export default function Shorts({ footer, shorts_hero, videos = [] }: { footer: any; shorts_hero?: any; videos: YouTubeShort[] }) {
+    const hero = shorts_hero ?? {};
     const heroInView = useInView(0.1);
     const gridInView = useInView(0.05);
     const [activeVideo, setActiveVideo] = useState<YouTubeShort | null>(null);
@@ -50,14 +51,14 @@ export default function Shorts({ footer, videos = [] }: { footer: any; videos: Y
                     <div
                         className={`flex h-165 flex-col items-start justify-end gap-10 rounded-b-[30px] px-10 py-15 transition-all duration-700 ease-out ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
                         style={{
-                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${heroImg}) lightgray 50% / cover no-repeat`,
+                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
                         }}
                     >
                         <span
                             className="text-[48px] font-normal leading-[100%] text-white"
                             style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}
                         >
-                            Shorts Musalem
+                            {hero.title || 'Shorts Musalem'}
                         </span>
                     </div>
                 </section>

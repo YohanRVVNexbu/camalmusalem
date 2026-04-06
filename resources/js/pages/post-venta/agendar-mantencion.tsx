@@ -60,7 +60,8 @@ const carouselCards: (
     },
 ];
 
-export default function AgendarMantencion({ footer }: { footer: any }) {
+export default function AgendarMantencion({ footer, mantencion_hero }: { footer: any; mantencion_hero?: any }) {
+    const hero = mantencion_hero ?? {};
     const [emblaRef, emblaApi] = useEmblaCarousel({
         loop: true,
         align: 'start',
@@ -175,7 +176,7 @@ export default function AgendarMantencion({ footer }: { footer: any }) {
                     <div
                         className="relative h-119.25 shrink-0 overflow-hidden rounded-b-[30px]"
                         style={{
-                            backgroundImage: `url(${heroImg})`,
+                            backgroundImage: `url(${hero.hero_image || heroImg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
@@ -201,7 +202,7 @@ export default function AgendarMantencion({ footer }: { footer: any }) {
                                 whiteSpace: 'nowrap',
                             }}
                         >
-                            Servicio técnico
+                            {hero.title || 'Servicio técnico'}
                         </span>
                     </div>
                 </section>

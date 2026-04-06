@@ -17,7 +17,9 @@ import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
 import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
-export default function ProgramasPage({ footer, programas }: { footer: any; programas: any }) {
+export default function ProgramasPage({ footer, programas, programas_hero, programas_grid }: { footer: any; programas: any; programas_hero?: any; programas_grid?: any }) {
+    const hero = programas_hero ?? {};
+    const grid = programas_grid ?? {};
     const heroInView = useInView(0.1);
     const gridInView = useInView(0.05);
     const cardInView = useInView(0.1);
@@ -41,7 +43,7 @@ export default function ProgramasPage({ footer, programas }: { footer: any; prog
                     <div
                         className={`flex h-165 flex-col items-start justify-end gap-10 rounded-b-[30px] px-10 py-15 transition-all duration-700 ease-out ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
                         style={{
-                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${heroImg}) lightgray 50% / cover no-repeat`,
+                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
                         }}
                     >
                         <span
@@ -51,7 +53,7 @@ export default function ProgramasPage({ footer, programas }: { footer: any; prog
                             }}
                             className="text-[48px] font-normal leading-[100%] text-white"
                         >
-                            Programas Toyota
+                            {hero.title || 'Programas Toyota'}
                         </span>
                     </div>
                 </section>
@@ -65,7 +67,7 @@ export default function ProgramasPage({ footer, programas }: { footer: any; prog
                                 className="text-[32px] font-normal leading-[120%] text-black"
                                 style={{ fontFamily: '"Toyota Type"' }}
                             >
-                                Descubre todos nuestros programas
+                                {grid.title || 'Descubre todos nuestros programas'}
                             </span>
                             <div className="relative flex h-11 w-65 shrink-0 items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-5">
                                 <select
@@ -84,14 +86,14 @@ export default function ProgramasPage({ footer, programas }: { footer: any; prog
 
                         {/* Grid */}
                         <div className="flex flex-col gap-5 pb-10">
-                            {[
-                                { img: grid1, title: 'App Mundo Toyota', desc: 'Accede al historial de mantenciones, revisa pautas y precios, agenda servicios, suma puntos y descubre beneficios, descuentos y comercios asociados desde una sola aplicación.' },
-                                { img: grid2, title: 'Kinto', desc: 'Movilidad flexible, directo desde tu celular. Con Kinto SHARE puedes reservar, retirar y usar tu Toyota desde la app, sin trámites ni complicaciones.' },
-                                { img: grid3, title: 'Kinto One', desc: 'Programa de arriendo Toyota que contempla dos modalidades: Business, orientado a empresas con necesidad de flota, y Personal, con periodos de 12, 24, 36 y 48 meses.' },
-                                { img: grid4, title: 'Beyond Zero', desc: 'Una iniciativa de Toyota que reúne su visión de movilidad sostenible a través de vehículos híbridos y eléctricos, orientada a reducir el impacto ambiental y avanzar hacia la neutralidad de carbono.' },
-                                { img: grid5, title: 'Toyota 10 Relax', desc: 'Entrega una cobertura adicional de hasta 5 años o 200.000 km, lo que ocurra primero.' },
-                                { img: grid6, title: 'Llamado a revisión', desc: 'Campañas de revisión y reemplazo preventivo para ciertos modelos Toyota, realizadas con repuestos originales y orientadas a mantener la seguridad de tu vehículo.' },
-                            ].reduce<{ img: string; title: string; desc: string }[][]>((rows, item, i) => {
+                            {(grid.items ?? [
+                                { img: grid1, title: 'App Mundo Toyota', desc: 'Accede al historial de mantenciones, revisa pautas y precios, agenda servicios, suma puntos y descubre beneficios, descuentos y comercios asociados desde una sola aplicación.', link: '#' },
+                                { img: grid2, title: 'Kinto', desc: 'Movilidad flexible, directo desde tu celular. Con Kinto SHARE puedes reservar, retirar y usar tu Toyota desde la app, sin trámites ni complicaciones.', link: '#' },
+                                { img: grid3, title: 'Kinto One', desc: 'Programa de arriendo Toyota que contempla dos modalidades: Business, orientado a empresas con necesidad de flota, y Personal, con periodos de 12, 24, 36 y 48 meses.', link: '#' },
+                                { img: grid4, title: 'Beyond Zero', desc: 'Una iniciativa de Toyota que reúne su visión de movilidad sostenible a través de vehículos híbridos y eléctricos, orientada a reducir el impacto ambiental y avanzar hacia la neutralidad de carbono.', link: '#' },
+                                { img: grid5, title: 'Toyota 10 Relax', desc: 'Entrega una cobertura adicional de hasta 5 años o 200.000 km, lo que ocurra primero.', link: '#' },
+                                { img: grid6, title: 'Llamado a revisión', desc: 'Campañas de revisión y reemplazo preventivo para ciertos modelos Toyota, realizadas con repuestos originales y orientadas a mantener la seguridad de tu vehículo.', link: '#' },
+                            ]).reduce<{ img: string; title: string; desc: string; link?: string }[][]>((rows, item, i) => {
                                 if (i % 2 === 0) rows.push([item]);
                                 else rows[rows.length - 1].push(item);
                                 return rows;
@@ -121,7 +123,7 @@ export default function ProgramasPage({ footer, programas }: { footer: any; prog
                                                     </p>
                                                 </div>
                                                 <a
-                                                    href="#"
+                                                    href={item.link ?? '#'}
                                                     className="flex w-38 items-center justify-between rounded-[60px] bg-black p-1"
                                                 >
                                                     <span className="pl-2.5 text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>

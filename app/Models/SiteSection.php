@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class SiteSection extends Model
 {
-    protected $fillable = ['section', 'data', 'is_visible', 'order'];
+    protected $fillable = ['section', 'data', 'default_data', 'is_visible', 'order'];
 
     protected $casts = [
         'data' => 'array',
+        'default_data' => 'array',
         'is_visible' => 'boolean',
     ];
 

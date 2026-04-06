@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { ChevronsUpDown, Home, LayoutGrid, LogOut, UserCog, Users } from 'lucide-react';
+import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, LogOut, Newspaper, RefreshCw, Settings, Shirt, UserCog, Users, Wrench } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import {
     DropdownMenu,
@@ -27,21 +27,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import type { NavItem } from '@/types';
 
 const adminNavItems: NavItem[] = [
-    {
-        title: 'Dashboard',
-        href: '/admin',
-        icon: LayoutGrid,
-    },
-    {
-        title: 'Página de inicio',
-        href: '/admin/home',
-        icon: Home,
-    },
-    {
-        title: 'Usuarios',
-        href: '/admin/users',
-        icon: Users,
-    },
+    { title: 'Dashboard',        href: '/admin',             icon: LayoutGrid },
+    { title: 'Página de inicio', href: '/admin/home',        icon: Home },
+    { title: 'Vehículos nuevos', href: '/admin/vehicles',    icon: Car },
+    { title: 'Seminuevos',       href: '/admin/seminuevos',  icon: RefreshCw },
+    { title: 'Repuestos',        href: '/admin/repuestos',   icon: Wrench },
+    { title: 'Accesorios',       href: '/admin/accesorios',  icon: Shirt },
+    { title: 'Noticias',         href: '/admin/noticias',    icon: Newspaper },
+    { title: 'Páginas',          href: '/admin/paginas',     icon: FileText },
+    { title: 'Usuarios',         href: '/admin/users',       icon: Users },
 ];
 
 function AdminNavUser() {

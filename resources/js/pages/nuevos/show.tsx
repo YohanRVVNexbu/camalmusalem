@@ -45,10 +45,69 @@ const vehicleData = {
                 { label: 'Crédito todo medio de pago', value: '$39.990.990' },
                 { label: 'Precio de lista', value: '$39.990.990' },
             ],
-            characteristics: [
-                { title: 'Seguridad', detail: '8 airbags / BA / EDB / HAC / BSM / SEA / Sensor Del. y Tra. Cámara 360° + TSS 3.0' },
-                { title: 'Performance', detail: 'Motor eléctrico, Potencia 165 KW (221) / 269 NM. Batería de lon litio de 73.1 KWh. 0 -100Kph: 7,4 segundos' },
-                { title: 'Conectividad', detail: 'Pantalla digital TFT de 7" + Pantalla de audio de 14" con conectividad AC y AD + 6 parlantes con amplificador' },
+            motor: [
+                { label: 'Transmisión', value: 'Automática' },
+                { label: 'Combustible', value: 'Eléctrico' },
+                { label: 'Cilindrada', value: '1' },
+                { label: 'Potencia (HP)', value: '221' },
+                { label: 'Tracción', value: '4x2' },
+                { label: 'Puertas', value: '5' },
+                { label: 'Asientos', value: '5' },
+            ],
+            interior: [
+                { label: 'A/C', value: 'Sí' },
+                { label: 'Climatizador', value: 'General' },
+                { label: 'Alzavidrios eléctricos', value: 'Sí' },
+                { label: 'Retrovisor', value: 'Electrocromático' },
+                { label: 'Radio', value: 'Pantalla Touch' },
+                { label: 'Pantalla radio (")', value: '14' },
+                { label: 'Parlantes', value: '6' },
+                { label: 'Apple CarPlay', value: 'Sí' },
+                { label: 'Android Auto', value: 'Sí' },
+                { label: 'Bluetooth', value: 'Sí' },
+                { label: 'Mando al volante', value: 'Sí' },
+                { label: 'Velocidad crucero', value: 'Sí' },
+                { label: 'Smart key', value: 'Sí' },
+                { label: 'Botón encendido', value: '-' },
+                { label: 'Tapiz', value: 'Eco-cuero' },
+                { label: 'Asientos eléctricos', value: 'Sí' },
+                { label: 'Asientos calefaccionados', value: 'Delantero + trasero' },
+                { label: 'Volante tapiz cuero', value: 'Sí' },
+            ],
+            exterior: [
+                { label: 'Llantas', value: 'Aleación' },
+                { label: 'Medidas llantas (")', value: '18' },
+                { label: 'Focos Led', value: 'Sí' },
+                { label: 'Focos inteligentes', value: '-' },
+                { label: 'Neblineros', value: 'Sí' },
+                { label: 'Espejos eléctricos', value: 'Sí' },
+                { label: 'Portalón', value: 'Trasero eléctrico' },
+            ],
+            seguridad: [
+                { label: 'Airbag', value: '8' },
+                { label: 'Control estabilidad', value: 'Sí' },
+                { label: 'Control de tracción', value: 'Sí' },
+                { label: 'ABS', value: 'Sí' },
+                { label: 'EBD', value: 'Sí' },
+                { label: 'Hill assist', value: 'Sí' },
+                { label: 'Frenos delanteros', value: 'Disco' },
+                { label: 'Frenos traseros', value: 'Disco' },
+                { label: 'Freno de mano eléctrico', value: 'Sí' },
+                { label: 'Freno automático de emergencia', value: 'Sí' },
+                { label: 'Sensor de presión de neumáticos', value: 'Sí' },
+                { label: 'Detector de punto ciego', value: 'Sí' },
+                { label: 'Alerta de cambio de carril', value: 'Sí' },
+                { label: 'Cámara de retroceso', value: 'Sí' },
+                { label: 'ISOFIX', value: 'Sí' },
+                { label: 'Rueda repuesto', value: 'Emergencia' },
+            ],
+            rendimiento: [
+                { label: 'Autonomía (WLTP)', value: '516 km' },
+                { label: 'Batería', value: '73.1 kWh' },
+                { label: 'Carga AC', value: '11 kW' },
+                { label: 'Carga DC', value: '150 kW' },
+                { label: '0-100 km/h', value: '7.5 seg' },
+                { label: 'Vel. máx.', value: '160 km/h' },
             ],
         },
         {
@@ -62,16 +121,80 @@ const vehicleData = {
                 { label: 'Crédito todo medio de pago', value: '$46.990.990' },
                 { label: 'Precio de lista', value: '$46.990.990' },
             ],
-            characteristics: [
-                { title: 'Seguridad', detail: '8 airbags / BA / EDB / HAC / BSM / SEA / Sensor Del. y Tra. Cámara 360° + TSS 3.0' },
-                { title: 'Performance', detail: 'Motor eléctrico, Potencia 165 KW (221) / 269 NM. Batería de lon litio de 73.1 KWh. 0 -100Kph: 7,4 segundos' },
-                { title: 'Conectividad', detail: 'Pantalla digital TFT de 7" + Pantalla de audio de 14" con conectividad AC y AD + 6 parlantes con amplificador' },
+            motor: [
+                { label: 'Transmisión', value: 'Automática' },
+                { label: 'Combustible', value: 'Eléctrico' },
+                { label: 'Cilindrada', value: '2' },
+                { label: 'Potencia (HP)', value: '295' },
+                { label: 'Tracción', value: '4x4 (AWD)' },
+                { label: 'Puertas', value: '5' },
+                { label: 'Asientos', value: '5' },
+            ],
+            interior: [
+                { label: 'A/C', value: 'Sí' },
+                { label: 'Climatizador', value: 'General' },
+                { label: 'Alzavidrios eléctricos', value: 'Sí' },
+                { label: 'Retrovisor', value: 'Electrocromático' },
+                { label: 'Radio', value: 'Pantalla Touch' },
+                { label: 'Pantalla radio (")', value: '14' },
+                { label: 'Parlantes', value: '6' },
+                { label: 'Apple CarPlay', value: 'Sí' },
+                { label: 'Android Auto', value: 'Sí' },
+                { label: 'Bluetooth', value: 'Sí' },
+                { label: 'Mando al volante', value: 'Sí' },
+                { label: 'Velocidad crucero', value: 'Sí' },
+                { label: 'Smart key', value: 'Sí' },
+                { label: 'Botón encendido', value: '-' },
+                { label: 'Tapiz', value: 'Eco-cuero' },
+                { label: 'Asientos eléctricos', value: 'Sí' },
+                { label: 'Asientos calefaccionados', value: 'Delantero + trasero' },
+                { label: 'Volante tapiz cuero', value: 'Sí' },
+            ],
+            exterior: [
+                { label: 'Llantas', value: 'Aleación' },
+                { label: 'Medidas llantas (")', value: '20' },
+                { label: 'Focos Led', value: 'Sí' },
+                { label: 'Focos inteligentes', value: '-' },
+                { label: 'Neblineros', value: 'Sí' },
+                { label: 'Espejos eléctricos', value: 'Sí' },
+                { label: 'Portalón', value: 'Trasero eléctrico' },
+            ],
+            seguridad: [
+                { label: 'Airbag', value: '8' },
+                { label: 'ABS', value: 'Sí' },
+                { label: 'EBD', value: 'Sí' },
+                { label: 'Freno de emergencia', value: 'Sí' },
+                { label: 'Control estabilidad', value: 'Sí' },
+                { label: 'Cámara trasera', value: 'Sí' },
+                { label: 'Cámara 360°', value: 'Sí' },
+                { label: 'Sensor delantero', value: 'Sí' },
+                { label: 'Sensor trasero', value: 'Sí' },
+                { label: 'TSS', value: '3.0' },
+                { label: 'BSM', value: 'Sí' },
+                { label: 'HAC', value: 'Sí' },
+            ],
+            rendimiento: [
+                { label: 'Autonomía (WLTP)', value: '500 km' },
+                { label: 'Batería', value: '73.1 kWh' },
+                { label: 'Carga AC', value: '11 kW' },
+                { label: 'Carga DC', value: '150 kW' },
+                { label: '0-100 km/h', value: '6.5 seg' },
+                { label: 'Vel. máx.', value: '160 km/h' },
             ],
         },
     ],
 };
 
-type VersionTab = 'precio' | 'caracteristicas';
+type VersionTab = 'precio' | 'motor' | 'interior' | 'exterior' | 'seguridad' | 'rendimiento';
+
+const VERSION_TABS: { key: VersionTab; label: string }[] = [
+    { key: 'precio', label: 'Precio' },
+    { key: 'motor', label: 'Motor' },
+    { key: 'interior', label: 'Interior' },
+    { key: 'exterior', label: 'Exterior' },
+    { key: 'seguridad', label: 'Seguridad' },
+    { key: 'rendimiento', label: 'Rendimiento' },
+];
 
 const highlights = [
     {
@@ -215,16 +338,54 @@ function VersionsSection({
         }
     }, [versionCardTab]);
 
+    const tabScrollRefs = useRef<(HTMLDivElement | null)[]>([]);
+    const activeTabRefs = useRef<(HTMLButtonElement | null)[]>([]);
+
+    const currentTabIndex = VERSION_TABS.findIndex(t => t.key === versionCardTab);
+
+    const goPrevTab = () => {
+        const prev = (currentTabIndex - 1 + VERSION_TABS.length) % VERSION_TABS.length;
+        setVersionCardTab(VERSION_TABS[prev].key);
+    };
+
+    const goNextTab = () => {
+        const next = (currentTabIndex + 1) % VERSION_TABS.length;
+        setVersionCardTab(VERSION_TABS[next].key);
+    };
+
+    // Scroll active tab to center of container when it changes (all cards)
+    useEffect(() => {
+        tabScrollRefs.current.forEach((container, idx) => {
+            const tab = activeTabRefs.current[idx];
+            if (container && tab) {
+                const targetScroll = tab.offsetLeft - container.clientWidth / 2 + tab.offsetWidth / 2;
+                container.scrollTo({ left: targetScroll, behavior: 'smooth' });
+            }
+        });
+    }, [versionCardTab]);
+
+    const getTabRows = (ver: typeof vehicleData.versions[0]) => {
+        switch (versionCardTab) {
+            case 'precio': return ver.pricing.map(r => ({ label: r.label, value: r.value }));
+            case 'motor': return ver.motor;
+            case 'interior': return ver.interior;
+            case 'exterior': return ver.exterior;
+            case 'seguridad': return ver.seguridad;
+            case 'rendimiento': return ver.rendimiento;
+        }
+    };
+
     return (
         <div ref={sectionRef} className="flex flex-col items-center bg-[#EAEAF1]" style={{ padding: '80px 60px', marginTop: '-60px' }}>
             <div className="flex gap-5">
                 {versions.map((ver, i) => {
                     const isSelected = selectedVersion === i;
+                    const rows = getTabRows(ver);
                     return (
-                        <button
+                        <div
                             key={ver.name}
                             onClick={() => setSelectedVersion(i)}
-                            className={`flex w-100 cursor-pointer flex-col items-center gap-5 rounded-[20px] bg-white p-5 pt-10 pb-10 text-left transition-all duration-700 ease-out ${
+                            className={`flex w-115 cursor-pointer flex-col rounded-[20px] bg-white px-5 pt-10 pb-10 text-left transition-all duration-700 ease-out ${
                                 isSelected
                                     ? 'border-2 border-black shadow-[2px_2px_10px_0_rgba(0,0,0,0.15)]'
                                     : 'border-2 border-transparent'
@@ -237,72 +398,92 @@ function VersionsSection({
                             }`}
                             style={{ transitionDelay: visible ? `${i * 150}ms` : '0ms' }}
                         >
-                            {/* Header */}
-                            <div className="flex w-full flex-col gap-3">
-                                <div className="flex items-end gap-1.5">
-                                    {ver.electric && (
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14" fill="none" className="shrink-0">
-                                            <path d="M4.79427 8.74999L0.612796 8.22499C0.318741 8.18999 0.127487 8.03249 0.0390351 7.75249C-0.0494168 7.47249 0.0124525 7.23333 0.224643 7.03499L7.44077 0.175C7.49958 0.116667 7.57015 0.0730333 7.65249 0.0440999C7.73482 0.0151666 7.84656 0.000466666 7.98771 0C8.22295 0 8.40245 0.0991666 8.52618 0.2975C8.64992 0.495833 8.65275 0.699999 8.53465 0.909999L6.20573 5.25L10.3872 5.775C10.6813 5.81 10.8725 5.9675 10.961 6.2475C11.0494 6.52749 10.9875 6.76666 10.7754 6.96499L3.55923 13.825C3.50042 13.8833 3.42985 13.9272 3.34751 13.9566C3.26518 13.986 3.15344 14.0005 3.01229 14C2.77705 14 2.59755 13.9008 2.47381 13.7025C2.35008 13.5042 2.34725 13.3 2.46535 13.09L4.79427 8.74999Z" fill="black"/>
+                            {/* Content */}
+                            <div className="flex flex-col items-start gap-5">
+                                {/* Header */}
+                                <div className="flex w-full flex-col gap-3">
+                                    <div className="flex items-end gap-1.5">
+                                        {ver.electric && (
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14" fill="none" className="shrink-0">
+                                                <path d="M4.79427 8.74999L0.612796 8.22499C0.318741 8.18999 0.127487 8.03249 0.0390351 7.75249C-0.0494168 7.47249 0.0124525 7.23333 0.224643 7.03499L7.44077 0.175C7.49958 0.116667 7.57015 0.0730333 7.65249 0.0440999C7.73482 0.0151666 7.84656 0.000466666 7.98771 0C8.22295 0 8.40245 0.0991666 8.52618 0.2975C8.64992 0.495833 8.65275 0.699999 8.53465 0.909999L6.20573 5.25L10.3872 5.775C10.6813 5.81 10.8725 5.9675 10.961 6.2475C11.0494 6.52749 10.9875 6.76666 10.7754 6.96499L3.55923 13.825C3.50042 13.8833 3.42985 13.9272 3.34751 13.9566C3.26518 13.986 3.15344 14.0005 3.01229 14C2.77705 14 2.59755 13.9008 2.47381 13.7025C2.35008 13.5042 2.34725 13.3 2.46535 13.09L4.79427 8.74999Z" fill="black"/>
+                                            </svg>
+                                        )}
+                                        <span className="text-xl font-semibold uppercase leading-none text-black">{ver.name}</span>
+                                    </div>
+                                    <span className="text-2xl font-semibold uppercase leading-none text-black">{ver.price}</span>
+                                    <span className="text-sm leading-none text-black/60">{ver.bonus}</span>
+                                </div>
+
+                                {/* Tab bar with arrows */}
+                                <div className="flex w-full items-center gap-4">
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); goPrevTab(); }}
+                                        className="flex shrink-0 cursor-pointer items-center justify-center transition-opacity hover:opacity-50"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="17" viewBox="0 0 7 12" fill="none">
+                                            <path d="M6 1L1 6L6 11" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                                         </svg>
-                                    )}
-                                    <span className="text-xl font-semibold uppercase leading-none text-black">{ver.name}</span>
+                                    </button>
+                                    <div
+                                        ref={(el) => { tabScrollRefs.current[i] = el; }}
+                                        className="min-w-0 flex-1 overflow-x-auto"
+                                        style={{ scrollbarWidth: 'none' }}
+                                    >
+                                        <div className="flex h-8.5 items-center" style={{ minWidth: 'max-content' }}>
+                                            {VERSION_TABS.map((tab) => {
+                                                const isActive = versionCardTab === tab.key;
+                                                return (
+                                                    <button
+                                                        key={tab.key}
+                                                        ref={isActive ? (el) => { activeTabRefs.current[i] = el; } : undefined}
+                                                        onClick={(e) => { e.stopPropagation(); setVersionCardTab(tab.key); }}
+                                                        className={`flex h-8.5 shrink-0 cursor-pointer items-center justify-center rounded-[60px] px-3.5 text-sm leading-none transition-colors duration-200 ${
+                                                            isActive
+                                                                ? 'bg-black font-semibold text-white'
+                                                                : 'font-normal text-black hover:bg-black/5'
+                                                        }`}
+                                                        style={{ fontFamily: '"Toyota Type"' }}
+                                                    >
+                                                        {tab.label}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={(e) => { e.stopPropagation(); goNextTab(); }}
+                                        className="flex shrink-0 cursor-pointer items-center justify-center transition-opacity hover:opacity-50"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="17" viewBox="0 0 7 12" fill="none">
+                                            <path d="M1 1L6 6L1 11" stroke="black" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </button>
                                 </div>
-                                <span className="text-2xl font-semibold uppercase leading-none text-black">{ver.price}</span>
-                                <span className="text-sm leading-none text-black/60">{ver.bonus}</span>
-                            </div>
 
-                            {/* Tabs */}
-                            <div className="flex w-full items-center gap-2.5">
-                                <div
-                                    onClick={(e) => { e.stopPropagation(); setVersionCardTab('precio'); }}
-                                    className={`flex h-8.5 flex-1 cursor-pointer items-center justify-center rounded-[60px] text-sm font-semibold leading-none transition-colors duration-300 ${
-                                        versionCardTab === 'precio' ? 'bg-black text-white' : 'text-black'
-                                    }`}
-                                >
-                                    Precio
-                                </div>
-                                <div
-                                    onClick={(e) => { e.stopPropagation(); setVersionCardTab('caracteristicas'); }}
-                                    className={`flex h-8.5 flex-1 cursor-pointer items-center justify-center rounded-[60px] text-sm font-semibold leading-none transition-colors duration-300 ${
-                                        versionCardTab === 'caracteristicas' ? 'bg-black text-white' : 'text-black'
-                                    }`}
-                                >
-                                    Características
-                                </div>
-                            </div>
-
-                            {/* Tab content */}
-                            <div className={`flex w-full flex-col gap-3.5 rounded-[20px] bg-black/5 p-2.5 transition-all duration-300 ${
-                                tabAnimating ? 'translate-y-2 opacity-0' : 'translate-y-0 opacity-100'
-                            }`}>
-                                {versionCardTab === 'precio' ? (
-                                    ver.pricing.map((item) => (
+                                {/* Tab content */}
+                                <div className={`flex w-full flex-col gap-3.5 rounded-[20px] bg-[#EAEAF1] p-3.5 transition-all duration-300 ${
+                                    tabAnimating ? 'translate-y-2 opacity-0' : 'translate-y-0 opacity-100'
+                                }`}>
+                                    {rows.map((item) => (
                                         <div key={item.label} className="flex items-center justify-between">
                                             <span className="text-sm leading-[120%] text-black">{item.label}</span>
                                             <span className="text-sm font-semibold leading-[120%] text-black">{item.value}</span>
                                         </div>
-                                    ))
-                                ) : (
-                                    ver.characteristics.map((item) => (
-                                        <div key={item.title} className="text-sm leading-[120%] text-black">
-                                            <span className="font-semibold">{item.title}:</span>
-                                            <br />
-                                            {item.detail}
-                                        </div>
-                                    ))
-                                )}
+                                    ))}
+                                </div>
+
+                                {/* CTA buttons */}
+                                <div className="flex w-full flex-col gap-2.5">
+                                    <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
+                                        Cotizar
+                                    </a>
+                                    <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] border border-black text-sm leading-none text-black transition hover:bg-black/5">
+                                        Comparar modelo
+                                    </a>
+                                </div>
                             </div>
 
-                            {/* CTA buttons */}
-                            <div className="flex w-full flex-col gap-4">
-                                <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
-                                    Cotizar
-                                </a>
-                                <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] border border-black text-sm leading-none text-black transition hover:bg-black/5">
-                                    {versionCardTab === 'precio' ? 'Comparar modelo' : 'Ver modelo'}
-                                </a>
-                            </div>
-                        </button>
+                        </div>
                     );
                 })}
             </div>
@@ -310,9 +491,9 @@ function VersionsSection({
     );
 }
 
-export default function NuevosShow({ vehicleId, footer, shorts, youtubeShorts }: { vehicleId: string; footer: any; shorts: any; youtubeShorts: any[] }) {
+export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtubeShorts }: { vehicle: typeof vehicleData; footer: any; shorts: any; youtubeShorts: any[] }) {
     const [selectedVersion, setSelectedVersion] = useState(0);
-    const [versionCardTab, setVersionCardTab] = useState<'precio' | 'caracteristicas'>('precio');
+    const [versionCardTab, setVersionCardTab] = useState<VersionTab>('precio');
     const [modal360Open, setModal360Open] = useState(false);
     const [frameIndex, setFrameIndex] = useState(0);
     const [selectedColor, setSelectedColor] = useState(0);
@@ -322,7 +503,7 @@ export default function NuevosShow({ vehicleId, footer, shorts, youtubeShorts }:
     const dragStartX = useRef(0);
     const dragStartFrame = useRef(0);
 
-    const vehicle = vehicleData;
+    const vehicle = vehicleProp ?? vehicleData;
 
     const hero = useInView(0.1);
     const section360 = useInView(0.1);
@@ -519,7 +700,7 @@ export default function NuevosShow({ vehicleId, footer, shorts, youtubeShorts }:
                         <img
                             src={frames360[frameIndex]}
                             alt={`${vehicle.name} 360° vista`}
-                            className="pointer-events-none h-auto w-full max-w-[700px] object-contain"
+                            className="pointer-events-none h-auto w-full max-w-175 object-contain"
                             draggable={false}
                         />
                     </div>

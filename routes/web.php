@@ -17,8 +17,10 @@ Route::get('/seminuevos/{id}', [SeminuevosController::class, 'show'])->name('sem
 Route::get('/post-venta/agendar-mantencion', [PostVentaController::class, 'agendarMantencion'])->name('post-venta.agendar-mantencion');
 Route::get('/post-venta/accesorios', [PostVentaController::class, 'accesorios'])->name('post-venta.accesorios');
 Route::get('/post-venta/accesorios/{id}', [PostVentaController::class, 'accesorioShow'])->name('post-venta.accesorios.show');
+Route::get('/post-venta/accesorios/{id}/cotizar', [PostVentaController::class, 'accesorioCotizar'])->name('post-venta.accesorios.cotizar');
 Route::get('/post-venta/repuestos', [PostVentaController::class, 'repuestos'])->name('post-venta.repuestos');
 Route::get('/post-venta/repuestos/{id}', [PostVentaController::class, 'repuestoShow'])->name('post-venta.repuestos.show');
+Route::get('/post-venta/repuestos/{id}/cotizar', [PostVentaController::class, 'repuestoCotizar'])->name('post-venta.repuestos.cotizar');
 
 Route::get('/programas', [PagesController::class, 'programas'])->name('programas');
 Route::get('/shorts', [PagesController::class, 'shorts'])->name('shorts');

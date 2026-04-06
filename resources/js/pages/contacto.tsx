@@ -5,9 +5,11 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
-import formImg from '@images/contacto/form_image.png?format=webp';
+import formImgDefault from '@images/contacto/form_image.png?format=webp';
 
-export default function Contacto({ footer }: { footer: any }) {
+export default function Contacto({ footer, contacto_info }: { footer: any; contacto_info?: any }) {
+    const info = contacto_info ?? {};
+    const formImg = info.form_image || formImgDefault;
     useEffect(() => {
         const html = document.documentElement;
         const prev = html.style.backgroundColor;
@@ -46,11 +48,11 @@ export default function Contacto({ footer }: { footer: any }) {
                                     </span>
                                     <div className="flex items-center justify-between self-stretch h-3.5">
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Lunes a Viernes</span>
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>09:00 a 13:30 - 14:45 a 18:30</span>
+                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.horario_lv ?? '09:00 a 13:30 - 14:45 a 18:30'}</span>
                                     </div>
                                     <div className="flex items-center justify-between self-stretch h-3.5">
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Domingo</span>
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Cerrado</span>
+                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Sábado / Domingo</span>
+                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.horario_sab ?? 'Cerrado'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -66,7 +68,7 @@ export default function Contacto({ footer }: { footer: any }) {
                                     </span>
                                     <div className="flex items-center justify-between self-stretch h-3.5">
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Correo electrónico</span>
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>info@camalmusalem.cl</span>
+                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.email ?? 'info@camalmusalem.cl'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -83,19 +85,19 @@ export default function Contacto({ footer }: { footer: any }) {
                                             className="text-[24px] font-semibold leading-[120%] text-black"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
-                                            Contacto
+                                            {info.form_title ?? 'Contacto'}
                                         </h1>
                                         <p
                                             className="text-lg leading-[120%] text-black"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
-                                            ¿En qué te podemos ayudar?
+                                            {info.form_subtitle ?? '¿En qué te podemos ayudar?'}
                                         </p>
                                         <p
                                             className="text-base leading-[120%] text-black"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
-                                            Completa el formulario y nuestro equipo se pondrá en contacto contigo a la brevedad.
+                                            {info.form_desc ?? 'Completa el formulario y nuestro equipo se pondrá en contacto contigo a la brevedad.'}
                                         </p>
                                     </div>
 
