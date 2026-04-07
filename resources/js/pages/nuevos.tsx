@@ -8,20 +8,24 @@ import { NuevosProductCard } from '@/components/nuevos/product-card';
 import { NuevosListItem } from '@/components/nuevos/product-list-item';
 import { Modal360 } from '@/components/nuevos/modal-360';
 import { useEffect, useMemo, useState } from 'react';
-import cardNuevos1 from '@images/nuevos/card_nuevos_1.png?format=webp';
-import cardNuevos2 from '@images/nuevos/card_nuevos_2.png?format=webp';
-import cardNuevos3 from '@images/nuevos/card_nuevos_3.png?format=webp';
-import cardNuevos4 from '@images/nuevos/card_nuevos_4.png?format=webp';
-import logoCard1 from '@images/nuevos/logo_card_1.png?format=webp';
-import logoCard2 from '@images/nuevos/loco_card_2.png?format=webp';
-import logoCard3 from '@images/nuevos/logo_card_3.png?format=webp';
-import logoCard4 from '@images/nuevos/logo_card_4.png?format=webp';
-import cardGrid1 from '@images/nuevos/card_grid_1.png?format=webp';
-import cardGrid2 from '@images/nuevos/card_grid_2.png?format=webp';
-import cardGrid3 from '@images/nuevos/card_grid_3.png?format=webp';
-import cardGrid4 from '@images/nuevos/card_grid_4.png?format=webp';
-import cardGrid5 from '@images/nuevos/card_grid_5.png?format=webp';
-import cardGrid6 from '@images/nuevos/card_grid_6.png?format=webp';
+
+type Version = {
+    name: string;
+    price: string;
+    electric: boolean;
+};
+
+type Vehicle = {
+    id: number;
+    name: string;
+    slug: string | null;
+    full_name: string | null;
+    subtitle: string | null;
+    type: string | null;
+    fuel: string | null;
+    hero_image: string | null;
+    versions: Version[];
+};
 
 function ElectricBadge() {
     return (
@@ -37,23 +41,23 @@ function ElectricBadge() {
     );
 }
 
-const heroCards = [
-    { image: cardNuevos1, logo: logoCard1, electric: true, price: '$39.990.000' },
-    { image: cardNuevos2, logo: logoCard2, electric: false, price: '$28.990.000' },
-    { image: cardNuevos3, logo: logoCard3, electric: false, price: '$22.490.000' },
-    { image: cardNuevos4, logo: logoCard4, electric: false, price: '$35.590.000' },
-];
+function vehicleHref(v: Vehicle) {
+    return `/nuevos/${v.slug ?? v.id}`;
+}
 
-const nuevosVehicles = [
-    { id: 1, image: cardGrid1, name: 'BZ4X', electric: true, tags: ['Nuevo', 'Sedan', 'Eléctrico', 'MT'], price: '39.990.000', subtitle: 'Más que un eléctrico, un eléctrico Toyota.' },
-    { id: 2, image: cardGrid2, name: 'Corolla', electric: false, tags: ['Nuevo', 'Sedan', 'Bencina', 'CVT'], price: '18.490.000', subtitle: 'Diseño que inspira, tecnología que conecta.' },
-    { id: 3, image: cardGrid3, name: 'Yaris Cross', electric: false, tags: ['Nuevo', 'SUV', 'Bencina', 'CVT'], price: '16.990.000', subtitle: 'Compacto por fuera, gigante por dentro.' },
-    { id: 4, image: cardGrid4, name: 'Hilux', electric: false, tags: ['Nuevo', 'Camioneta', 'Diesel', 'MT'], price: '22.490.000', subtitle: 'Potencia y resistencia sin límites.' },
-    { id: 5, image: cardGrid5, name: 'RAV4', electric: false, tags: ['Nuevo', 'SUV', 'Híbrido', 'CVT'], price: '28.990.000', subtitle: 'Aventura híbrida, rendimiento superior.' },
-    { id: 6, image: cardGrid6, name: '4Runner', electric: false, tags: ['Nuevo', 'SUV', 'Bencina', 'AT'], price: '35.590.000', subtitle: 'Conquista cualquier terreno.' },
-];
+function vehicleTags(v: Vehicle): string[] {
+    return [v.type, v.fuel].filter(Boolean) as string[];
+}
 
-export default function Nuevos({ data, footer }: { data: any; footer: any }) {
+function vehiclePrice(v: Vehicle): string {
+    return v.versions?.[0]?.price || 'Consultar';
+}
+
+function vehicleElectric(v: Vehicle): boolean {
+    return v.versions?.[0]?.electric ?? false;
+}
+
+export default function Nuevos({ data, footer, vehicles = [] }: { data: any; footer: any; vehicles: Vehicle[] }) {
     const [cardsVisible, setCardsVisible] = useState(false);
     const [contentVisible, setContentVisible] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -70,12 +74,14 @@ export default function Nuevos({ data, footer }: { data: any; footer: any }) {
     const ITEMS_PER_PAGE_GRID = 9;
     const ITEMS_PER_PAGE_LIST = 6;
 
+    const heroCards = vehicles.slice(0, 4);
+
     const itemsPerPage = viewMode === 'grid' ? ITEMS_PER_PAGE_GRID : ITEMS_PER_PAGE_LIST;
-    const totalPages = Math.ceil(nuevosVehicles.length / itemsPerPage);
+    const totalPages = Math.ceil(vehicles.length / itemsPerPage);
     const paginatedVehicles = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return nuevosVehicles.slice(start, start + itemsPerPage);
-    }, [currentPage, itemsPerPage]);
+        return vehicles.slice(start, start + itemsPerPage);
+    }, [currentPage, itemsPerPage, vehicles]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -102,64 +108,62 @@ export default function Nuevos({ data, footer }: { data: any; footer: any }) {
                             Musalem, líder Toyota en la región de Coquimbo.
                         </p>
 
-                        {/* Hero cards */}
-                        <div className="mt-10 flex gap-5">
-                            {heroCards.map((card, i) => (
-                                <div
-                                    key={i}
-                                    className={`group relative h-115 w-78.75 shrink-0 overflow-hidden rounded-[30px] transition-all duration-700 ease-out hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] ${
-                                        cardsVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-                                    }`}
-                                    style={{ transitionDelay: cardsVisible && !contentVisible ? `${i * 100}ms` : '0ms' }}
-                                >
+                        {/* Hero cards — first 4 vehicles */}
+                        {heroCards.length > 0 && (
+                            <div className="mt-10 flex gap-5">
+                                {heroCards.map((card, i) => (
                                     <div
-                                        className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105"
-                                        style={{
-                                            backgroundImage: `radial-gradient(84.02% 84.02% at 50% 48.04%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.30) 100%), url(${card.image})`,
-                                        }}
-                                    />
-                                    <div className="relative flex h-full flex-col items-center justify-between">
-                                    <div
-                                        className={`mt-2.5 flex w-65 flex-col items-center transition-all duration-600 ease-out ${
-                                            contentVisible ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                                        key={card.id}
+                                        className={`group relative h-115 w-78.75 shrink-0 overflow-hidden rounded-[30px] transition-all duration-700 ease-out hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] ${
+                                            cardsVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
                                         }`}
-                                        style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
+                                        style={{ transitionDelay: cardsVisible && !contentVisible ? `${i * 100}ms` : '0ms' }}
                                     >
-                                        <div className="flex h-37 w-full items-center justify-center">
-                                            <img
-                                                src={card.logo}
-                                                alt=""
-                                                className="max-h-full max-w-full object-contain"
-                                            />
+                                        <div
+                                            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105"
+                                            style={{
+                                                backgroundImage: `radial-gradient(84.02% 84.02% at 50% 48.04%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.30) 100%), url(${card.hero_image ?? ''})`,
+                                            }}
+                                        />
+                                        <div className="relative flex h-full flex-col items-center justify-between">
+                                            <div
+                                                className={`mt-6 flex w-65 flex-col items-center gap-3 transition-all duration-600 ease-out ${
+                                                    contentVisible ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                                                }`}
+                                                style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
+                                            >
+                                                <span className="text-center text-2xl font-semibold uppercase leading-none text-white drop-shadow">
+                                                    {card.name}
+                                                </span>
+                                                {vehicleElectric(card) && <ElectricBadge />}
+                                            </div>
+                                            <div
+                                                className={`mb-3 flex flex-col items-center gap-3 transition-all duration-600 ease-out group-hover:-translate-y-6 ${
+                                                    contentVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                                                }`}
+                                                style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
+                                            >
+                                                <div className="inline-flex flex-col items-center gap-1">
+                                                    <span className="text-center text-base leading-none text-white">Desde</span>
+                                                    <span className="text-[28px] leading-none text-white">{vehiclePrice(card)}</span>
+                                                </div>
+                                                <a
+                                                    href={vehicleHref(card)}
+                                                    className="flex h-10 w-67.75 origin-center scale-x-50 cursor-pointer items-center justify-between rounded-[60px] bg-white p-1 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/85 group-hover:scale-x-100 group-hover:opacity-100"
+                                                >
+                                                    <span className="pl-4 text-sm leading-none text-black">Ver detalles</span>
+                                                    <span className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] border border-black bg-black transition-transform duration-300 hover:scale-110" style={{ backdropFilter: 'blur(15px)' }}>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 14 11" fill="none">
+                                                            <path d="M0.5 5.5L13.5 5.5M13.5 5.5L8.625 10.5M13.5 5.5L8.625 0.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        </svg>
+                                                    </span>
+                                                </a>
+                                            </div>
                                         </div>
-                                        {card.electric && <ElectricBadge />}
                                     </div>
-                                    <div
-                                        className={`mb-3 flex flex-col items-center gap-3 transition-all duration-600 ease-out group-hover:-translate-y-6 ${
-                                            contentVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                                        }`}
-                                        style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
-                                    >
-                                        <div className="inline-flex flex-col items-center gap-1">
-                                            <span className="text-center text-base leading-none text-white">Desde</span>
-                                            <span className="text-[28px] leading-none text-white">{card.price}</span>
-                                        </div>
-                                        <a
-                                            href="#"
-                                            className="flex h-10 w-67.75 origin-center scale-x-50 cursor-pointer items-center justify-between rounded-[60px] bg-white p-1 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/85 group-hover:scale-x-100 group-hover:opacity-100"
-                                        >
-                                            <span className="pl-4 text-sm leading-none text-black">Ver detalles</span>
-                                            <span className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] border border-black bg-black transition-transform duration-300 hover:scale-110" style={{ backdropFilter: 'blur(15px)' }}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 14 11" fill="none">
-                                                    <path d="M0.5 5.5L13.5 5.5M13.5 5.5L8.625 10.5M13.5 5.5L8.625 0.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            </span>
-                                        </a>
-                                    </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </section>
 
                     <Toolbar filtersVisible={filtersVisible} onToggleFilters={() => setFiltersVisible(!filtersVisible)} viewMode={viewMode} onChangeViewMode={handleViewModeChange} />
@@ -176,39 +180,45 @@ export default function Nuevos({ data, footer }: { data: any; footer: any }) {
                             <Filters />
                         </div>
                         <div className="flex flex-1 flex-col justify-between transition-all duration-500 ease-in-out">
-                            <div>
-                                {viewMode === 'grid' ? (
-                                    <div key="grid" className="flex flex-wrap items-start gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
-                                        {paginatedVehicles.map((v) => (
-                                            <NuevosProductCard
-                                                key={`grid-${v.id}`}
-                                                image={v.image}
-                                                name={v.name}
-                                                electric={v.electric}
-                                                tags={v.tags}
-                                                price={v.price}
-                                                href={`/nuevos/${v.id}`}
-                                                on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle })}
-                                            />
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <div key="list" className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
-                                        {paginatedVehicles.map((v) => (
-                                            <NuevosListItem
-                                                key={`list-${v.id}`}
-                                                image={v.image}
-                                                name={v.name}
-                                                electric={v.electric}
-                                                tags={v.tags}
-                                                price={v.price}
-                                                href={`/nuevos/${v.id}`}
-                                                on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle })}
-                                            />
-                                        ))}
-                                    </div>
-                                )}
-                            </div>
+                            {vehicles.length === 0 ? (
+                                <div className="flex flex-1 items-center justify-center py-20 text-black/40">
+                                    No hay vehículos disponibles en este momento.
+                                </div>
+                            ) : (
+                                <div>
+                                    {viewMode === 'grid' ? (
+                                        <div key="grid" className="flex flex-wrap items-start gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                                            {paginatedVehicles.map((v) => (
+                                                <NuevosProductCard
+                                                    key={`grid-${v.id}`}
+                                                    image={v.hero_image ?? ''}
+                                                    name={v.name}
+                                                    electric={vehicleElectric(v)}
+                                                    tags={vehicleTags(v)}
+                                                    price={vehiclePrice(v)}
+                                                    href={vehicleHref(v)}
+                                                    on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle ?? '' })}
+                                                />
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <div key="list" className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400">
+                                            {paginatedVehicles.map((v) => (
+                                                <NuevosListItem
+                                                    key={`list-${v.id}`}
+                                                    image={v.hero_image ?? ''}
+                                                    name={v.name}
+                                                    electric={vehicleElectric(v)}
+                                                    tags={vehicleTags(v)}
+                                                    price={vehiclePrice(v)}
+                                                    href={vehicleHref(v)}
+                                                    on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle ?? '' })}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                             <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
                         </div>
                     </div>

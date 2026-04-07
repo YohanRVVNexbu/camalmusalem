@@ -1,27 +1,150 @@
 import { Head, Link } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { useEffect } from 'react';
-import { useInView } from '@/hooks/use-in-view';
 import { NoticiaCard, type NoticiaItem } from '@/components/landing/noticia-card';
-import card1Img from '@images/noticias/card_1.png?format=webp';
-import card2Img from '@images/noticias/card_2.png?format=webp';
+import { useEffect, useState } from 'react';
+import { useInView } from '@/hooks/use-in-view';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
-const relacionadas: NoticiaItem[] = [
-    { id: 2, categoria: 'Noticias', fecha: '05/12/25', titulo: 'Nueva sucursal Camal Musalem abre sus puertas en La Serena', descripcion: 'La empresa refuerza su presencia en la Región de Coquimbo con una nueva instalación de última generación', img: '' },
-    { id: 3, categoria: 'Reconocimientos', fecha: '28/11/25', titulo: 'Camal Musalem recibe premio a la excelencia en servicio Toyota Chile', descripcion: 'Por segundo año consecutivo, la concesionaria obtiene el reconocimiento más importante del sector automotriz', img: '' },
-    { id: 5, categoria: 'Mundo Toyota', fecha: '15/11/25', titulo: 'Toyota presenta la nueva generación del RAV4 híbrido para Latinoamérica', descripcion: 'El SUV más vendido del mundo llega renovado con mayor autonomía y tecnología de punta', img: '' },
-];
+// ─── Types ──────────────────────────────────────────────────────────────────
+
+type HeroSection    = { type: 'hero';    images: string[] };
+type TextSection    = { type: 'text';    content: string };
+type GallerySection = { type: 'gallery'; images: string[] };
+type Section = HeroSection | TextSection | GallerySection;
 
 type Noticia = {
     slug: string;
     titulo: string;
     categoria: string;
     fecha: string;
-    imagen: string | null;
-    descripcion: string;
-    contenido: string;
+    sections: Section[];
 };
+
+// ─── Hero section (carousel if multiple images) ──────────────────────────────
+
+function HeroCarousel({ images }: { images: string[] }) {
+    const [current, setCurrent] = useState(0);
+
+    if (images.length === 0) return (
+        <div className="h-120.75 w-full rounded-[30px] bg-[#d0d0d0]" />
+    );
+
+    if (images.length === 1) return (
+        <div
+            className="h-120.75 w-full rounded-[30px]"
+            style={{
+                background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${images[0]}) lightgray 50% / cover no-repeat`,
+            }}
+        />
+    );
+
+    return (
+        <div className="relative h-120.75 w-full overflow-hidden rounded-[30px]">
+            <div
+                className="h-full w-full transition-all duration-500"
+                style={{
+                    background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${images[current]}) lightgray 50% / cover no-repeat`,
+                }}
+            />
+            <button
+                onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
+                className="absolute left-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70"
+            >
+                <ChevronLeft className="size-5" />
+            </button>
+            <button
+                onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
+                className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70"
+            >
+                <ChevronRight className="size-5" />
+            </button>
+            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
+                {images.map((_, i) => (
+                    <button
+                        key={i}
+                        onClick={() => setCurrent(i)}
+                        className={`size-2 rounded-full transition ${i === current ? 'bg-white' : 'bg-white/40'}`}
+                    />
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// ─── Gallery section ─────────────────────────────────────────────────────────
+
+function GalleryCarousel({ images }: { images: string[] }) {
+    const [current, setCurrent] = useState(0);
+
+    if (images.length === 0) return null;
+
+    if (images.length <= 2) {
+        return (
+            <div className={`grid gap-5 ${images.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                {images.map((img, i) => (
+                    <div
+                        key={i}
+                        className="h-120.75 rounded-[30px]"
+                        style={{
+                            background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${img}) lightgray 50% / cover no-repeat`,
+                        }}
+                    />
+                ))}
+            </div>
+        );
+    }
+
+    // carousel for 3+
+    const visible = [images[current], images[(current + 1) % images.length]];
+    return (
+        <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-5">
+                {visible.map((img, i) => (
+                    <div
+                        key={i}
+                        className="h-120.75 rounded-[30px] transition-all duration-500"
+                        style={{
+                            background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${img}) lightgray 50% / cover no-repeat`,
+                        }}
+                    />
+                ))}
+            </div>
+            <div className="flex items-center justify-center gap-4">
+                <button
+                    onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
+                    className="flex size-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-black/70"
+                >
+                    <ChevronLeft className="size-5" />
+                </button>
+                <span className="text-sm font-medium text-black">{current + 1} / {images.length}</span>
+                <button
+                    onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
+                    className="flex size-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-black/70"
+                >
+                    <ChevronRight className="size-5" />
+                </button>
+            </div>
+        </div>
+    );
+}
+
+// ─── Section renderer ─────────────────────────────────────────────────────────
+
+function SectionRenderer({ section }: { section: Section }) {
+    if (section.type === 'hero') return <HeroCarousel images={section.images} />;
+    if (section.type === 'gallery') return <GalleryCarousel images={section.images} />;
+    if (section.type === 'text') return (
+        <div
+            className="wysiwyg-content text-black"
+            style={{ fontFamily: '"Toyota Type"' }}
+            dangerouslySetInnerHTML={{ __html: section.content }}
+        />
+    );
+    return null;
+}
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
 
 function ArrowLeft() {
     return (
@@ -31,7 +154,7 @@ function ArrowLeft() {
     );
 }
 
-export default function NoticiaShow({ footer, noticia }: { footer: any; noticia: Noticia }) {
+export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { footer: any; noticia: Noticia; relacionadas?: NoticiaItem[] }) {
     const inView = useInView(0.05);
 
     useEffect(() => {
@@ -47,12 +170,11 @@ export default function NoticiaShow({ footer, noticia }: { footer: any; noticia:
             <Navbar variant="white" />
 
             <main className="flex flex-col bg-[#EAEAF1]">
-                <section ref={inView.ref} className="flex flex-col gap-8 px-15 pb-20 pt-32">
-                    <div className={`flex flex-col gap-8 transition-all duration-700 ease-out ${inView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
+                <section ref={inView.ref} className="px-15 pb-20 pt-32">
+                    <div className={`flex flex-col gap-6 transition-all duration-700 ease-out ${inView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
 
-                        {/* Navegación */}
+                        {/* Volver + Categoría + Fecha — mismo margen que el contenido */}
                         <div className="flex items-center justify-between">
-                            {/* Volver */}
                             <Link
                                 href="/noticias"
                                 className="flex h-9.5 cursor-pointer items-center gap-2.5 rounded-[60px] border border-black py-2.5 pl-2.5 pr-5 transition-opacity hover:opacity-70"
@@ -65,79 +187,29 @@ export default function NoticiaShow({ footer, noticia }: { footer: any; noticia:
                                 </span>
                             </Link>
 
-                            {/* Compartir (invisible, reserva espacio) */}
-                            <div className="flex h-9.5 items-center gap-2.5 rounded-[60px] border border-black px-5 py-2.5 opacity-0">
-                                <span className="size-6" />
-                                <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                    Compartir
+                            <div className="flex items-center gap-2.5">
+                                <span className="rounded-[3px] bg-black/8 px-2 py-1.5 text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {noticia.categoria}
+                                </span>
+                                <span className="rounded-[3px] bg-black/8 px-2 py-1.5 text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {noticia.fecha}
                                 </span>
                             </div>
                         </div>
 
                         {/* Título */}
                         <h1
-                            className="text-center text-[48px] font-normal leading-[120%] text-black"
+                            className="text-[48px] font-normal leading-[120%] text-black"
                             style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}
                         >
                             {noticia.titulo}
                         </h1>
 
-                        {/* Imagen */}
-                        <div
-                            className="flex h-120.75 flex-col items-start justify-end gap-2.5 self-stretch rounded-[30px] p-7.5"
-                            style={{
-                                background: noticia.imagen
-                                    ? `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${noticia.imagen}) lightgray 50% / cover no-repeat`
-                                    : 'linear-gradient(180deg, #c8c8c8 0%, #a0a0a0 100%)',
-                            }}
-                        />
-
-                        {/* Categoría, fecha y contenido */}
-                        <div className="flex flex-col gap-8 px-50">
-                            {/* Categoría y fecha */}
-                            <div className="flex gap-2.5">
-                                <span className="rounded-[3px] p-1.25 text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
-                                    {noticia.categoria}
-                                </span>
-                                <span className="rounded-[3px] p-1.25 text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
-                                    {noticia.fecha}
-                                </span>
-                            </div>
-
-                            {/* Contenido WYSIWYG */}
-                            <div
-                                className="wysiwyg-content text-black"
-                                style={{ fontFamily: '"Toyota Type"' }}
-                                dangerouslySetInnerHTML={{ __html: noticia.contenido }}
-                            />
-
-                            {/* Cards de imágenes */}
-                            <div className="flex gap-5">
-                                {[card1Img, card2Img].map((img, i) => (
-                                    <div
-                                        key={i}
-                                        className="flex h-120.75 flex-1 flex-col items-start justify-end gap-2.5 rounded-[30px] p-7.5"
-                                        style={{
-                                            background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${img}) lightgray 50% / cover no-repeat`,
-                                        }}
-                                    />
-                                ))}
-                            </div>
-
-                            {/* Texto adicional */}
-                            <div
-                                className="wysiwyg-content text-black"
-                                style={{ fontFamily: '"Toyota Type"' }}
-                                dangerouslySetInnerHTML={{
-                                    __html: `<p><strong>Principales presentaciones y avances de vehículos</strong></p>
-<p>El evento realizado en Tokio destacó por la presentación de la nueva estrategia global de Toyota Motor Corporation, que reorganiza su estructura en torno a cinco marcas: Toyota, Lexus, GR, Century y Daihatsu, como parte de su evolución hacia una empresa integral de movilidad. Estos cambios impactarán en el futuro al mercado chileno, donde la marca ya lidera varios segmentos claves, incluyendo el de vehículos cero y bajas emisiones.</p>
-<p>Entre los destacados de Toyota en el Japan Mobility Show 2025, se presentaron diversos conceptos y estudios de vehículos que anticipan el futuro de la marca dentro de su estrategia de movilidad. La nueva propuesta para la línea Century, que la compañía está desarrollando como una submarca de lujo independiente, debutó con el Century "One of One" Concept, un SUV coupé de gran amplitud interior y puertas correderas, orientado al segmento del ultralujo.</p>
-<p>Además, Toyota exhibió una amplia gama de tecnologías y soluciones de movilidad personal, logística, asistencia y "movilidad ampliada" más allá del automóvil tradicional, incluyendo vehículos modulares, plataformas compartidas y movilidad urbana ligera. Entre los modelos más sobresalientes figuró el FJ Cruiser 2026, reinterpretación moderna del icónico todoterreno, que combina un diseño robusto con sistemas de propulsión más limpios y eficientes.</p>
-<p>Por su parte, Lexus presentó su visión de movilidad premium y conectada con el LS Concept, una minivan de lujo de seis ruedas que propone una nueva experiencia de transporte de alto nivel, junto a su ecosistema "Discover", diseñado para integrar servicios, conectividad y personalización. Estas presentaciones reflejaron la estrategia integral del Grupo Toyota, que busca ofrecer soluciones diversas bajo una misma visión de movilidad global.</p>
-<p><strong>Evaluación y compra: modelos híbridos Toyota para el uso diario en Chile</strong><br/>Evalúa y compra tu híbrido Toyota en Chile: ahorro de combustible, eficiencia diaria, menor impacto ambiental y respaldo de marca. Conoce modelos y opciones de financiamiento autos híbridos.</p>`
-                                }}
-                            />
-
+                        {/* Secciones dinámicas — mismo ancho que título */}
+                        <div className="flex flex-col gap-10">
+                            {(noticia.sections ?? []).map((section, i) => (
+                                <SectionRenderer key={i} section={section} />
+                            ))}
                         </div>
 
                     </div>
@@ -145,19 +217,21 @@ export default function NoticiaShow({ footer, noticia }: { footer: any; noticia:
             </main>
 
             {/* Te podrían interesar */}
-            <section className="flex flex-col items-center gap-10 px-15 pb-20">
-                <h2
-                    className="self-stretch text-[32px] font-normal leading-[120%] text-black"
-                    style={{ fontFamily: '"Toyota Type"' }}
-                >
-                    Te podrían interesar
-                </h2>
-                <div className="grid w-full grid-cols-3 gap-5">
-                    {relacionadas.map((n) => (
-                        <NoticiaCard key={n.id} noticia={n} />
-                    ))}
-                </div>
-            </section>
+            {relacionadas.length > 0 && (
+                <section className="flex flex-col gap-10 px-15 pb-20">
+                    <h2
+                        className="text-[32px] font-normal leading-[120%] text-black"
+                        style={{ fontFamily: '"Toyota Type"' }}
+                    >
+                        Te podrían interesar
+                    </h2>
+                    <div className="grid grid-cols-3 gap-5">
+                        {relacionadas.map((n) => (
+                            <NoticiaCard key={n.id} noticia={n} />
+                        ))}
+                    </div>
+                </section>
+            )}
 
             <div className="bg-[#EAEAF1]">
                 <Footer data={footer} />

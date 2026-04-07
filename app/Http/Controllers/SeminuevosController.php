@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Seminuevo;
 use App\Models\SiteSection;
 use Inertia\Inertia;
 
@@ -13,8 +14,12 @@ class SeminuevosController extends Controller
         $footer = SiteSection::where('section', 'footer')->first();
 
         return Inertia::render('seminuevos', [
-            'data' => $section?->data ?? [],
-            'footer' => $footer?->data ?? [],
+            'data'       => $section?->data ?? [],
+            'footer'     => $footer?->data ?? [],
+            'seminuevos' => Seminuevo::where('is_visible', true)
+                ->orderBy('order')
+                ->orderBy('brand')
+                ->get(),
         ]);
     }
 
@@ -27,13 +32,18 @@ class SeminuevosController extends Controller
         ]);
     }
 
-    public function show(string $id)
+    public function show(string $slug)
     {
+        $seminuevo = Seminuevo::where('slug', $slug)
+            ->orWhere('id', is_numeric($slug) ? (int) $slug : 0)
+            ->where('is_visible', true)
+            ->firstOrFail();
+
         $footer = SiteSection::where('section', 'footer')->first();
 
         return Inertia::render('seminuevos/show', [
-            'vehicleId' => $id,
-            'footer' => $footer?->data ?? [],
+            'seminuevo' => $seminuevo,
+            'footer'    => $footer?->data ?? [],
         ]);
     }
 }

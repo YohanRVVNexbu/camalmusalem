@@ -49,7 +49,7 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
                 <form onSubmit={submit} className="flex flex-col gap-6 max-w-2xl">
                     <div className="flex items-center space-x-3">
                         <Checkbox checked={data.is_visible} onCheckedChange={(v) => setData({ ...data, is_visible: !!v })} />
-                        <Label>Visible en el sitio</Label>
+                        <Label>Publicado</Label>
                     </div>
                     <Separator />
                     <div className="grid grid-cols-2 gap-4">

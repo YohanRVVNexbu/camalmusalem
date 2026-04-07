@@ -96,7 +96,7 @@ export function VisibilityField({
     return (
         <div className="flex items-center gap-3">
             <Checkbox checked={checked} onCheckedChange={(v) => onChange(!!v)} />
-            <Label>Visible en el sitio</Label>
+            <Label>Publicado</Label>
         </div>
     );
 }

@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 
 export type NoticiaItem = {
     id: number;
+    slug: string;
     categoria: string;
     fecha: string;
     titulo: string;
@@ -41,7 +42,7 @@ export function NoticiaCard({ noticia }: { noticia: NoticiaItem }) {
                 </div>
                 {/* Botón */}
                 <Link
-                    href={`/noticias/${noticia.id}`}
+                    href={`/noticias/${noticia.slug}`}
                     className="flex cursor-pointer items-center justify-between rounded-[60px] border border-transparent bg-black p-1 transition-opacity hover:opacity-80"
                 >
                     <span className="pl-2.5 text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>

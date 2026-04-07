@@ -1,44 +1,122 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
 
+type SpecRow = { label: string; value: string };
+type Specs = { general: SpecRow[]; equipment: SpecRow[]; downloads: SpecRow[] };
+
 type Seminuevo = {
-    id?: number; brand: string; model: string; year: number; km: number; price: string;
+    id?: number; brand: string; model: string; slug: string | null; year: number; km: number;
+    price: string; down_payment: string | null;
     fuel: string | null; transmission: string | null; traction: string | null;
     doors: number; seats: number; color: string | null; description: string | null;
-    gallery: string[]; is_visible: boolean; order: number;
+    gallery: string[]; featured_gallery: string[]; specs: Specs | null;
+    is_visible: boolean; order: number;
 };
+
+const emptySpecs = (): Specs => ({
+    general: [
+        { label: 'Motor', value: '' },
+        { label: 'Rendimiento', value: '' },
+    ],
+    equipment: [{ label: '', value: '' }],
+    downloads: [{ label: '', value: '' }],
+});
+
+function SpecsSection({
+    title,
+    rows,
+    onChange,
+}: {
+    title: string;
+    rows: SpecRow[];
+    onChange: (rows: SpecRow[]) => void;
+}) {
+    const update = (i: number, field: keyof SpecRow, val: string) => {
+        const next = rows.map((r, idx) => idx === i ? { ...r, [field]: val } : r);
+        onChange(next);
+    };
+    const add = () => onChange([...rows, { label: '', value: '' }]);
+    const remove = (i: number) => onChange(rows.filter((_, idx) => idx !== i));
+
+    return (
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold">{title}</Label>
+                <Button type="button" size="sm" variant="outline" onClick={add}>
+                    <Plus className="mr-1 size-3" /> Agregar fila
+                </Button>
+            </div>
+            {rows.map((row, i) => (
+                <div key={i} className="flex items-center gap-2">
+                    <Input
+                        placeholder="Etiqueta"
+                        value={row.label}
+                        onChange={(e) => update(i, 'label', e.target.value)}
+                        className="w-40"
+                    />
+                    <Input
+                        placeholder="Valor"
+                        value={row.value}
+                        onChange={(e) => update(i, 'value', e.target.value)}
+                        className="flex-1"
+                    />
+                    <Button type="button" size="sm" variant="ghost" onClick={() => remove(i)}>
+                        <Trash2 className="size-4 text-destructive" />
+                    </Button>
+                </div>
+            ))}
+        </div>
+    );
+}
 
 export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | null }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!seminuevo?.id;
 
     const [data, setData] = useState<Seminuevo>(seminuevo ?? {
-        brand: 'Toyota', model: '', year: new Date().getFullYear(), km: 0, price: '',
-        fuel: null, transmission: null, traction: null, doors: 5, seats: 5,
-        color: null, description: null, gallery: [], is_visible: true, order: 0,
+        brand: 'Toyota', model: '', slug: null, year: new Date().getFullYear(), km: 0,
+        price: '', down_payment: null, fuel: null, transmission: null, traction: null,
+        doors: 5, seats: 5, color: null, description: null,
+        gallery: [], featured_gallery: [], specs: emptySpecs(), is_visible: true, order: 0,
     });
+    const specs = data.specs ?? emptySpecs();
+
     const [newGallery, setNewGallery] = useState<File[]>([]);
     const [removeGallery, setRemoveGallery] = useState<string[]>([]);
+    const [newFeatured, setNewFeatured] = useState<File[]>([]);
+    const [removeFeatured, setRemoveFeatured] = useState<string[]>([]);
     const [processing, setProcessing] = useState(false);
 
     const set = (field: keyof Seminuevo, val: any) => setData({ ...data, [field]: val });
+    const setSpecs = (section: keyof Specs, rows: SpecRow[]) =>
+        set('specs', { ...specs, [section]: rows });
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
         const formData = new FormData();
-        const fields: (keyof Seminuevo)[] = ['brand','model','year','km','price','fuel','transmission','traction','doors','seats','color','description','is_visible','order'];
+        const fields: (keyof Seminuevo)[] = [
+            'brand', 'model', 'slug', 'year', 'km', 'price', 'down_payment',
+            'fuel', 'transmission', 'traction', 'doors', 'seats', 'color', 'description', 'is_visible', 'order',
+        ];
         fields.forEach((f) => formData.append(f as string, String(data[f] ?? '')));
         formData.set('is_visible', data.is_visible ? '1' : '0');
+        formData.append('specs', JSON.stringify(specs));
+
         newGallery.forEach((f) => formData.append('gallery_new[]', f));
         removeGallery.forEach((u) => formData.append('gallery_remove[]', u));
+        newFeatured.forEach((f) => formData.append('featured_new[]', f));
+        removeFeatured.forEach((u) => formData.append('featured_remove[]', u));
+
         if (isEdit) formData.append('_method', 'PUT');
 
         router.post(isEdit ? `/admin/seminuevos/${seminuevo!.id}` : '/admin/seminuevos', formData, {
@@ -53,20 +131,26 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                 <h1 className="text-2xl font-semibold">{isEdit ? `Editar: ${seminuevo!.brand} ${seminuevo!.model}` : 'Nuevo seminuevo'}</h1>
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
 
-                <form onSubmit={submit} className="flex flex-col gap-6 max-w-3xl">
+                <form onSubmit={submit} className="flex max-w-3xl flex-col gap-6">
                     <div className="flex items-center space-x-3">
                         <Checkbox checked={data.is_visible} onCheckedChange={(v) => set('is_visible', !!v)} />
-                        <Label>Visible en el sitio</Label>
+                        <Label>Publicado</Label>
                     </div>
                     <Separator />
+
+                    {/* Basic fields */}
                     <div className="grid grid-cols-3 gap-4">
                         <div className="grid gap-2">
                             <Label>Marca *</Label>
                             <Input value={data.brand} onChange={(e) => set('brand', e.target.value)} required />
                         </div>
-                        <div className="grid gap-2 col-span-2">
+                        <div className="col-span-2 grid gap-2">
                             <Label>Modelo *</Label>
                             <Input value={data.model} onChange={(e) => set('model', e.target.value)} required />
+                        </div>
+                        <div className="col-span-3 grid gap-2">
+                            <Label>Slug (URL) <span className="text-muted-foreground text-xs">(auto-generado si se deja vacío)</span></Label>
+                            <Input value={data.slug ?? ''} onChange={(e) => set('slug', e.target.value)} placeholder="bmw-x1-sdrive-2024" />
                         </div>
                         <div className="grid gap-2">
                             <Label>Año *</Label>
@@ -81,16 +165,45 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                             <Input value={data.price} onChange={(e) => set('price', e.target.value)} placeholder="$ 15.000.000" required />
                         </div>
                         <div className="grid gap-2">
+                            <Label>Pie mínimo</Label>
+                            <Input value={data.down_payment ?? ''} onChange={(e) => set('down_payment', e.target.value)} placeholder="$ 5.000.000" />
+                        </div>
+                        <div className="grid gap-2">
                             <Label>Combustible</Label>
-                            <Input value={data.fuel ?? ''} onChange={(e) => set('fuel', e.target.value)} placeholder="Gasolina, Diésel, Híbrido…" />
+                            <Select value={data.fuel ?? ''} onValueChange={(v) => set('fuel', v)}>
+                                <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Gasolina">Gasolina</SelectItem>
+                                    <SelectItem value="Diésel">Diésel</SelectItem>
+                                    <SelectItem value="Eléctrico">Eléctrico</SelectItem>
+                                    <SelectItem value="Híbrido">Híbrido</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label>Transmisión</Label>
-                            <Input value={data.transmission ?? ''} onChange={(e) => set('transmission', e.target.value)} placeholder="Automática, Manual…" />
+                            <Select value={data.transmission ?? ''} onValueChange={(v) => set('transmission', v)}>
+                                <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Automática">Automática</SelectItem>
+                                    <SelectItem value="Manual">Manual</SelectItem>
+                                    <SelectItem value="CVT">CVT</SelectItem>
+                                    <SelectItem value="ECVT">ECVT (Híbrido)</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label>Tracción</Label>
-                            <Input value={data.traction ?? ''} onChange={(e) => set('traction', e.target.value)} placeholder="4x2, 4x4…" />
+                            <Select value={data.traction ?? ''} onValueChange={(v) => set('traction', v)}>
+                                <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="4x2">4x2</SelectItem>
+                                    <SelectItem value="4x4">4x4</SelectItem>
+                                    <SelectItem value="AWD">AWD</SelectItem>
+                                    <SelectItem value="FWD">FWD</SelectItem>
+                                    <SelectItem value="RWD">RWD</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label>Color</Label>
@@ -108,15 +221,17 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                             <Label>Orden</Label>
                             <Input type="number" value={data.order} onChange={(e) => set('order', Number(e.target.value))} />
                         </div>
-                        <div className="grid gap-2 col-span-3">
+                        <div className="col-span-3 grid gap-2">
                             <Label>Descripción</Label>
                             <Textarea value={data.description ?? ''} onChange={(e) => set('description', e.target.value)} rows={3} />
                         </div>
                     </div>
 
-                    {/* Galería */}
+                    <Separator />
+
+                    {/* Gallery (carousel) */}
                     <div className="grid gap-2">
-                        <Label>Galería de fotos</Label>
+                        <Label className="text-base font-semibold">Galería de fotos (carrusel)</Label>
                         {(data.gallery ?? []).length > 0 && (
                             <div className="flex flex-wrap gap-2">
                                 {data.gallery.map((url) => (
@@ -131,6 +246,38 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                             </div>
                         )}
                         <Input type="file" accept="image/*" multiple onChange={(e) => setNewGallery(Array.from(e.target.files ?? []))} />
+                    </div>
+
+                    {/* Featured gallery */}
+                    <div className="grid gap-2">
+                        <Label className="text-base font-semibold">Fotos destacadas (sección inferior)</Label>
+                        <p className="text-sm text-muted-foreground">Fotos grandes que aparecen debajo del carrusel en la vista del vehículo.</p>
+                        {(data.featured_gallery ?? []).length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {data.featured_gallery.map((url) => (
+                                    <div key={url} className="relative">
+                                        <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
+                                        <button type="button" onClick={() => {
+                                            setRemoveFeatured([...removeFeatured, url]);
+                                            setData({ ...data, featured_gallery: data.featured_gallery.filter((u) => u !== url) });
+                                        }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <Input type="file" accept="image/*" multiple onChange={(e) => setNewFeatured(Array.from(e.target.files ?? []))} />
+                    </div>
+
+                    <Separator />
+
+                    {/* Specs */}
+                    <div className="flex flex-col gap-4">
+                        <Label className="text-base font-semibold">Detalles del vehículo (pestañas)</Label>
+                        <SpecsSection title="General" rows={specs.general} onChange={(rows) => setSpecs('general', rows)} />
+                        <Separator />
+                        <SpecsSection title="Equipamiento y seguridad" rows={specs.equipment} onChange={(rows) => setSpecs('equipment', rows)} />
+                        <Separator />
+                        <SpecsSection title="Descargables" rows={specs.downloads} onChange={(rows) => setSpecs('downloads', rows)} />
                     </div>
 
                     <div className="flex gap-3">

@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, LogOut, Newspaper, RefreshCw, Settings, Shirt, UserCog, Users, Wrench } from 'lucide-react';
+import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, LogOut, Newspaper, RefreshCw, Shirt, UserCog, Users, Wrench } from 'lucide-react';
 import AppLogo from '@/components/app-logo';
 import {
     DropdownMenu,
@@ -26,17 +26,44 @@ import { useCurrentUrl } from '@/hooks/use-current-url';
 import { useIsMobile } from '@/hooks/use-mobile';
 import type { NavItem } from '@/types';
 
-const adminNavItems: NavItem[] = [
-    { title: 'Dashboard',        href: '/admin',             icon: LayoutGrid },
-    { title: 'Página de inicio', href: '/admin/home',        icon: Home },
-    { title: 'Vehículos nuevos', href: '/admin/vehicles',    icon: Car },
-    { title: 'Seminuevos',       href: '/admin/seminuevos',  icon: RefreshCw },
-    { title: 'Repuestos',        href: '/admin/repuestos',   icon: Wrench },
-    { title: 'Accesorios',       href: '/admin/accesorios',  icon: Shirt },
-    { title: 'Noticias',         href: '/admin/noticias',    icon: Newspaper },
-    { title: 'Páginas',          href: '/admin/paginas',     icon: FileText },
-    { title: 'Usuarios',         href: '/admin/users',       icon: Users },
+const dashboardItem: NavItem = { title: 'Dashboard', href: '/admin', icon: LayoutGrid };
+
+const paginasItems: NavItem[] = [
+    { title: 'Páginas', href: '/admin/paginas', icon: FileText },
 ];
+
+const catalogoItems: NavItem[] = [
+    { title: 'Vehículos nuevos', href: '/admin/vehicles',   icon: Car },
+    { title: 'Seminuevos',       href: '/admin/seminuevos', icon: RefreshCw },
+    { title: 'Repuestos',        href: '/admin/repuestos',  icon: Wrench },
+    { title: 'Accesorios',       href: '/admin/accesorios', icon: Shirt },
+    { title: 'Noticias',         href: '/admin/noticias',   icon: Newspaper },
+    { title: 'Usuarios',         href: '/admin/users',      icon: Users },
+];
+
+function NavGroup({ label, items, isCurrentUrl }: { label: string; items: NavItem[]; isCurrentUrl: (href: string) => boolean }) {
+    return (
+        <SidebarGroup className="px-2 py-0">
+            <SidebarGroupLabel>{label}</SidebarGroupLabel>
+            <SidebarMenu>
+                {items.map((item) => (
+                    <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton
+                            asChild
+                            isActive={isCurrentUrl(item.href)}
+                            tooltip={{ children: item.title }}
+                        >
+                            <Link href={item.href} prefetch>
+                                {item.icon && <item.icon />}
+                                <span>{item.title}</span>
+                            </Link>
+                        </SidebarMenuButton>
+                    </SidebarMenuItem>
+                ))}
+            </SidebarMenu>
+        </SidebarGroup>
+    );
+}
 
 function AdminNavUser() {
     const { auth } = usePage().props;
@@ -63,13 +90,7 @@ function AdminNavUser() {
                     <DropdownMenuContent
                         className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
                         align="end"
-                        side={
-                            isMobile
-                                ? 'bottom'
-                                : state === 'collapsed'
-                                  ? 'left'
-                                  : 'bottom'
-                        }
+                        side={isMobile ? 'bottom' : state === 'collapsed' ? 'left' : 'bottom'}
                     >
                         <DropdownMenuLabel className="p-0 font-normal">
                             <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
@@ -83,10 +104,7 @@ function AdminNavUser() {
                                 Mi perfil
                             </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                            className="cursor-pointer"
-                            onClick={handleLogout}
-                        >
+                        <DropdownMenuItem className="cursor-pointer" onClick={handleLogout}>
                             <LogOut className="mr-2" />
                             Cerrar sesión
                         </DropdownMenuItem>
@@ -115,25 +133,29 @@ export function AdminSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
+                {/* Dashboard */}
                 <SidebarGroup className="px-2 py-0">
-                    <SidebarGroupLabel>Administración</SidebarGroupLabel>
                     <SidebarMenu>
-                        {adminNavItems.map((item) => (
-                            <SidebarMenuItem key={item.title}>
-                                <SidebarMenuButton
-                                    asChild
-                                    isActive={isCurrentUrl(item.href)}
-                                    tooltip={{ children: item.title }}
-                                >
-                                    <Link href={item.href} prefetch>
-                                        {item.icon && <item.icon />}
-                                        <span>{item.title}</span>
-                                    </Link>
-                                </SidebarMenuButton>
-                            </SidebarMenuItem>
-                        ))}
+                        <SidebarMenuItem>
+                            <SidebarMenuButton
+                                asChild
+                                isActive={isCurrentUrl(dashboardItem.href)}
+                                tooltip={{ children: dashboardItem.title }}
+                            >
+                                <Link href={dashboardItem.href} prefetch>
+                                    <dashboardItem.icon />
+                                    <span>{dashboardItem.title}</span>
+                                </Link>
+                            </SidebarMenuButton>
+                        </SidebarMenuItem>
                     </SidebarMenu>
                 </SidebarGroup>
+
+                {/* Administración de páginas */}
+                <NavGroup label="Administración de páginas" items={paginasItems} isCurrentUrl={isCurrentUrl} />
+
+                {/* Catálogo y contenido */}
+                <NavGroup label="Catálogo y contenido" items={catalogoItems} isCurrentUrl={isCurrentUrl} />
             </SidebarContent>
 
             <SidebarFooter>

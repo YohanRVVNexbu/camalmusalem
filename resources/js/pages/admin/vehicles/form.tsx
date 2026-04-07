@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
@@ -156,7 +157,7 @@ export default function VehicleForm({ vehicle }: { vehicle: Vehicle | null }) {
                     {/* Visibilidad */}
                     <div className="flex items-center space-x-3">
                         <Checkbox id="is_visible" checked={data.is_visible} onCheckedChange={(v) => setData({ ...data, is_visible: !!v })} />
-                        <Label htmlFor="is_visible">Visible en el sitio</Label>
+                        <Label htmlFor="is_visible">Publicado</Label>
                     </div>
 
                     <Separator />
@@ -177,11 +178,29 @@ export default function VehicleForm({ vehicle }: { vehicle: Vehicle | null }) {
                         </div>
                         <div className="grid gap-2">
                             <Label>Tipo</Label>
-                            <Input value={data.type ?? ''} placeholder="SUV, Pickup, Sedán…" onChange={(e) => setData({ ...data, type: e.target.value })} />
+                            <Select value={data.type ?? ''} onValueChange={(v) => setData({ ...data, type: v })}>
+                                <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="SUV">SUV</SelectItem>
+                                    <SelectItem value="Sedán">Sedán</SelectItem>
+                                    <SelectItem value="Hatchback">Hatchback</SelectItem>
+                                    <SelectItem value="Pickup">Pickup</SelectItem>
+                                    <SelectItem value="Van">Van</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label>Combustible</Label>
-                            <Input value={data.fuel ?? ''} placeholder="Eléctrico, Gasolina…" onChange={(e) => setData({ ...data, fuel: e.target.value })} />
+                            <Select value={data.fuel ?? ''} onValueChange={(v) => setData({ ...data, fuel: v })}>
+                                <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="Gasolina">Gasolina</SelectItem>
+                                    <SelectItem value="Diésel">Diésel</SelectItem>
+                                    <SelectItem value="Híbrido">Híbrido</SelectItem>
+                                    <SelectItem value="Híbrido Enchufable">Híbrido Enchufable</SelectItem>
+                                    <SelectItem value="Eléctrico">Eléctrico</SelectItem>
+                                </SelectContent>
+                            </Select>
                         </div>
                         <div className="grid gap-2">
                             <Label>Orden</Label>

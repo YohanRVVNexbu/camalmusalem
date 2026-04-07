@@ -42,7 +42,7 @@ class PagesController extends Controller
                 'id'          => $n->id,
                 'slug'        => $n->slug,
                 'titulo'      => $n->title,
-                'categoria'   => 'Noticias',
+                'categoria'   => $n->categoria ?? 'Noticias',
                 'fecha'       => $n->published_at?->format('d/m/y') ?? '',
                 'descripcion' => $n->excerpt ?? '',
                 'img'         => $n->image ?? '',
@@ -58,22 +58,38 @@ class PagesController extends Controller
 
     public function noticiaShow(string $slug)
     {
-        $noticia = Noticia::where('slug', $slug)->where('is_visible', true)->first();
+        $noticia = Noticia::where('slug', $slug)->where('is_visible', true)->firstOrFail();
 
-        if (! $noticia) {
-            abort(404);
+        // Backwards compat: if no sections yet, wrap old content as a text section
+        $sections = $noticia->sections ?? [];
+        if (empty($sections) && $noticia->content) {
+            $sections = [['type' => 'text', 'content' => $noticia->content]];
         }
 
+        $relacionadas = Noticia::where('is_visible', true)
+            ->where('id', '!=', $noticia->id)
+            ->orderByDesc('published_at')
+            ->limit(3)
+            ->get()
+            ->map(fn($n) => [
+                'id'          => $n->id,
+                'slug'        => $n->slug,
+                'titulo'      => $n->title,
+                'categoria'   => $n->categoria ?? 'Noticias',
+                'fecha'       => $n->published_at?->format('d/m/y') ?? '',
+                'descripcion' => $n->excerpt ?? '',
+                'img'         => $n->image ?? '',
+            ]);
+
         return Inertia::render('noticias/show', [
-            'footer'  => $this->section('footer'),
-            'noticia' => [
-                'slug'        => $noticia->slug,
-                'titulo'      => $noticia->title,
-                'categoria'   => 'Noticias',
-                'fecha'       => $noticia->published_at?->format('d/m/y') ?? '',
-                'imagen'      => $noticia->image ?? null,
-                'descripcion' => $noticia->excerpt ?? '',
-                'contenido'   => $noticia->content ?? '',
+            'footer'      => $this->section('footer'),
+            'relacionadas' => $relacionadas,
+            'noticia'     => [
+                'slug'      => $noticia->slug,
+                'titulo'    => $noticia->title,
+                'categoria' => $noticia->categoria ?? 'Noticias',
+                'fecha'     => $noticia->published_at?->format('d/m/y') ?? '',
+                'sections'  => $sections,
             ],
         ]);
     }
