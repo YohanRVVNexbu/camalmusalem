@@ -1,4 +1,5 @@
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -62,6 +63,12 @@ const carouselCards: (
 
 export default function AgendarMantencion({ footer, mantencion_hero }: { footer: any; mantencion_hero?: any }) {
     const hero = mantencion_hero ?? {};
+    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
+    const [submitting, setSubmitting] = useState(false);
+
+    useEffect(() => {
+        if (flash?.error) toast.error(flash.error);
+    }, [flash?.error]);
     const [emblaRef, emblaApi] = useEmblaCarousel({
         loop: true,
         align: 'start',
@@ -628,15 +635,40 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                             )}
                                         </div>
                                         <button
-                                            onClick={() => formStep < 3 ? changeStep(formStep + 1) : setShowForm(false)}
-                                            disabled={formStep === 3 && !aceptaPrivacidad}
+                                            onClick={() => {
+                                                if (formStep < 3) {
+                                                    changeStep(formStep + 1);
+                                                } else {
+                                                    setSubmitting(true);
+                                                    router.post('/post-venta/agendar-mantencion', {
+                                                        servicio, taller,
+                                                        fecha: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
+                                                        hora: selectedTime,
+                                                        modelo, anio, patente, comentario,
+                                                        nombre, rut, telefono, correo,
+                                                        _website: '',
+                                                    }, {
+                                                        preserveState: true,
+                                                        onSuccess: () => {
+                                                            setShowForm(false);
+                                                            setSubmitting(false);
+                                                            toast.success('¡Agendamiento confirmado! Te contactaremos pronto.');
+                                                        },
+                                                        onError: () => {
+                                                            setSubmitting(false);
+                                                            toast.error('Hubo un problema al enviar. Intenta nuevamente.');
+                                                        },
+                                                    });
+                                                }
+                                            }}
+                                            disabled={(formStep === 3 && !aceptaPrivacidad) || submitting}
                                             className={`flex items-center justify-center gap-2.5 rounded-[60px] px-15 py-4.75 text-base leading-[120%] font-normal transition ${
-                                                formStep === 3 && !aceptaPrivacidad
+                                                (formStep === 3 && !aceptaPrivacidad) || submitting
                                                     ? 'cursor-not-allowed bg-black/30 text-white/60'
                                                     : 'cursor-pointer bg-black text-white hover:bg-black/85'
                                             }`}
                                         >
-                                            {formStep < 3 ? 'Siguiente' : 'Confirmar agendamiento'}
+                                            {formStep < 3 ? 'Siguiente' : submitting ? 'Enviando…' : 'Confirmar agendamiento'}
                                         </button>
                                     </div>
                                 </div>

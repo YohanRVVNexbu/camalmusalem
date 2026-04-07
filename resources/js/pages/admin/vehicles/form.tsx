@@ -152,7 +152,7 @@ export default function VehicleForm({ vehicle }: { vehicle: Vehicle | null }) {
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
                 )}
 
-                <form onSubmit={submit} className="flex flex-col gap-6 max-w-4xl">
+                <form onSubmit={submit} className="flex flex-col gap-6">
 
                     {/* Visibilidad */}
                     <div className="flex items-center space-x-3">
@@ -163,7 +163,7 @@ export default function VehicleForm({ vehicle }: { vehicle: Vehicle | null }) {
                     <Separator />
 
                     {/* Datos básicos */}
-                    <div className="grid grid-cols-2 gap-4">
+                    <div className="grid grid-cols-3 gap-4">
                         <div className="grid gap-2">
                             <Label>Nombre *</Label>
                             <Input value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} required />

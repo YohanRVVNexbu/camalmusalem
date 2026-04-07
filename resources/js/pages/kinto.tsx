@@ -1,9 +1,27 @@
-import { Head } from '@inertiajs/react';
+import { Head, router, usePage } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCta } from '@/components/landing/contact-cta';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
+import { DayPicker } from 'react-day-picker';
+import { es } from 'date-fns/locale';
+import { format } from 'date-fns';
+import 'react-day-picker/style.css';
+
+const calendarStyles = `
+    .rdp-root { --rdp-accent-color: #000; --rdp-accent-background: #000; --rdp-day_button-height: 40px; --rdp-day_button-width: 40px; font-family: inherit; color: #000; }
+    .rdp-month_caption { font-size: 16px; font-weight: 600; color: #000; }
+    .rdp-weekday { font-size: 13px; color: rgba(0,0,0,0.5); font-weight: 600; }
+    .rdp-day_button { font-size: 14px; border-radius: 50%; color: #000; font-weight: 500; }
+    .rdp-selected .rdp-day_button { background: #000 !important; color: #fff !important; }
+    .rdp-today:not(.rdp-selected) .rdp-day_button { font-weight: 700; color: #000; border: 2px solid #000; }
+    .rdp-disabled .rdp-day_button { color: rgba(0,0,0,0.2) !important; }
+    .rdp-chevron { fill: #000; }
+    .rdp-button_next, .rdp-button_previous { border: 1px solid rgba(0,0,0,0.2); border-radius: 50%; width: 32px; height: 32px; }
+    .rdp-day_button:hover:not(.rdp-selected) { background: rgba(0,0,0,0.08); }
+`;
 import heroImgDefault from '@images/kinto/hero_image.png?format=webp';
 import car1Img from '@images/kinto/car_1.png?format=webp';
 import car2Img from '@images/kinto/car_2.png?format=webp';
@@ -69,6 +87,7 @@ function SelectField({ label, placeholder, options, value, onChange }: {
 }
 
 export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos }: { footer: any; kinto_hero?: any; kinto_pasos?: any; kinto_vehiculos?: any }) {
+    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const heroData = kinto_hero ?? {};
     const heroImg = heroData.hero_image || heroImgDefault;
     const pasos = kinto_pasos?.pasos ?? DEFAULT_PASOS;
@@ -90,6 +109,31 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
     const [formCorreo, setFormCorreo] = useState('');
     const [formLicencia, setFormLicencia] = useState(false);
     const [formSent, setFormSent] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+
+    const formatRut = (value: string) => {
+        let clean = value.replace(/[^0-9kK]/g, '');
+        if (clean.length > 9) clean = clean.slice(0, 9);
+        if (clean.length <= 1) return clean;
+        const dv = clean.slice(-1);
+        const body = clean.slice(0, -1);
+        const formatted = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return `${formatted}-${dv}`;
+    };
+    const [showCalendar, setShowCalendar] = useState(false);
+    const [selectedDate, setSelectedDate] = useState<Date | undefined>();
+    const calendarRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        if (!showCalendar) return;
+        const handleClick = (e: MouseEvent) => {
+            if (calendarRef.current && !calendarRef.current.contains(e.target as Node)) {
+                setShowCalendar(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [showCalendar]);
 
     useEffect(() => {
         const html = document.documentElement;
@@ -97,6 +141,10 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
         html.style.backgroundColor = '#000';
         return () => { html.style.backgroundColor = prev; };
     }, []);
+
+    useEffect(() => {
+        if (flash?.error) toast.error(flash.error);
+    }, [flash?.error]);
 
     return (
         <div className="min-h-screen bg-black">
@@ -434,23 +482,35 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                 />
 
                                                 {/* Fecha estimada */}
-                                                <div className="flex flex-col gap-2.5 items-start w-full">
+                                                <div className="relative flex flex-col gap-2.5 items-start w-full">
                                                     <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>Fecha estimada</span>
-                                                    <div className="relative w-full">
-                                                        <input
-                                                            type="datetime-local"
-                                                            value={formFecha}
-                                                            onChange={e => setFormFecha(e.target.value)}
-                                                            className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-12 text-sm leading-none appearance-none cursor-pointer focus:outline-none"
-                                                            style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif', color: formFecha ? '#000' : 'rgba(0,0,0,0.60)' }}
-                                                            placeholder="Seleccionar fecha y hora"
-                                                        />
-                                                        <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" width="24" height="24" viewBox="0 0 24 24" fill="none">
-                                                            <rect x="3" y="4" width="18" height="18" rx="2" stroke="#000" strokeWidth="1.4"/>
-                                                            <path d="M3 9H21" stroke="#000" strokeWidth="1.4"/>
-                                                            <path d="M8 2V6M16 2V6" stroke="#000" strokeWidth="1.4" strokeLinecap="round"/>
-                                                        </svg>
-                                                    </div>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowCalendar(!showCalendar)}
+                                                        className="flex h-10 w-full cursor-pointer items-center justify-between rounded-[60px] border border-transparent bg-white px-5 text-left"
+                                                    >
+                                                        <span className={`text-sm leading-none ${selectedDate ? 'text-black' : 'text-black/60'}`} style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>
+                                                            {selectedDate ? format(selectedDate, "d 'de' MMMM yyyy", { locale: es }) : 'Seleccionar fecha'}
+                                                        </span>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="18" rx="2" stroke="black" strokeWidth="1.5"/><path d="M16 2V6M8 2V6M3 10H21" stroke="black" strokeWidth="1.5" strokeLinecap="round"/></svg>
+                                                    </button>
+                                                    {showCalendar && (
+                                                        <div ref={calendarRef} className="absolute top-full left-0 z-10 mt-2 rounded-[20px] bg-white p-4 shadow-lg">
+                                                            <style>{calendarStyles}</style>
+                                                            <DayPicker
+                                                                mode="single"
+                                                                selected={selectedDate}
+                                                                onSelect={(date) => {
+                                                                    if (!date) return;
+                                                                    setSelectedDate(date);
+                                                                    setFormFecha(format(date, 'yyyy-MM-dd'));
+                                                                    setShowCalendar(false);
+                                                                }}
+                                                                locale={es}
+                                                                disabled={{ before: new Date() }}
+                                                            />
+                                                        </div>
+                                                    )}
                                                 </div>
 
                                                 {/* Duración del arriendo */}
@@ -542,7 +602,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                         value={formNombre}
                                                         onChange={e => setFormNombre(e.target.value)}
                                                         placeholder="Nombre y apellido"
-                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none focus:outline-none placeholder:text-black/60"
+                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none text-black focus:outline-none placeholder:text-black/60"
                                                         style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}
                                                     />
                                                 </div>
@@ -553,9 +613,9 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                     <input
                                                         type="text"
                                                         value={formRut}
-                                                        onChange={e => setFormRut(e.target.value)}
+                                                        onChange={e => setFormRut(formatRut(e.target.value))}
                                                         placeholder="12.345.678-9"
-                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none focus:outline-none placeholder:text-black/60"
+                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none text-black focus:outline-none placeholder:text-black/60"
                                                         style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}
                                                     />
                                                 </div>
@@ -567,7 +627,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                         type="tel"
                                                         value={formTelefono}
                                                         onChange={e => setFormTelefono(e.target.value)}
-                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none focus:outline-none"
+                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none text-black focus:outline-none"
                                                         style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}
                                                     />
                                                 </div>
@@ -580,7 +640,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                         value={formCorreo}
                                                         onChange={e => setFormCorreo(e.target.value)}
                                                         placeholder="Correo electrónico"
-                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none focus:outline-none placeholder:text-black/60"
+                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none text-black focus:outline-none placeholder:text-black/60"
                                                         style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}
                                                     />
                                                 </div>
@@ -647,7 +707,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                     {
                                                         label: 'Fecha estimada',
                                                         value: formFecha
-                                                            ? new Date(formFecha).toLocaleString('es-CL', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' }) + ' hrs.'
+                                                            ? new Date(formFecha + 'T12:00:00').toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })
                                                             : '—',
                                                     },
                                                     {
@@ -673,11 +733,30 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                             </div>
 
                                             <button
-                                                onClick={() => setFormSent(true)}
-                                                className="self-start cursor-pointer rounded-[60px] border border-transparent bg-black px-15 py-4.75 text-base leading-none text-white transition-opacity hover:opacity-80"
+                                                disabled={submitting}
+                                                onClick={() => {
+                                                    setSubmitting(true);
+                                                    router.post('/kinto/solicitud', {
+                                                        sucursal: formSucursal,
+                                                        fecha: formFecha,
+                                                        duracion: formDuracion,
+                                                        duracion_tipo: durationType,
+                                                        vehiculo: formVehiculo,
+                                                        nombre: formNombre,
+                                                        rut: formRut,
+                                                        telefono: formTelefono,
+                                                        correo: formCorreo,
+                                                        _website: '',
+                                                    }, {
+                                                        preserveState: true,
+                                                        onSuccess: () => { setFormSent(true); setSubmitting(false); toast.success('¡Solicitud enviada! Te contactaremos pronto.'); },
+                                                        onError: () => { setSubmitting(false); toast.error('Hubo un problema al enviar. Intenta nuevamente.'); },
+                                                    });
+                                                }}
+                                                className="self-start cursor-pointer rounded-[60px] border border-transparent bg-black px-15 py-4.75 text-base leading-none text-white transition-opacity hover:opacity-80 disabled:opacity-50"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
-                                                Enviar solicitud
+                                                {submitting ? 'Enviando…' : 'Enviar solicitud'}
                                             </button>
                                         </div>
                                     </div>

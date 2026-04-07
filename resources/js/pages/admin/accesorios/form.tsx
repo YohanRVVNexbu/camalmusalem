@@ -46,14 +46,14 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
             <div className="flex flex-col gap-4 p-4">
                 <h1 className="text-2xl font-semibold">{isEdit ? `Editar: ${accesorio!.name}` : 'Nuevo accesorio'}</h1>
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
-                <form onSubmit={submit} className="flex flex-col gap-6 max-w-2xl">
+                <form onSubmit={submit} className="flex flex-col gap-6">
                     <div className="flex items-center space-x-3">
                         <Checkbox checked={data.is_visible} onCheckedChange={(v) => setData({ ...data, is_visible: !!v })} />
                         <Label>Publicado</Label>
                     </div>
                     <Separator />
-                    <div className="grid grid-cols-2 gap-4">
-                        <div className="grid gap-2 col-span-2">
+                    <div className="grid grid-cols-3 gap-4">
+                        <div className="grid gap-2 col-span-3">
                             <Label>Nombre *</Label>
                             <Input value={data.name} onChange={(e) => setData({ ...data, name: e.target.value })} required />
                         </div>
@@ -69,7 +69,7 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
                             <Label>Orden</Label>
                             <Input type="number" value={data.order} onChange={(e) => setData({ ...data, order: Number(e.target.value) })} />
                         </div>
-                        <div className="grid gap-2 col-span-2">
+                        <div className="grid gap-2 col-span-3">
                             <Label>Descripción</Label>
                             <Textarea value={data.description ?? ''} onChange={(e) => setData({ ...data, description: e.target.value })} rows={4} />
                         </div>

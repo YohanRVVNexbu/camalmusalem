@@ -131,7 +131,7 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                 <h1 className="text-2xl font-semibold">{isEdit ? `Editar: ${seminuevo!.brand} ${seminuevo!.model}` : 'Nuevo seminuevo'}</h1>
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
 
-                <form onSubmit={submit} className="flex max-w-3xl flex-col gap-6">
+                <form onSubmit={submit} className="flex flex-col gap-6">
                     <div className="flex items-center space-x-3">
                         <Checkbox checked={data.is_visible} onCheckedChange={(v) => set('is_visible', !!v)} />
                         <Label>Publicado</Label>
@@ -139,16 +139,16 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                     <Separator />
 
                     {/* Basic fields */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-4 gap-4">
                         <div className="grid gap-2">
                             <Label>Marca *</Label>
                             <Input value={data.brand} onChange={(e) => set('brand', e.target.value)} required />
                         </div>
-                        <div className="col-span-2 grid gap-2">
+                        <div className="col-span-3 grid gap-2">
                             <Label>Modelo *</Label>
                             <Input value={data.model} onChange={(e) => set('model', e.target.value)} required />
                         </div>
-                        <div className="col-span-3 grid gap-2">
+                        <div className="col-span-4 grid gap-2">
                             <Label>Slug (URL) <span className="text-muted-foreground text-xs">(auto-generado si se deja vacío)</span></Label>
                             <Input value={data.slug ?? ''} onChange={(e) => set('slug', e.target.value)} placeholder="bmw-x1-sdrive-2024" />
                         </div>
@@ -221,7 +221,7 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                             <Label>Orden</Label>
                             <Input type="number" value={data.order} onChange={(e) => set('order', Number(e.target.value))} />
                         </div>
-                        <div className="col-span-3 grid gap-2">
+                        <div className="col-span-4 grid gap-2">
                             <Label>Descripción</Label>
                             <Textarea value={data.description ?? ''} onChange={(e) => set('description', e.target.value)} rows={3} />
                         </div>

@@ -2,7 +2,10 @@
 
 use App\Http\Controllers\Admin\AccesorioController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\ContactoController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\KintoSolicitudController;
+use App\Http\Controllers\Admin\MantencionController;
 use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\NoticiaController;
 use App\Http\Controllers\Admin\PageContentController;
@@ -56,6 +59,21 @@ Route::middleware('admin')->group(function () {
     Route::resource('noticias', NoticiaController::class)
         ->except(['show'])
         ->names('admin.noticias');
+
+    // Contactos
+    Route::get('contactos', [ContactoController::class, 'index'])->name('admin.contactos');
+    Route::patch('contactos/{contacto}/leido', [ContactoController::class, 'marcarLeido'])->name('admin.contactos.leido');
+    Route::delete('contactos/{contacto}', [ContactoController::class, 'destroy'])->name('admin.contactos.destroy');
+
+    // Agendamientos de mantención
+    Route::get('mantenciones', [MantencionController::class, 'index'])->name('admin.mantenciones');
+    Route::patch('mantenciones/{agendamiento}/leido', [MantencionController::class, 'marcarLeido'])->name('admin.mantenciones.leido');
+    Route::delete('mantenciones/{agendamiento}', [MantencionController::class, 'destroy'])->name('admin.mantenciones.destroy');
+
+    // Solicitudes Kinto
+    Route::get('kinto-solicitudes', [KintoSolicitudController::class, 'index'])->name('admin.kinto-solicitudes');
+    Route::patch('kinto-solicitudes/{solicitud}/leido', [KintoSolicitudController::class, 'marcarLeido'])->name('admin.kinto-solicitudes.leido');
+    Route::delete('kinto-solicitudes/{solicitud}', [KintoSolicitudController::class, 'destroy'])->name('admin.kinto-solicitudes.destroy');
 
     // Páginas estáticas (CMS por sección)
     Route::get('paginas', [PageContentController::class, 'index'])->name('admin.paginas');

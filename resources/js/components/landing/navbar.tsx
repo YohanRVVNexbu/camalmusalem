@@ -41,7 +41,7 @@ type SidebarLink = { label: string; href: string; image?: string };
 const sidebarLinks: Record<SidebarSection, SidebarLink[]> = {
     default: [
         { label: 'Programas Toyota', href: '/programas' },
-        { label: 'Shorts', href: '/shorts' },
+        // { label: 'Shorts', href: '/shorts' },
         { label: 'Noticias', href: '/noticias' },
         { label: 'Comparar', href: '/seminuevos/comparar' },
         { label: 'Contacto', href: '/contacto' },

@@ -271,7 +271,7 @@ export default function NoticiaForm({ noticia }: { noticia: (Noticia & { id?: nu
                 <h1 className="text-2xl font-semibold">{isEdit ? `Editar: ${noticia!.title}` : 'Nueva noticia'}</h1>
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
 
-                <form onSubmit={submit} className="flex max-w-3xl flex-col gap-6">
+                <form onSubmit={submit} className="flex flex-col gap-6">
 
                     {/* Publicado */}
                     <div className="flex items-center space-x-3">

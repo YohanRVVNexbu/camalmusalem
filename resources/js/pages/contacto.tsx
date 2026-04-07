@@ -1,8 +1,9 @@
-import { Head } from '@inertiajs/react';
+import { Head, useForm, usePage } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 import formImgDefault from '@images/contacto/form_image.png?format=webp';
@@ -10,6 +11,33 @@ import formImgDefault from '@images/contacto/form_image.png?format=webp';
 export default function Contacto({ footer, contacto_info }: { footer: any; contacto_info?: any }) {
     const info = contacto_info ?? {};
     const formImg = info.form_image || formImgDefault;
+    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
+
+    const { data, setData, post, processing, errors, reset } = useForm({
+        nombre: '',
+        asunto: '',
+        email: '',
+        telefono: '',
+        mensaje: '',
+        privacidad: false,
+        _website: '', // honeypot — debe quedar vacío
+    });
+
+    const submit = (e: React.FormEvent) => {
+        e.preventDefault();
+        post('/contacto', {
+            onSuccess: () => {
+                reset();
+                toast.success('¡Mensaje enviado! Nos pondremos en contacto contigo a la brevedad.');
+            },
+            onError: () => toast.error('Por favor revisa los campos e inténtalo nuevamente.'),
+        });
+    };
+
+    useEffect(() => {
+        if (flash?.error) toast.error(flash.error);
+    }, [flash?.error]);
+
     useEffect(() => {
         const html = document.documentElement;
         const prev = html.style.backgroundColor;
@@ -75,7 +103,7 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                         </div>
 
                         {/* Right: Form */}
-                        <div className="flex flex-1 flex-col items-start justify-center gap-2.5 overflow-hidden bg-[#EAEAF1] px-10 pb-2.5 pt-20">
+                        <form onSubmit={submit} className="flex flex-1 flex-col items-start justify-center gap-2.5 overflow-hidden bg-[#EAEAF1] px-10 pb-2.5 pt-20">
                             <div className="flex w-full flex-col gap-10 items-end justify-center">
                                 <div className="flex w-full flex-col gap-5 items-start">
 
@@ -101,67 +129,83 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                                         </p>
                                     </div>
 
+                                    {/* Honeypot — invisible para humanos, bots lo rellenan */}
+                                    <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+                                        <label htmlFor="_website">No rellenar</label>
+                                        <input
+                                            id="_website"
+                                            type="text"
+                                            name="_website"
+                                            value={data._website}
+                                            onChange={(e) => setData('_website', e.target.value)}
+                                            tabIndex={-1}
+                                            autoComplete="off"
+                                        />
+                                    </div>
+
                                     {/* Form fields */}
                                     <div className="flex w-full flex-col gap-5 items-start self-stretch">
 
                                         {/* Nombre completo */}
                                         <div className="flex w-full flex-col gap-2.5 items-start self-stretch">
-                                            <label
-                                                className="text-sm leading-none text-black"
-                                                style={{ fontFamily: '"Toyota Type"' }}
-                                            >
+                                            <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Nombre completo
                                             </label>
                                             <input
                                                 type="text"
                                                 placeholder="Ingresa tu nombre completo"
+                                                value={data.nombre}
+                                                onChange={(e) => setData('nombre', e.target.value)}
+                                                required
                                                 className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black placeholder-black/60 outline-none"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             />
+                                            {errors.nombre && <span className="text-xs text-red-500">{errors.nombre}</span>}
                                         </div>
 
                                         {/* Asunto */}
                                         <div className="flex w-full flex-col gap-2.5 items-start self-stretch">
-                                            <label
-                                                className="text-sm leading-none text-black"
-                                                style={{ fontFamily: '"Toyota Type"' }}
-                                            >
+                                            <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Asunto
                                             </label>
                                             <input
                                                 type="text"
                                                 placeholder="Escribe el motivo de tu consulta"
+                                                value={data.asunto}
+                                                onChange={(e) => setData('asunto', e.target.value)}
+                                                required
                                                 className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black placeholder-black/60 outline-none"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             />
+                                            {errors.asunto && <span className="text-xs text-red-500">{errors.asunto}</span>}
                                         </div>
 
                                         {/* Email + Teléfono */}
                                         <div className="flex w-full flex-row gap-5 items-center self-stretch">
                                             <div className="flex flex-1 flex-col gap-2.5 items-start">
-                                                <label
-                                                    className="text-sm leading-none text-black"
-                                                    style={{ fontFamily: '"Toyota Type"' }}
-                                                >
+                                                <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                     Email
                                                 </label>
                                                 <input
                                                     type="email"
                                                     placeholder="Correo electrónico"
+                                                    value={data.email}
+                                                    onChange={(e) => setData('email', e.target.value)}
+                                                    required
                                                     className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black placeholder-black/60 outline-none"
                                                     style={{ fontFamily: '"Toyota Type"' }}
                                                 />
+                                                {errors.email && <span className="text-xs text-red-500">{errors.email}</span>}
                                             </div>
                                             <div className="flex flex-1 flex-col gap-2.5 items-start">
-                                                <label
-                                                    className="text-sm leading-none text-black"
-                                                    style={{ fontFamily: '"Toyota Type"' }}
-                                                >
+                                                <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                     Teléfono
                                                 </label>
                                                 <input
                                                     type="tel"
                                                     placeholder="+569"
+                                                    value={data.telefono}
+                                                    onChange={(e) => setData('telefono', e.target.value)}
                                                     className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black placeholder-black/60 outline-none"
                                                     style={{ fontFamily: '"Toyota Type"' }}
                                                 />
@@ -171,30 +215,31 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
 
                                     {/* Mensaje */}
                                     <div className="flex w-full flex-col gap-2.5 items-start self-stretch">
-                                        <label
-                                            className="text-sm leading-none text-black"
-                                            style={{ fontFamily: '"Toyota Type"' }}
-                                        >
+                                        <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                             Mensaje
                                         </label>
                                         <textarea
                                             placeholder="Cuéntanos en qué podemos ayudarte"
                                             rows={5}
+                                            value={data.mensaje}
+                                            onChange={(e) => setData('mensaje', e.target.value)}
+                                            required
                                             className="h-28.5 w-full resize-none rounded-[20px] border border-transparent bg-white p-5 text-sm leading-none text-black placeholder-black/60 outline-none"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         />
+                                        {errors.mensaje && <span className="text-xs text-red-500">{errors.mensaje}</span>}
                                     </div>
 
                                     {/* Checkbox */}
                                     <div className="flex flex-row gap-2.5 items-center">
                                         <input
                                             type="checkbox"
+                                            checked={data.privacidad}
+                                            onChange={(e) => setData('privacidad', e.target.checked)}
+                                            required
                                             className="size-4.5 shrink-0 appearance-none rounded border border-black/80 bg-[#EAEAF1] checked:bg-white checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M2%206l3%203%205-5%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E')] checked:bg-center checked:bg-no-repeat"
                                         />
-                                        <span
-                                            className="text-sm leading-none text-black"
-                                            style={{ fontFamily: '"Toyota Type"' }}
-                                        >
+                                        <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                             He leído y acepto la política de privacidad de mis datos personales.
                                         </span>
                                     </div>
@@ -202,18 +247,16 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
 
                                 {/* Submit button */}
                                 <button
-                                    type="button"
-                                    className="flex h-12 w-50 items-center justify-center rounded-[60px] bg-black px-5"
+                                    type="submit"
+                                    disabled={processing}
+                                    className="flex h-12 w-50 items-center justify-center rounded-[60px] bg-black px-5 disabled:opacity-60"
                                 >
-                                    <span
-                                        className="text-base leading-none text-white"
-                                        style={{ fontFamily: '"Toyota Type"' }}
-                                    >
-                                        Enviar solicitud
+                                    <span className="text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                        {processing ? 'Enviando…' : 'Enviar solicitud'}
                                     </span>
                                 </button>
                             </div>
-                        </div>
+                        </form>
                     </div>
                 </section>
 

@@ -1,6 +1,6 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, LogOut, Newspaper, RefreshCw, Shirt, UserCog, Users, Wrench } from 'lucide-react';
-import AppLogo from '@/components/app-logo';
+import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, LogOut, Mail, Newspaper, RefreshCw, Shirt, UserCog, Users, Wrench, Wrench as WrenchIcon, KeySquare } from 'lucide-react';
+import logoBlanco from '@images/logo_blanco.png?format=webp';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -38,7 +38,10 @@ const catalogoItems: NavItem[] = [
     { title: 'Repuestos',        href: '/admin/repuestos',  icon: Wrench },
     { title: 'Accesorios',       href: '/admin/accesorios', icon: Shirt },
     { title: 'Noticias',         href: '/admin/noticias',   icon: Newspaper },
-    { title: 'Usuarios',         href: '/admin/users',      icon: Users },
+    { title: 'Contactos',        href: '/admin/contactos',          icon: Mail },
+    { title: 'Mantenciones',     href: '/admin/mantenciones',       icon: WrenchIcon },
+    { title: 'Solicitudes Kinto',href: '/admin/kinto-solicitudes',  icon: KeySquare },
+    { title: 'Usuarios',         href: '/admin/users',              icon: Users },
 ];
 
 function NavGroup({ label, items, isCurrentUrl }: { label: string; items: NavItem[]; isCurrentUrl: (href: string) => boolean }) {
@@ -125,7 +128,7 @@ export function AdminSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href="/admin" prefetch>
-                                <AppLogo />
+                                <img src={logoBlanco} alt="Toyota Musalem" className="h-8 w-auto object-contain" />
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>
