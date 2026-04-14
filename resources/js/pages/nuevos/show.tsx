@@ -219,11 +219,15 @@ const highlights = [
     },
 ];
 
-function HighlightsCarousel() {
+type HighlightSlide = { image: string; title: string; subtitle: string };
+
+function HighlightsCarousel({ slides }: { slides: HighlightSlide[] }) {
     const { ref: animRef, visible } = useInView(0.1);
     const wrapperRef = useRef<HTMLDivElement>(null);
     const [activeIndex, setActiveIndex] = useState(0);
-    const totalSlides = highlights.length;
+    const totalSlides = slides.length;
+
+    if (totalSlides === 0) return null;
 
     useEffect(() => {
         const wrapper = wrapperRef.current;
@@ -257,21 +261,11 @@ function HighlightsCarousel() {
                     {/* Header */}
                     <div className="flex items-center justify-between">
                         <h2 className="text-[32px] leading-none text-black">Aspectos destacados</h2>
-                        <div className="flex items-center gap-2.5">
-                            {highlights.map((_, i) => (
-                                <div
-                                    key={i}
-                                    className={`h-2.5 rounded-full transition-all duration-300 ${
-                                        i === activeIndex ? 'w-10 bg-black' : 'w-2.5 bg-black/25'
-                                    }`}
-                                />
-                            ))}
-                        </div>
                     </div>
 
                     {/* Single slide with crossfade */}
                     <div className="relative flex-1 overflow-hidden rounded-[30px]">
-                        {highlights.map((item, i) => (
+                        {slides.map((item, i) => (
                             <div
                                 key={i}
                                 className="absolute inset-0 flex flex-col items-start justify-end rounded-[30px] p-7.5 transition-opacity duration-700 ease-out"
@@ -293,6 +287,18 @@ function HighlightsCarousel() {
                                 </div>
                             </div>
                         ))}
+
+                        {/* Vertical pagination — centered right inside slide */}
+                        <div className="absolute right-7.5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5">
+                            {slides.map((_, i) => (
+                                <div
+                                    key={i}
+                                    className={`w-2.5 rounded-full transition-all duration-300 ${
+                                        i === activeIndex ? 'h-10 bg-white' : 'h-2.5 bg-white/40'
+                                    }`}
+                                />
+                            ))}
+                        </div>
                     </div>
                 </div>
             </div>
@@ -503,7 +509,34 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
     const dragStartX = useRef(0);
     const dragStartFrame = useRef(0);
 
-    const vehicle = vehicleProp ?? vehicleData;
+    const vehicle: any = vehicleProp ?? vehicleData;
+
+    // Fuentes dinámicas del detail_content (con fallback a los valores legacy)
+    const detail = (vehicle as any).detail_content ?? {};
+    const dynamicHighlights: HighlightSlide[] = (detail.highlights ?? []).length > 0
+        ? detail.highlights.map((h: any) => ({
+            image: h.image ?? '',
+            title: h.title ?? '',
+            subtitle: h.text ?? '',
+        }))
+        : highlights;
+
+    const dynamicColors: { name: string; hex: string | null; photos: string[] }[] =
+        (detail.viewer_360?.colors ?? []).length > 0
+            ? detail.viewer_360.colors
+            : [];
+    const dynamicFrames = dynamicColors[selectedColor]?.photos?.length >= 2
+        ? dynamicColors[selectedColor].photos
+        : frames360;
+
+    const dynamicTextBlocks: { key: string; title: string; text: string }[] =
+        detail.viewer_360?.text_blocks ?? [];
+
+    const heroDescription: string = detail.hero?.description || vehicle.description || 'Descubre las características únicas de este vehículo Toyota.';
+    const heroTagline: string = detail.hero?.tagline || 'Desde';
+    const topSpecs: { label: string; value: string }[] = detail.hero?.top_specs ?? [];
+    const showElectricBadge: boolean = !!(vehicle.versions ?? []).find((v: any) => v.electric);
+    const heroBgImage: string = vehicle.hero_image || heroDetail;
 
     const hero = useInView(0.1);
     const section360 = useInView(0.1);
@@ -524,8 +557,8 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
         const dx = e.clientX - dragStartX.current;
         const sensitivity = 30;
         const frameDelta = Math.round(dx / sensitivity);
-        let newIndex = (dragStartFrame.current + frameDelta) % frames360.length;
-        if (newIndex < 0) newIndex += frames360.length;
+        let newIndex = (dragStartFrame.current + frameDelta) % dynamicFrames.length;
+        if (newIndex < 0) newIndex += dynamicFrames.length;
         setFrameIndex(newIndex);
     }, [isDragging]);
 
@@ -571,7 +604,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     <div
                         className="relative flex flex-col justify-between"
                         style={{
-                            background: `linear-gradient(270deg, rgba(0, 0, 0, 0.00) 60.73%, rgba(0, 0, 0, 0.40) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.00) 60.06%, rgba(0, 0, 0, 0.50) 94.55%), url(${heroDetail}) center / cover no-repeat`,
+                            background: `linear-gradient(270deg, rgba(0, 0, 0, 0.00) 60.73%, rgba(0, 0, 0, 0.40) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.00) 60.06%, rgba(0, 0, 0, 0.50) 94.55%), url(${heroBgImage}) center / cover no-repeat`,
                             padding: '0 65px 83px 65px',
                             height: '920px',
                         }}
@@ -579,24 +612,26 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                         {/* Left content */}
                         <div className={`flex max-w-105 flex-col gap-4 pt-40 transition-all duration-1000 ease-out ${hero.visible ? 'translate-x-0 opacity-100' : '-translate-x-12 opacity-0'}`}>
                             {/* Electric badge */}
-                            <div className="flex items-center gap-2">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14" fill="none">
-                                    <path d="M4.79427 8.74999L0.612796 8.22499C0.318741 8.18999 0.127487 8.03249 0.0390351 7.75249C-0.0494168 7.47249 0.0124525 7.23333 0.224643 7.03499L7.44077 0.175C7.49958 0.116667 7.57015 0.0730333 7.65249 0.0440999C7.73482 0.0151666 7.84656 0.000466666 7.98771 0C8.22295 0 8.40245 0.0991666 8.52618 0.2975C8.64992 0.495833 8.65275 0.699999 8.53465 0.909999L6.20573 5.25L10.3872 5.775C10.6813 5.81 10.8725 5.9675 10.961 6.2475C11.0494 6.52749 10.9875 6.76666 10.7754 6.96499L3.55923 13.825C3.50042 13.8833 3.42985 13.9272 3.34751 13.9566C3.26518 13.986 3.15344 14.0005 3.01229 14C2.77705 14 2.59755 13.9008 2.47381 13.7025C2.35008 13.5042 2.34725 13.3 2.46535 13.09L4.79427 8.74999Z" fill="white"/>
-                                </svg>
-                                <span className="text-xl leading-none text-white">100% Eléctrico de Toyota</span>
-                            </div>
+                            {showElectricBadge && (
+                                <div className="flex items-center gap-2">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="11" height="14" viewBox="0 0 11 14" fill="none">
+                                        <path d="M4.79427 8.74999L0.612796 8.22499C0.318741 8.18999 0.127487 8.03249 0.0390351 7.75249C-0.0494168 7.47249 0.0124525 7.23333 0.224643 7.03499L7.44077 0.175C7.49958 0.116667 7.57015 0.0730333 7.65249 0.0440999C7.73482 0.0151666 7.84656 0.000466666 7.98771 0C8.22295 0 8.40245 0.0991666 8.52618 0.2975C8.64992 0.495833 8.65275 0.699999 8.53465 0.909999L6.20573 5.25L10.3872 5.775C10.6813 5.81 10.8725 5.9675 10.961 6.2475C11.0494 6.52749 10.9875 6.76666 10.7754 6.96499L3.55923 13.825C3.50042 13.8833 3.42985 13.9272 3.34751 13.9566C3.26518 13.986 3.15344 14.0005 3.01229 14C2.77705 14 2.59755 13.9008 2.47381 13.7025C2.35008 13.5042 2.34725 13.3 2.46535 13.09L4.79427 8.74999Z" fill="white"/>
+                                    </svg>
+                                    <span className="text-xl leading-none text-white">100% Eléctrico de Toyota</span>
+                                </div>
+                            )}
 
-                            {/* Vehicle logo */}
-                            <img src={logoCard1} alt={vehicle.name} className="h-32 w-auto self-start object-contain" />
+                            {/* Vehicle name */}
+                            <span className="text-[56px] font-semibold leading-none text-white uppercase">{vehicle.name}</span>
 
                             {/* Description */}
                             <p className="text-base leading-[120%] text-white">
-                                El Toyota bZ4X es el primer SUV 100 % eléctrico desarrollado sobre la plataforma dedicada e-TNGA, marcando el inicio de la familia Beyond Zero de Toyota. Diseñado para una movilidad más limpia y eficiente, el bZ4X combina cero emisiones, un manejo silencioso y una experiencia de conducción estable y segura.
+                                {heroDescription}
                             </p>
 
                             {/* Price */}
                             <div className="mt-4 flex flex-col gap-1">
-                                <span className="text-base leading-none text-white">Desde</span>
+                                <span className="text-base leading-none text-white">{heroTagline}</span>
                                 <span className="text-[32px] font-semibold leading-none text-white">{vehicle.price}</span>
                             </div>
                         </div>
@@ -605,25 +640,15 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                         <div className={`flex items-end justify-between transition-all duration-1000 delay-300 ease-out ${hero.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                             {/* Specs columns */}
                             <div className="flex items-center gap-10">
-                                <div className="flex flex-col">
-                                    <span className="text-sm leading-none text-[#f4f4f4]">Potencia hasta</span>
-                                    <span className="text-2xl leading-none text-[#f4f4f4]">338 hp</span>
-                                </div>
-                                <div className="h-16.5 w-px bg-white" />
-                                <div className="flex flex-col">
-                                    <span className="text-sm leading-none text-[#f4f4f4]">Transmisión</span>
-                                    <span className="text-2xl leading-none text-[#f4f4f4]">Automática</span>
-                                </div>
-                                <div className="h-16.5 w-px bg-white" />
-                                <div className="flex flex-col">
-                                    <span className="text-sm leading-none text-[#f4f4f4]">Combustible</span>
-                                    <span className="text-2xl leading-none text-white">100% Eléctrico</span>
-                                </div>
-                                <div className="h-16.5 w-px bg-white" />
-                                <div className="flex flex-col">
-                                    <span className="text-sm leading-none text-[#f4f4f4]">Autonomía hasta</span>
-                                    <span className="text-2xl leading-none text-white">478 km (WLTC)</span>
-                                </div>
+                                {topSpecs.map((s, i) => (
+                                    <div key={i} className="flex items-center gap-10">
+                                        {i > 0 && <div className="h-16.5 w-px bg-white" />}
+                                        <div className="flex flex-col">
+                                            <span className="text-sm leading-none text-[#f4f4f4]">{s.label}</span>
+                                            <span className="text-2xl leading-none text-white">{s.value}</span>
+                                        </div>
+                                    </div>
+                                ))}
                             </div>
 
                             {/* Download button */}
@@ -698,7 +723,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                         onPointerCancel={handlePointerUp}
                     >
                         <img
-                            src={frames360[frameIndex]}
+                            src={dynamicFrames[frameIndex % dynamicFrames.length]}
                             alt={`${vehicle.name} 360° vista`}
                             className="pointer-events-none h-auto w-full max-w-175 object-contain"
                             draggable={false}
@@ -708,59 +733,53 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     {/* Specs + colors */}
                     <div className={`flex gap-15 p-2.5 transition-all duration-700 delay-400 ease-out ${section360.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                         {/* Colors */}
-                        <div className="flex w-57.5 flex-col gap-2.5">
-                            <span className="text-base font-semibold leading-none text-black">Colores disponibles</span>
-                            <div className="flex items-center gap-2.5">
-                                {[
-                                    { color: '#878787', label: 'Gris' },
-                                    { color: '#dadada', label: 'Plateado' },
-                                    { color: '#102e48', label: 'Azul' },
-                                    { color: '#a2110a', label: 'Rojo' },
-                                    { color: '#000000', label: 'Negro' },
-                                ].map((c, i) => (
-                                    <button
-                                        key={c.color}
-                                        onClick={() => setSelectedColor(i)}
-                                        className="size-8 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200"
-                                        style={{
-                                            backgroundColor: c.color,
-                                            borderColor: selectedColor === i ? '#ffffff' : 'rgba(255,255,255,0.20)',
-                                            boxShadow: selectedColor === i ? '0 0 0 1px rgba(0,0,0,0.15)' : 'none',
-                                        }}
-                                        title={c.label}
-                                    />
+                        {dynamicColors.length > 0 && (
+                            <div className="flex w-57.5 flex-col gap-2.5">
+                                <span className="text-base font-semibold leading-none text-black">Colores disponibles</span>
+                                <div className="flex items-center gap-2.5 flex-wrap">
+                                    {dynamicColors.map((c, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => {
+                                                setSelectedColor(i);
+                                                setFrameIndex(0);
+                                            }}
+                                            className="size-8 shrink-0 cursor-pointer rounded-full border-2 transition-all duration-200"
+                                            style={{
+                                                backgroundColor: c.hex ?? '#cccccc',
+                                                borderColor: selectedColor === i ? '#000000' : 'rgba(0,0,0,0.20)',
+                                                boxShadow: selectedColor === i ? '0 0 0 1px rgba(0,0,0,0.15)' : 'none',
+                                            }}
+                                            title={c.name}
+                                        />
+                                    ))}
+                                </div>
+                                {dynamicColors[selectedColor] && (
+                                    <span className="text-xs text-black/60">{dynamicColors[selectedColor].name}</span>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Text blocks grid */}
+                        {dynamicTextBlocks.length > 0 && (
+                            <div className="flex w-130 flex-col gap-5">
+                                {Array.from({ length: Math.ceil(dynamicTextBlocks.length / 2) }).map((_, rowIdx) => (
+                                    <div key={rowIdx} className="flex gap-15">
+                                        {dynamicTextBlocks.slice(rowIdx * 2, rowIdx * 2 + 2).map((b, i) => (
+                                            <div key={i} className="flex w-57.5 flex-col gap-2.5">
+                                                <span className="text-base font-semibold leading-none text-black">{b.title}</span>
+                                                <span className="text-xs leading-none text-black">{b.text || '—'}</span>
+                                            </div>
+                                        ))}
+                                    </div>
                                 ))}
                             </div>
-                        </div>
-
-                        {/* Specs grid */}
-                        <div className="flex w-130 flex-col gap-5">
-                            <div className="flex gap-15">
-                                <div className="flex w-57.5 flex-col gap-2.5">
-                                    <span className="text-base font-semibold leading-none text-black">Seguridad</span>
-                                    <span className="text-xs leading-none text-black">8 airbags / BA / EDB / HAC / BSM/ SEA/ Sensor Del. y Tra. Cámara 360° + TSS 3.0</span>
-                                </div>
-                                <div className="flex w-57.5 flex-col gap-2.5">
-                                    <span className="text-base font-semibold leading-none text-black">Conectividad</span>
-                                    <span className="text-xs leading-none text-black">Pantalla digital TFT de 7'' + Pantalla de audio de 14'' con conectividad AC y AD + 6 parlantes con amplificador</span>
-                                </div>
-                            </div>
-                            <div className="flex gap-15">
-                                <div className="flex w-57.5 flex-col gap-2.5">
-                                    <span className="text-base font-semibold leading-none text-black">Performance</span>
-                                    <span className="text-xs leading-none text-black">Motor eléctrico, Potencia 165 KW (221 HP) / 269 NM. Batería de Ion litio de 73.1 KWh. 0 -100Kph: 7,4 segundos</span>
-                                </div>
-                                <div className="flex w-57.5 flex-col gap-2.5">
-                                    <span className="text-base font-semibold leading-none text-black">Autonomía</span>
-                                    <span className="text-xs leading-none text-black">478 KM</span>
-                                </div>
-                            </div>
-                        </div>
+                        )}
                     </div>
                 </div>
 
                 {/* Aspectos destacados */}
-                <HighlightsCarousel />
+                <HighlightsCarousel slides={dynamicHighlights} />
 
                 {/* Multimedia */}
                 <div
