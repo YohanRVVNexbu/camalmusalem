@@ -33,8 +33,9 @@ const paginasItems: NavItem[] = [
 ];
 
 const catalogoTecnicoItems: NavItem[] = [
-    { title: 'Marcas',          href: '/admin/brands',   icon: Tag },
-    { title: 'Equipamiento',    href: '/admin/features', icon: ListChecks },
+    { title: 'Marcas',          href: '/admin/brands',          icon: Tag },
+    { title: 'Modelos',         href: '/admin/vehicle-models',  icon: Car },
+    { title: 'Equipamiento',    href: '/admin/features',        icon: ListChecks },
 ];
 
 const catalogoItems: NavItem[] = [

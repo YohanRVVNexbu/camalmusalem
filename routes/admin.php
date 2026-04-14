@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AccesorioController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\FeatureController;
+use App\Http\Controllers\Admin\VehicleModelController;
 use App\Http\Controllers\Admin\ContactoController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\KintoSolicitudController;
@@ -51,6 +52,12 @@ Route::middleware('admin')->group(function () {
     Route::resource('features', FeatureController::class)
         ->except(['show'])
         ->names('admin.features');
+
+    // Catálogo técnico — Modelos de vehículos
+    Route::resource('vehicle-models', VehicleModelController::class)
+        ->except(['show'])
+        ->parameters(['vehicle-models' => 'vehicleModel'])
+        ->names('admin.vehicle-models');
 
     // Repuestos
     Route::resource('repuestos', RepuestoController::class)
