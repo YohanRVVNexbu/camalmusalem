@@ -248,8 +248,12 @@ export default function VehicleVersionForm({ version, models, features, enums, s
     return (
         <AdminLayout breadcrumbs={[
             { title: 'Dashboard', href: '/admin' },
-            { title: 'Versiones', href: '/admin/vehicle-versions' },
-            { title: isEdit ? 'Editar' : 'Crear', href: '#' },
+            { title: 'Vehículos nuevos', href: '/admin/vehicle-models' },
+            ...(data.vehicle_model_id ? [{
+                title: models.find((m) => m.id === data.vehicle_model_id)?.name ?? 'Vehículo',
+                href: `/admin/vehicle-models/${data.vehicle_model_id}/edit`,
+            }] : []),
+            { title: isEdit ? `Ficha: ${version?.trim_name ?? ''}` : 'Nueva ficha técnica', href: '#' },
         ]}>
             <Head title={`Admin — ${isEdit ? 'Editar' : 'Crear'} versión`} />
             <div className="flex flex-col gap-4 p-4 max-w-5xl">

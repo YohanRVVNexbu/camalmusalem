@@ -1,4 +1,4 @@
-import { Minus, Plus } from 'lucide-react';
+import { Check, Minus, Plus } from 'lucide-react';
 import { useState } from 'react';
 
 export type FilterOption = {
@@ -39,16 +39,21 @@ function FilterCard({
     config,
     selection,
     onToggle,
+    variant,
 }: {
     config: GroupConfig;
     selection: string[];
     onToggle: (code: string, checked: boolean) => void;
+    variant: 'filled' | 'outline';
 }) {
     const [open, setOpen] = useState(true);
     const Icon = open ? Minus : Plus;
+    const cardClass = variant === 'filled'
+        ? 'bg-white border-black/10'
+        : 'border-black/40';
 
     return (
-        <div className="w-full overflow-hidden rounded-2xl border border-black/10 bg-white p-5">
+        <div className={`w-full overflow-hidden rounded-2xl border p-5 ${cardClass}`}>
             <div className="flex flex-col gap-5">
                 <button
                     type="button"
@@ -59,7 +64,7 @@ function FilterCard({
                     <span className="text-left text-base font-semibold uppercase leading-none text-black">
                         {config.title}
                     </span>
-                    <Icon className="size-[26px] text-black" strokeWidth={1.5} />
+                    <Icon className="size-6.5 text-black" strokeWidth={1.5} />
                 </button>
 
                 {open && (
@@ -74,12 +79,15 @@ function FilterCard({
                                     key={item.code}
                                     className="flex cursor-pointer items-center gap-2.5"
                                 >
-                                    <input
-                                        type="checkbox"
-                                        checked={checked}
-                                        onChange={(e) => onToggle(item.code, e.target.checked)}
-                                        className="size-[18px] shrink-0 cursor-pointer rounded border border-black/80 bg-[#EDEDED] accent-black"
-                                    />
+                                    <span className="relative flex size-4.5 shrink-0 items-center justify-center overflow-hidden rounded border border-black/80 bg-[#EDEDED]">
+                                        <input
+                                            type="checkbox"
+                                            checked={checked}
+                                            onChange={(e) => onToggle(item.code, e.target.checked)}
+                                            className="absolute inset-0 size-full cursor-pointer appearance-none"
+                                        />
+                                        {checked && <Check className="size-3 text-black" strokeWidth={3} />}
+                                    </span>
                                     <span
                                         className={`text-left text-sm leading-none text-black ${config.uppercase ? 'uppercase' : ''}`}
                                     >
@@ -106,12 +114,13 @@ export default function NuevosFilters({ options, selection, onChange }: Props) {
 
     return (
         <div className="flex w-full flex-col gap-5">
-            {groups.map((g) => (
+            {groups.map((g, i) => (
                 <FilterCard
                     key={g.key}
                     config={g}
                     selection={selection[g.key]}
                     onToggle={(code, checked) => onChange(g.key, code, checked)}
+                    variant={i === 0 ? 'filled' : 'outline'}
                 />
             ))}
         </div>

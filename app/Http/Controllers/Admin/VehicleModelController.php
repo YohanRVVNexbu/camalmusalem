@@ -69,10 +69,21 @@ class VehicleModelController extends Controller
 
     public function edit(VehicleModel $vehicleModel)
     {
+        $vehicleModel->load(['versions' => fn ($q) => $q->orderBy('display_order')->orderBy('model_year', 'desc')]);
+
         return Inertia::render('admin/vehicle-models/form', [
             'model' => $vehicleModel,
             'brands' => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
             'bodyTypes' => $this->bodyTypes(),
+            'versions' => $vehicleModel->versions->map(fn ($v) => [
+                'id' => $v->id,
+                'trim_name' => $v->trim_name,
+                'model_year' => $v->model_year,
+                'powertrain_type' => $v->powertrain_type,
+                'drivetrain' => $v->drivetrain,
+                'msrp_clp' => $v->msrp_clp,
+                'is_active' => $v->is_active,
+            ]),
         ]);
     }
 

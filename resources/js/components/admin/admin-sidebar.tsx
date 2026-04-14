@@ -39,10 +39,9 @@ const catalogoItems: NavItem[] = [
 ];
 
 const mantenedoresItems: NavItem[] = [
-    { title: 'Marcas',           href: '/admin/brands',            icon: Tag },
-    { title: 'Versiones',        href: '/admin/vehicle-versions',  icon: Layers },
-    { title: 'Equipamiento',     href: '/admin/features',          icon: ListChecks },
-    { title: 'Listas editables', href: '/admin/lookups',           icon: ListTree },
+    { title: 'Marcas',           href: '/admin/brands',   icon: Tag },
+    { title: 'Equipamiento',     href: '/admin/features', icon: ListChecks },
+    { title: 'Listas editables', href: '/admin/lookups',  icon: ListTree },
 ];
 
 const solicitudesItems: NavItem[] = [
