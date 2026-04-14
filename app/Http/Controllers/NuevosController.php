@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BodyType;
+use App\Models\Drivetrain;
+use App\Models\PowertrainType;
 use App\Models\SiteSection;
+use App\Models\TransmissionType;
 use App\Models\VehicleModel;
 use App\Services\CatalogPresenter;
 use App\Services\YouTubeService;
@@ -29,7 +33,20 @@ class NuevosController extends Controller
             ->orderBy('name')
             ->get();
 
-        $vehicles = $models->map(fn ($m) => $this->presenter->presentModel($m))->all();
+        $vehicles = $models->map(function ($m) {
+            $presented = $this->presenter->presentModel($m);
+            // Campos raw para filtrar en el frontend (no usados en la UI visible)
+            $presented['_filter'] = [
+                'body_type' => $m->body_type,
+                'model_slug' => $m->slug,
+                'powertrains' => $m->versions->pluck('powertrain_type')->unique()->values()->all(),
+                'transmissions' => $m->versions->pluck('transmission_type')->filter()->unique()->values()->all(),
+                'drivetrains' => $m->versions->pluck('drivetrain')->unique()->values()->all(),
+            ];
+
+            return $presented;
+        })->all();
+
         $heroCards = $this->resolveHeroCards($section?->data['hero_cards'] ?? null, $models);
 
         return Inertia::render('nuevos', [
@@ -37,7 +54,46 @@ class NuevosController extends Controller
             'footer' => $footer?->data ?? [],
             'vehicles' => $vehicles,
             'heroCards' => $heroCards,
+            'filterOptions' => $this->buildFilterOptions($models),
         ]);
+    }
+
+    private function buildFilterOptions($models): array
+    {
+        // Solo incluye códigos que efectivamente tienen vehículos (para no mostrar
+        // opciones sin resultados). Combina lookup master con lo presente en BD.
+        $lookupMap = fn ($class) => $class::where('is_active', true)
+            ->orderBy('display_order')
+            ->get(['code', 'name_es'])
+            ->map(fn ($l) => ['code' => $l->code, 'label' => $l->name_es])
+            ->keyBy('code');
+
+        $bodyTypes = $lookupMap(BodyType::class);
+        $powertrains = $lookupMap(PowertrainType::class);
+        $transmissions = $lookupMap(TransmissionType::class);
+        $drivetrains = $lookupMap(Drivetrain::class);
+
+        $presentBody = $models->pluck('body_type')->filter()->unique()->values();
+        $presentPower = $models->flatMap(fn ($m) => $m->versions->pluck('powertrain_type'))->filter()->unique()->values();
+        $presentTrans = $models->flatMap(fn ($m) => $m->versions->pluck('transmission_type'))->filter()->unique()->values();
+        $presentDrive = $models->flatMap(fn ($m) => $m->versions->pluck('drivetrain'))->filter()->unique()->values();
+
+        $only = function ($lookups, $presentCodes) {
+            return $lookups->only($presentCodes)->values()->all();
+        };
+
+        $modelOptions = $models->map(fn ($m) => [
+            'code' => $m->slug,
+            'label' => $m->name,
+        ])->values()->all();
+
+        return [
+            'gama' => $only($bodyTypes, $presentBody->all()),
+            'modelo' => $modelOptions,
+            'combustible' => $only($powertrains, $presentPower->all()),
+            'transmision' => $only($transmissions, $presentTrans->all()),
+            'traccion' => $only($drivetrains, $presentDrive->all()),
+        ];
     }
 
     /**

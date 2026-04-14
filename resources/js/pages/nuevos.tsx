@@ -1,14 +1,14 @@
 import { Head } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { Filters } from '@/components/seminuevos/filters';
+import NuevosFilters, { FilterGroupKey, FilterOptions, FilterSelection, emptyFilterSelection } from '@/components/nuevos/filters';
 import { Toolbar, type ViewMode } from '@/components/seminuevos/toolbar';
 import { Pagination } from '@/components/seminuevos/pagination';
 import { NuevosProductCard } from '@/components/nuevos/product-card';
 import { NuevosListItem } from '@/components/nuevos/product-list-item';
 import { Modal360 } from '@/components/nuevos/modal-360';
 import { Car } from 'lucide-react';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 
 type Version = {
     name: string;
@@ -60,7 +60,17 @@ function vehicleElectric(v: Vehicle): boolean {
 
 type HeroCardVehicle = Vehicle & { force_electric_badge?: boolean };
 
-export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCardsProp }: { data: any; footer: any; vehicles: Vehicle[]; heroCards?: HeroCardVehicle[] }) {
+type VehicleWithFilter = Vehicle & {
+    _filter?: {
+        body_type: string | null;
+        model_slug: string;
+        powertrains: string[];
+        transmissions: string[];
+        drivetrains: string[];
+    };
+};
+
+export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCardsProp, filterOptions }: { data: any; footer: any; vehicles: VehicleWithFilter[]; heroCards?: HeroCardVehicle[]; filterOptions?: FilterOptions }) {
     const [cardsVisible, setCardsVisible] = useState(false);
     const [contentVisible, setContentVisible] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -74,19 +84,70 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
         return () => { clearTimeout(t1); clearTimeout(t2); };
     }, []);
 
-    const ITEMS_PER_PAGE_GRID = 9;
-    const ITEMS_PER_PAGE_LIST = 6;
-
     const heroCards: HeroCardVehicle[] = heroCardsProp && heroCardsProp.length > 0
         ? heroCardsProp
         : vehicles.slice(0, 4);
 
-    const itemsPerPage = viewMode === 'grid' ? ITEMS_PER_PAGE_GRID : ITEMS_PER_PAGE_LIST;
-    const totalPages = Math.ceil(vehicles.length / itemsPerPage);
+    // Filtros
+    const [filterSelection, setFilterSelection] = useState<FilterSelection>(emptyFilterSelection);
+    const toggleFilter = (group: FilterGroupKey, code: string, checked: boolean) => {
+        setCurrentPage(1);
+        setFilterSelection((prev) => ({
+            ...prev,
+            [group]: checked
+                ? [...prev[group], code]
+                : prev[group].filter((c) => c !== code),
+        }));
+    };
+
+    const filteredVehicles = useMemo(() => {
+        const any = (arr: string[]) => arr.length === 0;
+        return vehicles.filter((v) => {
+            const f = v._filter;
+            if (!f) return true;
+            if (!any(filterSelection.gama) && !filterSelection.gama.includes(f.body_type ?? '')) return false;
+            if (!any(filterSelection.modelo) && !filterSelection.modelo.includes(f.model_slug)) return false;
+            if (!any(filterSelection.combustible) && !f.powertrains.some((p) => filterSelection.combustible.includes(p))) return false;
+            if (!any(filterSelection.transmision) && !f.transmissions.some((t) => filterSelection.transmision.includes(t))) return false;
+            if (!any(filterSelection.traccion) && !f.drivetrains.some((d) => filterSelection.traccion.includes(d))) return false;
+
+            return true;
+        });
+    }, [vehicles, filterSelection]);
+
+    // Paginación dinámica: calcula cuántas filas entran en el alto de los filtros.
+    // Ajusta itemsPerPage para que la grilla no sobrepase la altura del sidebar.
+    const filtersRef = useRef<HTMLDivElement | null>(null);
+    const [filtersHeight, setFiltersHeight] = useState(0);
+
+    useEffect(() => {
+        if (!filtersRef.current) return;
+        const el = filtersRef.current;
+        const obs = new ResizeObserver(([entry]) => setFiltersHeight(entry.contentRect.height));
+        obs.observe(el);
+        setFiltersHeight(el.offsetHeight);
+        return () => obs.disconnect();
+    }, [filtersVisible]);
+
+    const GRID_COLS = 4;
+    const GRID_ROW_HEIGHT = 340; // card + gap aprox
+    const LIST_ROW_HEIGHT = 196; // list item + gap aprox
+
+    const itemsPerPage = useMemo(() => {
+        if (filtersHeight < 100) {
+            return viewMode === 'grid' ? GRID_COLS * 2 : 4;
+        }
+        if (viewMode === 'grid') {
+            const rows = Math.max(1, Math.floor(filtersHeight / GRID_ROW_HEIGHT));
+            return rows * GRID_COLS;
+        }
+        return Math.max(1, Math.floor(filtersHeight / LIST_ROW_HEIGHT));
+    }, [filtersHeight, viewMode]);
+    const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
     const paginatedVehicles = useMemo(() => {
         const start = (currentPage - 1) * itemsPerPage;
-        return vehicles.slice(start, start + itemsPerPage);
-    }, [currentPage, itemsPerPage, vehicles]);
+        return filteredVehicles.slice(start, start + itemsPerPage);
+    }, [currentPage, itemsPerPage, filteredVehicles]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -182,18 +243,27 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                     {/* Grid section: filters + products */}
                     <div data-products className="mt-10 flex items-stretch gap-5 overflow-hidden">
                         <div
+                            ref={filtersRef}
                             className={`shrink-0 transition-all duration-500 ease-in-out ${
                                 filtersVisible
                                     ? 'w-69.5 opacity-100'
                                     : '-ml-74.5 w-69.5 opacity-0'
                             }`}
                         >
-                            <Filters />
+                            {filterOptions && (
+                                <NuevosFilters
+                                    options={filterOptions}
+                                    selection={filterSelection}
+                                    onChange={toggleFilter}
+                                />
+                            )}
                         </div>
                         <div className="flex flex-1 flex-col justify-between transition-all duration-500 ease-in-out">
-                            {vehicles.length === 0 ? (
+                            {filteredVehicles.length === 0 ? (
                                 <div className="flex flex-1 items-center justify-center py-20 text-black/40">
-                                    No hay vehículos disponibles en este momento.
+                                    {vehicles.length === 0
+                                        ? 'No hay vehículos disponibles en este momento.'
+                                        : 'No hay vehículos que coincidan con los filtros seleccionados.'}
                                 </div>
                             ) : (
                                 <div>
