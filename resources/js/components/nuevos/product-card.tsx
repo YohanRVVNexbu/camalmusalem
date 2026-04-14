@@ -1,5 +1,14 @@
 import { Link } from '@inertiajs/react';
 import VehicleImage from './vehicle-image';
+import { ElectricIcon as ElectricSvg } from '@/components/icons/electric-icon';
+import { HybridIcon as HybridSvg } from '@/components/icons/hybrid-icon';
+
+function tagIcon(tag: string): React.ReactNode | null {
+    const t = tag.toLowerCase();
+    if (t === 'eléctrico' || t === 'electrico') return <ElectricSvg className="size-3 text-black" />;
+    if (t === 'híbrido' || t === 'hibrido' || t === 'híbrido enchufable') return <HybridSvg className="size-3 text-black" />;
+    return null;
+}
 
 type NuevosProductCardProps = {
     image: string;
@@ -73,14 +82,18 @@ export function NuevosProductCard({
 
                         {/* Tags */}
                         <div className="flex flex-wrap items-start justify-center gap-1.25">
-                            {tags.map((tag) => (
-                                <span
-                                    key={tag}
-                                    className="rounded-[3.36px] bg-[#EAEAF1] p-1.25 text-sm leading-none text-black/60"
-                                >
-                                    {tag}
-                                </span>
-                            ))}
+                            {tags.map((tag) => {
+                                const icon = tagIcon(tag);
+                                return (
+                                    <span
+                                        key={tag}
+                                        className="flex items-center gap-1 rounded-[3.36px] bg-[#EAEAF1] p-1.25 text-sm leading-none text-black/60"
+                                    >
+                                        {icon}
+                                        {tag}
+                                    </span>
+                                );
+                            })}
                         </div>
 
                         {/* Price */}

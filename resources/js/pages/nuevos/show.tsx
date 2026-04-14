@@ -289,12 +289,12 @@ function HighlightsCarousel({ slides }: { slides: HighlightSlide[] }) {
                         ))}
 
                         {/* Vertical pagination — centered right inside slide */}
-                        <div className="absolute right-7.5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5">
+                        <div className="absolute right-7.5 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2.5 rounded-full bg-black/30 p-2 backdrop-blur-sm">
                             {slides.map((_, i) => (
                                 <div
                                     key={i}
                                     className={`w-2.5 rounded-full transition-all duration-300 ${
-                                        i === activeIndex ? 'h-10 bg-white' : 'h-2.5 bg-white/40'
+                                        i === activeIndex ? 'h-10 bg-white' : 'h-2.5 bg-white/70'
                                     }`}
                                 />
                             ))}
