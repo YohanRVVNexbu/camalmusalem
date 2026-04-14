@@ -2,7 +2,25 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(grep -A 20 'protected $routeMiddleware' /Users/nexbuescl/Sites/camalmusalem/app/Http/Kernel.php)"
+      "Bash(grep -A 20 'protected $routeMiddleware' /Users/nexbuescl/Sites/camalmusalem/app/Http/Kernel.php)",
+      "Bash(brew list:*)",
+      "Bash(du -sh /tmp/toyota_specs_txt/*.txt)",
+      "Bash(awk '{s+=$1} END {print \"total files OK\"}')",
+      "Read(//private/tmp/toyota_specs_txt/**)",
+      "Bash(composer require:*)",
+      "Bash(python3 -c ':*)",
+      "Bash(git add:*)",
+      "Bash(git commit -m ':*)",
+      "Bash(git push:*)",
+      "Bash(wc -l /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/nuevos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/nuevos/*.tsx)",
+      "Bash(git checkout:*)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/nuevos)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/admin/vehicles)",
+      "Bash(kill %1)",
+      "Bash(wait)"
+    ],
+    "additionalDirectories": [
+      "/tmp"
     ]
   }
 }

@@ -40,7 +40,6 @@ const catalogoTecnicoItems: NavItem[] = [
 ];
 
 const catalogoItems: NavItem[] = [
-    { title: 'Vehículos nuevos', href: '/admin/vehicles',   icon: Car },
     { title: 'Seminuevos',       href: '/admin/seminuevos', icon: RefreshCw },
     { title: 'Repuestos',        href: '/admin/repuestos',  icon: Wrench },
     { title: 'Accesorios',       href: '/admin/accesorios', icon: Shirt },

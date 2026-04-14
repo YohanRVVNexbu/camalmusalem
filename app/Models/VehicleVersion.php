@@ -76,9 +76,4 @@ class VehicleVersion extends Model
     {
         return $this->hasMany(VehicleDocument::class);
     }
-
-    public function stockVehicles(): HasMany
-    {
-        return $this->hasMany(StockVehicle::class);
-    }
 }

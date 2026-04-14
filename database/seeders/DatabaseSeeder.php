@@ -17,7 +17,6 @@ class DatabaseSeeder extends Seeder
             AdminUserSeeder::class,
             SiteSectionsSeeder::class,
             PageSectionsSeeder::class,
-            VehiclesSeeder::class,
             FeaturesSeeder::class,
             VehicleCatalogSeeder::class,
             RepuestosSeeder::class,

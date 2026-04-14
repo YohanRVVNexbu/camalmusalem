@@ -16,7 +16,6 @@ use App\Http\Controllers\Admin\PageContentController;
 use App\Http\Controllers\Admin\RepuestoController;
 use App\Http\Controllers\Admin\SeminuevoController;
 use App\Http\Controllers\Admin\UserController;
-use App\Http\Controllers\Admin\VehicleController;
 use Illuminate\Support\Facades\Route;
 
 // Rutas públicas (sin autenticación admin)
@@ -38,11 +37,6 @@ Route::middleware('admin')->group(function () {
     Route::resource('users', UserController::class)
         ->except(['show'])
         ->names('admin.users');
-
-    // Vehículos nuevos
-    Route::resource('vehicles', VehicleController::class)
-        ->except(['show'])
-        ->names('admin.vehicles');
 
     // Catálogo técnico — Marcas
     Route::resource('brands', BrandController::class)
