@@ -13,10 +13,14 @@ class VehicleModel extends Model
 
     protected $fillable = [
         'brand_id', 'name', 'slug', 'body_type', 'segment',
-        'generation', 'description', 'hero_image', 'is_active', 'display_order',
+        'generation', 'description', 'hero_image', 'detail_content',
+        'is_active', 'display_order',
     ];
 
-    protected $casts = ['is_active' => 'boolean'];
+    protected $casts = [
+        'is_active' => 'boolean',
+        'detail_content' => 'array',
+    ];
 
     public function brand(): BelongsTo
     {

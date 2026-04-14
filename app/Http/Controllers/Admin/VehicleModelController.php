@@ -51,6 +51,11 @@ class VehicleModelController extends Controller
         $data = $this->validated($request);
         $data['slug'] = Str::slug($data['name']);
 
+        $detailContent = $this->resolveDetailContent($request, null);
+        if ($detailContent !== null) {
+            $data['detail_content'] = $detailContent;
+        }
+
         $model = VehicleModel::create($data);
 
         if ($request->hasFile('hero_image')) {
@@ -58,6 +63,8 @@ class VehicleModelController extends Controller
                 'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-models/'.$model->id),
             ]);
         }
+
+        $this->processDetailUploads($request, $model);
 
         if ($request->boolean('add_version_after')) {
             return redirect('/admin/vehicle-versions/create?model_id='.$model->id)
@@ -97,9 +104,16 @@ class VehicleModelController extends Controller
             $data['hero_image'] = $this->settings->uploadFile($request->file('hero_image'), 'vehicle-models/'.$vehicleModel->id);
         }
 
+        $detailContent = $this->resolveDetailContent($request, $vehicleModel);
+        if ($detailContent !== null) {
+            $data['detail_content'] = $detailContent;
+        }
+
         $vehicleModel->update($data);
 
-        return back()->with('success', 'Modelo actualizado correctamente.');
+        $this->processDetailUploads($request, $vehicleModel);
+
+        return back()->with('success', 'Vehículo actualizado correctamente.');
     }
 
     public function destroy(VehicleModel $vehicleModel)
@@ -128,4 +142,93 @@ class VehicleModelController extends Controller
         ]);
     }
 
+    /**
+     * Normaliza el detail_content enviado, preservando URLs de imagen
+     * existentes si no se suben nuevos archivos.
+     */
+    private function resolveDetailContent(Request $request, ?VehicleModel $existing): ?array
+    {
+        if (! $request->has('detail_content')) {
+            return null;
+        }
+
+        $payload = $request->input('detail_content', []);
+        $stored = $existing?->detail_content ?? [];
+
+        $highlights = $payload['highlights'] ?? [];
+        $normalizedHighlights = [];
+        foreach ($highlights as $i => $h) {
+            $normalizedHighlights[] = [
+                'image' => $h['image'] ?? ($stored['highlights'][$i]['image'] ?? null),
+                'title' => $h['title'] ?? '',
+                'text' => $h['text'] ?? '',
+            ];
+        }
+
+        $colors = $payload['viewer_360']['colors'] ?? [];
+        $normalizedColors = [];
+        foreach ($colors as $i => $c) {
+            $normalizedColors[] = [
+                'name' => $c['name'] ?? '',
+                'hex' => $c['hex'] ?? null,
+                'photos' => $c['photos'] ?? ($stored['viewer_360']['colors'][$i]['photos'] ?? []),
+            ];
+        }
+
+        $textBlocks = $payload['viewer_360']['text_blocks'] ?? [];
+        $normalizedBlocks = [];
+        foreach ($textBlocks as $b) {
+            $normalizedBlocks[] = [
+                'key' => $b['key'] ?? Str::slug($b['title'] ?? '', '_'),
+                'title' => $b['title'] ?? '',
+                'text' => $b['text'] ?? '',
+            ];
+        }
+
+        return [
+            'hero' => [
+                'tagline' => $payload['hero']['tagline'] ?? $stored['hero']['tagline'] ?? 'Desde',
+                'description' => $payload['hero']['description'] ?? $stored['hero']['description'] ?? '',
+            ],
+            'highlights' => $normalizedHighlights,
+            'viewer_360' => [
+                'colors' => $normalizedColors,
+                'text_blocks' => $normalizedBlocks,
+            ],
+        ];
+    }
+
+    /**
+     * Procesa uploads en claves dot-notation bajo detail_content.*. Los mueve
+     * al storage público y reemplaza el valor correspondiente dentro del JSON.
+     */
+    private function processDetailUploads(Request $request, VehicleModel $model): void
+    {
+        $detail = $model->detail_content ?? [];
+        $touched = false;
+
+        foreach ($request->allFiles() as $key => $file) {
+            if ($key === 'hero_image') {
+                continue;
+            }
+            if (! str_starts_with($key, 'detail_content.')) {
+                continue;
+            }
+            if (! $file instanceof \Illuminate\Http\UploadedFile) {
+                continue;
+            }
+
+            $path = substr($key, strlen('detail_content.'));
+            $oldUrl = data_get($detail, $path);
+            $this->settings->deleteOldFile($oldUrl);
+            $url = $this->settings->uploadFile($file, 'vehicle-models/'.$model->id);
+
+            data_set($detail, $path, $url);
+            $touched = true;
+        }
+
+        if ($touched) {
+            $model->update(['detail_content' => $detail]);
+        }
+    }
 }

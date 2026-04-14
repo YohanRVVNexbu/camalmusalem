@@ -42,15 +42,66 @@ class CatalogPresenter
             'slug' => $model->slug,
             'full_name' => trim("{$model->brand->name} {$model->name}"),
             'subtitle' => $model->segment ?? $model->generation ?? null,
+            'description' => $model->description,
             'type' => self::BODY_TYPE_LABELS[$model->body_type] ?? null,
             'fuel' => $firstPowertrain ? (self::POWERTRAIN_LABELS[$firstPowertrain] ?? null) : null,
             'hero_image' => $model->hero_image,
+            'price' => $firstVersion?->msrp_clp ? '$'.number_format($firstVersion->msrp_clp, 0, ',', '.') : 'Consultar',
             'gallery' => [],
             'highlights' => $this->buildHighlights($firstVersion),
             'versions' => $model->versions->map(fn ($v) => $this->presentVersion($v))->values()->all(),
             'is_visible' => $model->is_active,
+            'detail_content' => $this->resolveDetailContent($model, $firstVersion),
         ];
     }
+
+    /**
+     * Fusiona el detail_content guardado en BD con valores por defecto derivados
+     * del catálogo. Los top_specs del hero se calculan automáticamente desde la
+     * primera versión (HP, transmisión, combustible) salvo override explícito.
+     */
+    private function resolveDetailContent(VehicleModel $model, ?VehicleVersion $v): array
+    {
+        $stored = $model->detail_content ?? [];
+
+        $autoTopSpecs = [];
+        if ($v) {
+            $hp = $v->engine?->hp ?? $v->electric?->combined_hp;
+            if ($hp) {
+                $autoTopSpecs[] = ['label' => 'Potencia hasta', 'value' => $hp.' hp'];
+            }
+            $transmission = $v->transmission_type
+                ? (in_array($v->transmission_type, ['MT', 'AT']) ? ($v->transmission_type === 'MT' ? 'Manual' : 'Automática') : $v->transmission_type)
+                : null;
+            if ($transmission) {
+                $autoTopSpecs[] = ['label' => 'Transmisión', 'value' => $transmission];
+            }
+            $fuel = self::POWERTRAIN_LABELS[$v->powertrain_type] ?? null;
+            if ($fuel) {
+                $autoTopSpecs[] = ['label' => 'Combustible', 'value' => $fuel];
+            }
+        }
+
+        return [
+            'hero' => [
+                'tagline' => $stored['hero']['tagline'] ?? 'Desde',
+                'description' => $stored['hero']['description'] ?? $model->description ?? '',
+                'top_specs' => $autoTopSpecs,
+            ],
+            'highlights' => $stored['highlights'] ?? [],
+            'viewer_360' => [
+                'colors' => $stored['viewer_360']['colors'] ?? [],
+                'text_blocks' => $stored['viewer_360']['text_blocks'] ?? self::DEFAULT_360_TEXT_BLOCKS,
+            ],
+        ];
+    }
+
+    private const DEFAULT_360_TEXT_BLOCKS = [
+        ['key' => 'seguridad', 'title' => 'Seguridad', 'text' => ''],
+        ['key' => 'conectividad', 'title' => 'Conectividad', 'text' => ''],
+        ['key' => 'performance', 'title' => 'Performance', 'text' => ''],
+        ['key' => 'autonomia', 'title' => 'Autonomía', 'text' => ''],
+    ];
 
     public function presentVersion(VehicleVersion $v): array
     {
