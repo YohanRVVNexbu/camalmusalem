@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import VehicleImage from './vehicle-image';
 
 type NuevosProductCardProps = {
     image: string;
@@ -47,7 +48,7 @@ export function NuevosProductCard({
         <div className="relative w-81.75 pt-16">
             {/* Vehicle image - overflows above the card */}
             <div className="absolute left-1/2 -top-4 z-10 flex h-36 w-[85%] -translate-x-1/2 items-center justify-center">
-                <img
+                <VehicleImage
                     src={image}
                     alt={name}
                     className="max-h-full w-full object-contain"

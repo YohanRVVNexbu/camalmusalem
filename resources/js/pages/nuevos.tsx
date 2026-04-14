@@ -7,6 +7,7 @@ import { Pagination } from '@/components/seminuevos/pagination';
 import { NuevosProductCard } from '@/components/nuevos/product-card';
 import { NuevosListItem } from '@/components/nuevos/product-list-item';
 import { Modal360 } from '@/components/nuevos/modal-360';
+import { Car } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
 
 type Version = {
@@ -119,12 +120,18 @@ export default function Nuevos({ data, footer, vehicles = [] }: { data: any; foo
                                         }`}
                                         style={{ transitionDelay: cardsVisible && !contentVisible ? `${i * 100}ms` : '0ms' }}
                                     >
-                                        <div
-                                            className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105"
-                                            style={{
-                                                backgroundImage: `radial-gradient(84.02% 84.02% at 50% 48.04%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.30) 100%), url(${card.hero_image ?? ''})`,
-                                            }}
-                                        />
+                                        {card.hero_image ? (
+                                            <div
+                                                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105"
+                                                style={{
+                                                    backgroundImage: `radial-gradient(84.02% 84.02% at 50% 48.04%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.30) 100%), url(${card.hero_image})`,
+                                                }}
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 flex items-center justify-center bg-linear-to-b from-black/10 to-black/40">
+                                                <Car className="h-24 w-24 text-white/40" strokeWidth={1.25} />
+                                            </div>
+                                        )}
                                         <div className="relative flex h-full flex-col items-center justify-between">
                                             <div
                                                 className={`mt-6 flex w-65 flex-col items-center gap-3 transition-all duration-600 ease-out ${

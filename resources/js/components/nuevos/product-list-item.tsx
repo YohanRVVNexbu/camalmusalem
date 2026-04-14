@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import VehicleImage from './vehicle-image';
 
 type NuevosListItemProps = {
     image: string;
@@ -47,7 +48,7 @@ export function NuevosListItem({
         <div className="flex w-full items-center overflow-hidden rounded-[20px] bg-white">
             {/* Image */}
             <div className="flex h-44 w-72 shrink-0 items-center justify-center bg-[#F5F5F7] p-4">
-                <img
+                <VehicleImage
                     src={image}
                     alt={name}
                     className="max-h-full w-full object-contain"
