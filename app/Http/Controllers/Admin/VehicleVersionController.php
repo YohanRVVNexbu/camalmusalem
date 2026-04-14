@@ -3,7 +3,13 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\ColorType;
+use App\Models\Drivetrain;
 use App\Models\Feature;
+use App\Models\FeatureCategory;
+use App\Models\FuelType;
+use App\Models\PowertrainType;
+use App\Models\TransmissionType;
 use App\Models\VehicleModel;
 use App\Models\VehicleVersion;
 use App\Models\VersionCapacities;
@@ -156,8 +162,25 @@ class VehicleVersionController extends Controller
                 ->orderBy('display_order')
                 ->get(['id', 'code', 'name_es', 'category'])
                 ->groupBy('category'),
-            'enums' => self::ENUMS,
+            'enums' => $this->enums(),
             'suggestions' => $this->collectSuggestions(),
+        ];
+    }
+
+    private function enums(): array
+    {
+        $map = fn ($class) => $class::where('is_active', true)
+            ->orderBy('display_order')
+            ->pluck('name_es', 'code')
+            ->all();
+
+        return [
+            'powertrain' => $map(PowertrainType::class),
+            'drivetrain' => $map(Drivetrain::class),
+            'transmission' => $map(TransmissionType::class),
+            'color_type' => $map(ColorType::class),
+            'fuel_type' => $map(FuelType::class),
+            'category_labels' => $map(FeatureCategory::class),
         ];
     }
 
@@ -268,9 +291,9 @@ class VehicleVersionController extends Controller
             'vehicle_model_id' => ['required', 'exists:vehicle_models,id'],
             'trim_name' => ['required', 'string', 'max:255'],
             'model_year' => ['required', 'integer', 'min:1990', 'max:2100'],
-            'powertrain_type' => ['required', 'in:gasoline,diesel,hybrid,phev,bev'],
-            'drivetrain' => ['required', 'in:fwd,rwd,awd,4wd'],
-            'transmission_type' => ['nullable', 'in:MT,AT,CVT,eCVT,DCT,AMT'],
+            'powertrain_type' => ['required', 'string', 'exists:powertrain_types,code'],
+            'drivetrain' => ['required', 'string', 'exists:drivetrains,code'],
+            'transmission_type' => ['nullable', 'string', 'exists:transmission_types,code'],
             'transmission_speeds' => ['nullable', 'integer', 'min:1', 'max:12'],
             'msrp_clp' => ['nullable', 'integer', 'min:0'],
             'sales_code' => ['nullable', 'string', 'max:100'],
@@ -289,26 +312,4 @@ class VehicleVersionController extends Controller
         ]);
     }
 
-    private const ENUMS = [
-        'powertrain' => [
-            'gasoline' => 'Gasolina', 'diesel' => 'Diésel', 'hybrid' => 'Híbrido',
-            'phev' => 'Híbrido Enchufable', 'bev' => 'Eléctrico',
-        ],
-        'drivetrain' => [
-            'fwd' => 'Delantera (FWD)', 'rwd' => 'Trasera (RWD)',
-            'awd' => 'Integral (AWD)', '4wd' => '4x4 (4WD)',
-        ],
-        'transmission' => [
-            'MT' => 'Manual (MT)', 'AT' => 'Automática (AT)', 'CVT' => 'CVT',
-            'eCVT' => 'eCVT', 'DCT' => 'Doble embrague (DCT)', 'AMT' => 'Automatizada (AMT)',
-        ],
-        'color_type' => [
-            'solid' => 'Sólido', 'metallic' => 'Metalizado', 'pearl' => 'Perlado', 'matte' => 'Mate',
-        ],
-        'category_labels' => [
-            'safety' => 'Seguridad', 'tss' => 'Toyota Safety Sense', 'comfort' => 'Confort',
-            'infotainment' => 'Infoentretenimiento', 'interior' => 'Interior', 'exterior' => 'Exterior',
-            'offroad' => 'Off-road', 'performance' => 'Rendimiento', 'other' => 'Otros',
-        ],
-    ];
 }

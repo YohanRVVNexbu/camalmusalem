@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feature;
+use App\Models\FeatureCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
@@ -19,7 +20,7 @@ class FeatureController extends Controller
 
         return Inertia::render('admin/features/index', [
             'features' => $features,
-            'categories' => self::CATEGORIES,
+            'categories' => $this->categories(),
         ]);
     }
 
@@ -27,8 +28,16 @@ class FeatureController extends Controller
     {
         return Inertia::render('admin/features/form', [
             'feature' => null,
-            'categories' => self::CATEGORIES,
+            'categories' => $this->categories(),
         ]);
+    }
+
+    private function categories(): array
+    {
+        return FeatureCategory::where('is_active', true)
+            ->orderBy('display_order')
+            ->pluck('name_es', 'code')
+            ->all();
     }
 
     public function store(Request $request)
@@ -47,7 +56,7 @@ class FeatureController extends Controller
     {
         return Inertia::render('admin/features/form', [
             'feature' => $feature,
-            'categories' => self::CATEGORIES,
+            'categories' => $this->categories(),
         ]);
     }
 
@@ -72,7 +81,7 @@ class FeatureController extends Controller
             'code' => ['nullable', 'string', 'max:100', "unique:features,code,{$request->route('feature')?->id}"],
             'name_es' => ['required', 'string', 'max:255'],
             'name_en' => ['nullable', 'string', 'max:255'],
-            'category' => ['required', 'string', 'in:'.implode(',', array_keys(self::CATEGORIES))],
+            'category' => ['required', 'string', 'exists:feature_categories,code'],
             'data_type' => ['required', 'string', 'in:boolean,int,string'],
             'unit' => ['nullable', 'string', 'max:50'],
             'description' => ['nullable', 'string'],
@@ -81,15 +90,4 @@ class FeatureController extends Controller
         ]);
     }
 
-    private const CATEGORIES = [
-        'safety' => 'Seguridad',
-        'tss' => 'Toyota Safety Sense',
-        'comfort' => 'Confort',
-        'infotainment' => 'Infoentretenimiento',
-        'interior' => 'Interior',
-        'exterior' => 'Exterior',
-        'offroad' => 'Off-road',
-        'performance' => 'Rendimiento',
-        'other' => 'Otros',
-    ];
 }

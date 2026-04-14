@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\BodyType;
 use App\Models\Brand;
 use App\Models\VehicleModel;
 use App\Services\SiteSettingsService;
@@ -24,7 +25,7 @@ class VehicleModelController extends Controller
 
         return Inertia::render('admin/vehicle-models/index', [
             'models' => $models,
-            'bodyTypes' => self::BODY_TYPES,
+            'bodyTypes' => $this->bodyTypes(),
         ]);
     }
 
@@ -33,8 +34,16 @@ class VehicleModelController extends Controller
         return Inertia::render('admin/vehicle-models/form', [
             'model' => null,
             'brands' => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'bodyTypes' => self::BODY_TYPES,
+            'bodyTypes' => $this->bodyTypes(),
         ]);
+    }
+
+    private function bodyTypes(): array
+    {
+        return BodyType::where('is_active', true)
+            ->orderBy('display_order')
+            ->pluck('name_es', 'code')
+            ->all();
     }
 
     public function store(Request $request)
@@ -63,7 +72,7 @@ class VehicleModelController extends Controller
         return Inertia::render('admin/vehicle-models/form', [
             'model' => $vehicleModel,
             'brands' => Brand::where('is_active', true)->orderBy('name')->get(['id', 'name']),
-            'bodyTypes' => self::BODY_TYPES,
+            'bodyTypes' => $this->bodyTypes(),
         ]);
     }
 
@@ -99,7 +108,7 @@ class VehicleModelController extends Controller
         return $request->validate([
             'brand_id' => ['required', 'exists:brands,id'],
             'name' => ['required', 'string', 'max:255'],
-            'body_type' => ['nullable', 'string', 'in:'.implode(',', array_keys(self::BODY_TYPES))],
+            'body_type' => ['nullable', 'string', 'exists:body_types,code'],
             'segment' => ['nullable', 'string', 'max:100'],
             'generation' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
@@ -108,14 +117,4 @@ class VehicleModelController extends Controller
         ]);
     }
 
-    private const BODY_TYPES = [
-        'sedan' => 'Sedán',
-        'hatchback' => 'Hatchback',
-        'suv' => 'SUV',
-        'pickup' => 'Pickup',
-        'crossover' => 'Crossover',
-        'coupe' => 'Coupé',
-        'van' => 'Van',
-        'other' => 'Otro',
-    ];
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\AccesorioController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\FeatureController;
+use App\Http\Controllers\Admin\LookupController;
 use App\Http\Controllers\Admin\VehicleModelController;
 use App\Http\Controllers\Admin\VehicleVersionController;
 use App\Http\Controllers\Admin\ContactoController;
@@ -47,6 +48,12 @@ Route::middleware('admin')->group(function () {
     Route::resource('features', FeatureController::class)
         ->except(['show'])
         ->names('admin.features');
+
+    // Listas editables (lookups)
+    Route::get('lookups', [LookupController::class, 'index'])->name('admin.lookups');
+    Route::post('lookups/{type}', [LookupController::class, 'store'])->name('admin.lookups.store');
+    Route::put('lookups/{type}/{id}', [LookupController::class, 'update'])->name('admin.lookups.update');
+    Route::delete('lookups/{type}/{id}', [LookupController::class, 'destroy'])->name('admin.lookups.destroy');
 
     // Catálogo técnico — Modelos de vehículos
     Route::resource('vehicle-models', VehicleModelController::class)

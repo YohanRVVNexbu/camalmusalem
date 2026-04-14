@@ -55,6 +55,7 @@ type Enums = {
     drivetrain: Record<string, string>;
     transmission: Record<string, string>;
     color_type: Record<string, string>;
+    fuel_type: Record<string, string>;
     category_labels: Record<string, string>;
 };
 
@@ -373,10 +374,9 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                                 <Select value={data.engine?.fuel_type ?? ''} onValueChange={(v) => setSatField('engine', 'fuel_type', v || null)}>
                                     <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                                     <SelectContent>
-                                        <SelectItem value="gasoline">Gasolina</SelectItem>
-                                        <SelectItem value="diesel">Diésel</SelectItem>
-                                        <SelectItem value="lpg">GLP</SelectItem>
-                                        <SelectItem value="cng">GNC</SelectItem>
+                                        {Object.entries(enums.fuel_type).map(([k, l]) => (
+                                            <SelectItem key={k} value={k}>{l}</SelectItem>
+                                        ))}
                                     </SelectContent>
                                 </Select>
                             </div>
