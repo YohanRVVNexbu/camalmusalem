@@ -58,11 +58,19 @@ type Enums = {
     category_labels: Record<string, string>;
 };
 
+type Suggestions = {
+    engine: Record<string, string[]>;
+    electric: Record<string, string[]>;
+    chassis: Record<string, string[]>;
+    colors: Record<string, string[]>;
+};
+
 type Props = {
     version: VersionPayload | null;
     models: ModelLite[];
     features: FeaturesByCategory;
     enums: Enums;
+    suggestions: Suggestions;
 };
 
 type SectionKey = 'basico' | 'motor' | 'electrico' | 'dimensiones' | 'capacidades' | 'rendimiento' | 'chasis' | 'equipamiento' | 'colores';
@@ -99,7 +107,7 @@ const empty = (): VersionPayload => ({
     colors: [],
 });
 
-export default function VehicleVersionForm({ version, models, features, enums }: Props) {
+export default function VehicleVersionForm({ version, models, features, enums, suggestions }: Props) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!version?.id;
 
@@ -188,17 +196,27 @@ export default function VehicleVersionForm({ version, models, features, enums }:
     };
 
     // Generic helpers for satellite fields
-    const Field = ({ label, value, onChange, type = 'text', placeholder }: any) => (
-        <div className="grid gap-1.5">
-            <Label className="text-xs">{label}</Label>
-            <Input
-                type={type}
-                value={value ?? ''}
-                onChange={(e) => onChange(type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value || null)}
-                placeholder={placeholder}
-            />
-        </div>
-    );
+    const Field = ({ label, value, onChange, type = 'text', placeholder, suggest }: any) => {
+        const hasSuggest = Array.isArray(suggest) && suggest.length > 0;
+        const listId = hasSuggest ? `dl-${label.replace(/\s+/g, '-').toLowerCase()}` : undefined;
+        return (
+            <div className="grid gap-1.5">
+                <Label className="text-xs">{label}</Label>
+                <Input
+                    type={type}
+                    value={value ?? ''}
+                    onChange={(e) => onChange(type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value || null)}
+                    placeholder={placeholder}
+                    list={listId}
+                />
+                {hasSuggest && (
+                    <datalist id={listId}>
+                        {suggest.map((s: string) => <option key={s} value={s} />)}
+                    </datalist>
+                )}
+            </div>
+        );
+    };
 
     const SectionNav = () => (
         <div className="flex flex-wrap gap-1 border-b pb-2">
@@ -332,12 +350,12 @@ export default function VehicleVersionForm({ version, models, features, enums }:
 
                     {section === 'motor' && (
                         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                            <Field label="Código motor" value={data.engine?.engine_code} onChange={(v: any) => setSatField('engine', 'engine_code', v)} placeholder="Ej: 1GD-FTV" />
+                            <Field label="Código motor" value={data.engine?.engine_code} onChange={(v: any) => setSatField('engine', 'engine_code', v)} placeholder="Ej: 1GD-FTV" suggest={suggestions.engine.engine_code} />
                             <Field label="N° cilindros" type="number" value={data.engine?.cylinders} onChange={(v: any) => setSatField('engine', 'cylinders', v)} />
-                            <Field label="Configuración" value={data.engine?.layout} onChange={(v: any) => setSatField('engine', 'layout', v)} placeholder="Ej: en línea" />
+                            <Field label="Configuración" value={data.engine?.layout} onChange={(v: any) => setSatField('engine', 'layout', v)} placeholder="Ej: en línea" suggest={suggestions.engine.layout} />
                             <Field label="Cilindrada (cc)" type="number" value={data.engine?.displacement_cc} onChange={(v: any) => setSatField('engine', 'displacement_cc', v)} />
-                            <Field label="Relación compresión" value={data.engine?.compression_ratio} onChange={(v: any) => setSatField('engine', 'compression_ratio', v)} placeholder="Ej: 15.6:1" />
-                            <Field label="Alimentación" value={data.engine?.fuel_system} onChange={(v: any) => setSatField('engine', 'fuel_system', v)} placeholder="Ej: Common-Rail Turbo" />
+                            <Field label="Relación compresión" value={data.engine?.compression_ratio} onChange={(v: any) => setSatField('engine', 'compression_ratio', v)} placeholder="Ej: 15.6:1" suggest={suggestions.engine.compression_ratio} />
+                            <Field label="Alimentación" value={data.engine?.fuel_system} onChange={(v: any) => setSatField('engine', 'fuel_system', v)} placeholder="Ej: Common-Rail Turbo" suggest={suggestions.engine.fuel_system} />
                             <Field label="Potencia (HP)" type="number" value={data.engine?.hp} onChange={(v: any) => setSatField('engine', 'hp', v)} />
                             <Field label="Potencia @ RPM" type="number" value={data.engine?.hp_rpm} onChange={(v: any) => setSatField('engine', 'hp_rpm', v)} />
                             <Field label="Torque (Nm)" type="number" value={data.engine?.torque_nm} onChange={(v: any) => setSatField('engine', 'torque_nm', v)} />
@@ -355,20 +373,20 @@ export default function VehicleVersionForm({ version, models, features, enums }:
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <Field label="Norma emisiones" value={data.engine?.emissions_standard} onChange={(v: any) => setSatField('engine', 'emissions_standard', v)} placeholder="Ej: Euro 5" />
+                            <Field label="Norma emisiones" value={data.engine?.emissions_standard} onChange={(v: any) => setSatField('engine', 'emissions_standard', v)} placeholder="Ej: Euro 5" suggest={suggestions.engine.emissions_standard} />
                             <Field label="Octanaje recomendado" value={data.engine?.octane_recommended} onChange={(v: any) => setSatField('engine', 'octane_recommended', v)} />
                         </div>
                     )}
 
                     {section === 'electrico' && showElectric && (
                         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                            <Field label="Tipo motor eléctrico" value={data.electric?.motor_type} onChange={(v: any) => setSatField('electric', 'motor_type', v)} />
+                            <Field label="Tipo motor eléctrico" value={data.electric?.motor_type} onChange={(v: any) => setSatField('electric', 'motor_type', v)} suggest={suggestions.electric.motor_type} />
                             <Field label="Motor delantero (kW)" type="number" value={data.electric?.motor_front_kw} onChange={(v: any) => setSatField('electric', 'motor_front_kw', v)} />
                             <Field label="Motor trasero (kW)" type="number" value={data.electric?.motor_rear_kw} onChange={(v: any) => setSatField('electric', 'motor_rear_kw', v)} />
                             <Field label="Potencia combinada (kW)" type="number" value={data.electric?.combined_kw} onChange={(v: any) => setSatField('electric', 'combined_kw', v)} />
                             <Field label="Potencia combinada (HP)" type="number" value={data.electric?.combined_hp} onChange={(v: any) => setSatField('electric', 'combined_hp', v)} />
                             <Field label="Torque combinado (Nm)" type="number" value={data.electric?.combined_torque_nm} onChange={(v: any) => setSatField('electric', 'combined_torque_nm', v)} />
-                            <Field label="Tipo batería" value={data.electric?.battery_type} onChange={(v: any) => setSatField('electric', 'battery_type', v)} placeholder="Li-ion" />
+                            <Field label="Tipo batería" value={data.electric?.battery_type} onChange={(v: any) => setSatField('electric', 'battery_type', v)} placeholder="Li-ion" suggest={suggestions.electric.battery_type} />
                             <Field label="Capacidad batería (kWh)" type="number" value={data.electric?.battery_kwh} onChange={(v: any) => setSatField('electric', 'battery_kwh', v)} />
                             <Field label="Celdas" type="number" value={data.electric?.battery_cells} onChange={(v: any) => setSatField('electric', 'battery_cells', v)} />
                             <Field label="Voltaje (V)" type="number" value={data.electric?.battery_voltage} onChange={(v: any) => setSatField('electric', 'battery_voltage', v)} />
@@ -377,7 +395,7 @@ export default function VehicleVersionForm({ version, models, features, enums }:
                             <Field label="Carga DC (kW)" type="number" value={data.electric?.dc_charge_kw} onChange={(v: any) => setSatField('electric', 'dc_charge_kw', v)} />
                             <Field label="Tiempo carga AC (min)" type="number" value={data.electric?.ac_charge_minutes} onChange={(v: any) => setSatField('electric', 'ac_charge_minutes', v)} />
                             <Field label="Tiempo carga DC (min)" type="number" value={data.electric?.dc_charge_minutes} onChange={(v: any) => setSatField('electric', 'dc_charge_minutes', v)} />
-                            <Field label="Conector carga" value={data.electric?.charge_connector} onChange={(v: any) => setSatField('electric', 'charge_connector', v)} placeholder="Tipo 2 CCS2" />
+                            <Field label="Conector carga" value={data.electric?.charge_connector} onChange={(v: any) => setSatField('electric', 'charge_connector', v)} placeholder="Tipo 2 CCS2" suggest={suggestions.electric.charge_connector} />
                         </div>
                     )}
 
@@ -427,16 +445,16 @@ export default function VehicleVersionForm({ version, models, features, enums }:
 
                     {section === 'chasis' && (
                         <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
-                            <Field label="Dirección" value={data.chassis?.steering_type} onChange={(v: any) => setSatField('chassis', 'steering_type', v)} placeholder="Asistida eléctrica" />
-                            <Field label="Suspensión delantera" value={data.chassis?.front_suspension} onChange={(v: any) => setSatField('chassis', 'front_suspension', v)} />
-                            <Field label="Suspensión trasera" value={data.chassis?.rear_suspension} onChange={(v: any) => setSatField('chassis', 'rear_suspension', v)} />
-                            <Field label="Frenos delanteros" value={data.chassis?.front_brakes} onChange={(v: any) => setSatField('chassis', 'front_brakes', v)} />
-                            <Field label="Frenos traseros" value={data.chassis?.rear_brakes} onChange={(v: any) => setSatField('chassis', 'rear_brakes', v)} />
-                            <Field label="Freno estacionamiento" value={data.chassis?.parking_brake} onChange={(v: any) => setSatField('chassis', 'parking_brake', v)} />
-                            <Field label="Neumático delantero" value={data.chassis?.front_tire} onChange={(v: any) => setSatField('chassis', 'front_tire', v)} placeholder="265/65R17" />
-                            <Field label="Neumático trasero" value={data.chassis?.rear_tire} onChange={(v: any) => setSatField('chassis', 'rear_tire', v)} />
+                            <Field label="Dirección" value={data.chassis?.steering_type} onChange={(v: any) => setSatField('chassis', 'steering_type', v)} placeholder="Asistida eléctrica" suggest={suggestions.chassis.steering_type} />
+                            <Field label="Suspensión delantera" value={data.chassis?.front_suspension} onChange={(v: any) => setSatField('chassis', 'front_suspension', v)} suggest={suggestions.chassis.front_suspension} />
+                            <Field label="Suspensión trasera" value={data.chassis?.rear_suspension} onChange={(v: any) => setSatField('chassis', 'rear_suspension', v)} suggest={suggestions.chassis.rear_suspension} />
+                            <Field label="Frenos delanteros" value={data.chassis?.front_brakes} onChange={(v: any) => setSatField('chassis', 'front_brakes', v)} suggest={suggestions.chassis.front_brakes} />
+                            <Field label="Frenos traseros" value={data.chassis?.rear_brakes} onChange={(v: any) => setSatField('chassis', 'rear_brakes', v)} suggest={suggestions.chassis.rear_brakes} />
+                            <Field label="Freno estacionamiento" value={data.chassis?.parking_brake} onChange={(v: any) => setSatField('chassis', 'parking_brake', v)} suggest={suggestions.chassis.parking_brake} />
+                            <Field label="Neumático delantero" value={data.chassis?.front_tire} onChange={(v: any) => setSatField('chassis', 'front_tire', v)} placeholder="265/65R17" suggest={suggestions.chassis.front_tire} />
+                            <Field label="Neumático trasero" value={data.chassis?.rear_tire} onChange={(v: any) => setSatField('chassis', 'rear_tire', v)} suggest={suggestions.chassis.rear_tire} />
                             <Field label="Tamaño llanta (pulg.)" type="number" value={data.chassis?.wheel_size_in} onChange={(v: any) => setSatField('chassis', 'wheel_size_in', v)} />
-                            <Field label="Material llanta" value={data.chassis?.wheel_material} onChange={(v: any) => setSatField('chassis', 'wheel_material', v)} placeholder="aleación" />
+                            <Field label="Material llanta" value={data.chassis?.wheel_material} onChange={(v: any) => setSatField('chassis', 'wheel_material', v)} placeholder="aleación" suggest={suggestions.chassis.wheel_material} />
                         </div>
                     )}
 
@@ -494,7 +512,11 @@ export default function VehicleVersionForm({ version, models, features, enums }:
                                                 setData({ ...data, colors });
                                             }}
                                             placeholder="Ej: Blanco Perla"
+                                            list="dl-color-name"
                                         />
+                                        <datalist id="dl-color-name">
+                                            {suggestions.colors.name.map((s) => <option key={s} value={s} />)}
+                                        </datalist>
                                     </div>
                                     <div className="grid gap-1.5">
                                         <Label className="text-xs">Hex</Label>

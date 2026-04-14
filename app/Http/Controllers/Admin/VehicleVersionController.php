@@ -152,6 +152,48 @@ class VehicleVersionController extends Controller
                 ->get(['id', 'code', 'name_es', 'category'])
                 ->groupBy('category'),
             'enums' => self::ENUMS,
+            'suggestions' => $this->collectSuggestions(),
+        ];
+    }
+
+    private function collectSuggestions(): array
+    {
+        $distinct = fn (string $table, string $column) => DB::table($table)
+            ->whereNotNull($column)
+            ->where($column, '!=', '')
+            ->distinct()
+            ->orderBy($column)
+            ->pluck($column)
+            ->values()
+            ->all();
+
+        return [
+            'engine' => [
+                'engine_code' => $distinct('version_engine', 'engine_code'),
+                'layout' => $distinct('version_engine', 'layout'),
+                'fuel_system' => $distinct('version_engine', 'fuel_system'),
+                'emissions_standard' => $distinct('version_engine', 'emissions_standard'),
+                'compression_ratio' => $distinct('version_engine', 'compression_ratio'),
+            ],
+            'electric' => [
+                'motor_type' => $distinct('version_electric', 'motor_type'),
+                'battery_type' => $distinct('version_electric', 'battery_type'),
+                'charge_connector' => $distinct('version_electric', 'charge_connector'),
+            ],
+            'chassis' => [
+                'steering_type' => $distinct('version_chassis', 'steering_type'),
+                'front_suspension' => $distinct('version_chassis', 'front_suspension'),
+                'rear_suspension' => $distinct('version_chassis', 'rear_suspension'),
+                'front_brakes' => $distinct('version_chassis', 'front_brakes'),
+                'rear_brakes' => $distinct('version_chassis', 'rear_brakes'),
+                'parking_brake' => $distinct('version_chassis', 'parking_brake'),
+                'front_tire' => $distinct('version_chassis', 'front_tire'),
+                'rear_tire' => $distinct('version_chassis', 'rear_tire'),
+                'wheel_material' => $distinct('version_chassis', 'wheel_material'),
+            ],
+            'colors' => [
+                'name' => $distinct('version_colors', 'name'),
+            ],
         ];
     }
 
