@@ -30,3 +30,6 @@ yarn-error.log
 # Sección prueba WordPress
 /public/seccion-prueba.html
 /public/images/frutas/
+
+# Fichas técnicas originales del cliente (fuente de extracción)
+/modelos_autos/

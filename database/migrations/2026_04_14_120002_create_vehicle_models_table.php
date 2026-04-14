@@ -1,0 +1,33 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('vehicle_models', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('brand_id')->constrained()->cascadeOnDelete();
+            $table->string('name');
+            $table->string('slug');
+            $table->enum('body_type', ['sedan', 'hatchback', 'suv', 'pickup', 'crossover', 'coupe', 'van', 'other'])->nullable();
+            $table->string('segment')->nullable();
+            $table->string('generation')->nullable();
+            $table->text('description')->nullable();
+            $table->string('hero_image')->nullable();
+            $table->boolean('is_active')->default(true);
+            $table->integer('display_order')->default(0);
+            $table->timestamps();
+
+            $table->unique(['brand_id', 'slug']);
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('vehicle_models');
+    }
+};
