@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, LogOut, Mail, Newspaper, RefreshCw, Shirt, UserCog, Users, Wrench, Wrench as WrenchIcon, KeySquare } from 'lucide-react';
+import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, ListChecks, LogOut, Mail, Newspaper, RefreshCw, Shirt, Tag, UserCog, Users, Wrench, Wrench as WrenchIcon, KeySquare } from 'lucide-react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
 import {
     DropdownMenu,
@@ -30,6 +30,11 @@ const dashboardItem: NavItem = { title: 'Dashboard', href: '/admin', icon: Layou
 
 const paginasItems: NavItem[] = [
     { title: 'Páginas', href: '/admin/paginas', icon: FileText },
+];
+
+const catalogoTecnicoItems: NavItem[] = [
+    { title: 'Marcas',          href: '/admin/brands',   icon: Tag },
+    { title: 'Equipamiento',    href: '/admin/features', icon: ListChecks },
 ];
 
 const catalogoItems: NavItem[] = [
@@ -156,6 +161,9 @@ export function AdminSidebar() {
 
                 {/* Administración de páginas */}
                 <NavGroup label="Administración de páginas" items={paginasItems} isCurrentUrl={isCurrentUrl} />
+
+                {/* Catálogo técnico (mantenedores) */}
+                <NavGroup label="Catálogo técnico" items={catalogoTecnicoItems} isCurrentUrl={isCurrentUrl} />
 
                 {/* Catálogo y contenido */}
                 <NavGroup label="Catálogo y contenido" items={catalogoItems} isCurrentUrl={isCurrentUrl} />
