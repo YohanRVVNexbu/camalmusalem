@@ -215,6 +215,12 @@ class SiteSectionsSeeder extends Seeder
                 'title' => 'Vehículos Nuevos',
                 'description' => 'Explora la gama completa de Toyota disponible en Musalem. Encuentra el vehículo perfecto para ti.',
                 'categories' => ['SUV', 'Sedán', 'Camioneta', 'Hatchback', 'Comercial'],
+                'hero_cards' => [
+                    ['vehicle_model_id' => null, 'image_override' => null, 'show_electric_badge' => 'auto'],
+                    ['vehicle_model_id' => null, 'image_override' => null, 'show_electric_badge' => 'auto'],
+                    ['vehicle_model_id' => null, 'image_override' => null, 'show_electric_badge' => 'auto'],
+                    ['vehicle_model_id' => null, 'image_override' => null, 'show_electric_badge' => 'auto'],
+                ],
                 'vehicles' => [
                     [
                         'image' => $url('home/about/BZ4X.png'),

@@ -17,7 +17,7 @@ use PhpOffice\PhpSpreadsheet\Style\Fill;
  */
 class ExportVehicleCatalog extends Command
 {
-    protected $signature = 'vehicles:export-catalog {--path=storage/app/catalogo_vehiculos.xlsx}';
+    protected $signature = 'vehicles:export-catalog {--path=catalogo_vehiculos.xlsx}';
 
     protected $description = 'Exporta el catálogo completo a un .xlsx con UNA sola hoja plana (1 fila por versión).';
 

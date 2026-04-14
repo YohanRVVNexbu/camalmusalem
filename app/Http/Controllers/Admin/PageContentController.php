@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SiteSection;
+use App\Models\VehicleModel;
 use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
@@ -13,6 +14,7 @@ class PageContentController extends Controller
 {
     // Map page slug → [section keys]
     private const PAGE_SECTIONS = [
+        'nuevos'       => ['nuevos_page'],
         'kinto'        => ['kinto_hero', 'kinto_pasos', 'kinto_vehiculos'],
         'nosotros'     => ['nosotros_hero', 'nosotros_historia', 'nosotros_mision', 'nosotros_vision', 'nosotros_equipo', 'nosotros_reconocimientos'],
         'contacto'     => ['contacto_info'],
@@ -30,6 +32,7 @@ class PageContentController extends Controller
     public function index()
     {
         $pages = [
+            ['slug' => 'nuevos',     'title' => 'Vehículos Nuevos',    'icon' => '🚙'],
             ['slug' => 'kinto',      'title' => 'Arriendo KINTO',      'icon' => '🚗'],
             ['slug' => 'nosotros',   'title' => 'Nosotros',            'icon' => '🏢'],
             ['slug' => 'contacto',   'title' => 'Contacto',            'icon' => '📞'],
@@ -61,9 +64,28 @@ class PageContentController extends Controller
             ])
             ->toArray();
 
+        $extra = [];
+        if ($page === 'nuevos') {
+            $extra['vehicle_models'] = VehicleModel::with([
+                'brand',
+                'versions' => fn ($q) => $q->where('is_active', true)->orderBy('display_order'),
+            ])
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($m) => [
+                    'id' => $m->id,
+                    'name' => $m->name,
+                    'brand_name' => $m->brand->name,
+                    'hero_image' => $m->hero_image,
+                    'is_electric' => $m->versions->contains(fn ($v) => $v->powertrain_type === 'bev'),
+                ])->values();
+        }
+
         return Inertia::render("admin/paginas/{$page}", [
             'page'     => $page,
             'sections' => $sections,
+            ...$extra,
         ]);
     }
 

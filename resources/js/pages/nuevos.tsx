@@ -58,7 +58,9 @@ function vehicleElectric(v: Vehicle): boolean {
     return v.versions?.[0]?.electric ?? false;
 }
 
-export default function Nuevos({ data, footer, vehicles = [] }: { data: any; footer: any; vehicles: Vehicle[] }) {
+type HeroCardVehicle = Vehicle & { force_electric_badge?: boolean };
+
+export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCardsProp }: { data: any; footer: any; vehicles: Vehicle[]; heroCards?: HeroCardVehicle[] }) {
     const [cardsVisible, setCardsVisible] = useState(false);
     const [contentVisible, setContentVisible] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(true);
@@ -75,7 +77,9 @@ export default function Nuevos({ data, footer, vehicles = [] }: { data: any; foo
     const ITEMS_PER_PAGE_GRID = 9;
     const ITEMS_PER_PAGE_LIST = 6;
 
-    const heroCards = vehicles.slice(0, 4);
+    const heroCards: HeroCardVehicle[] = heroCardsProp && heroCardsProp.length > 0
+        ? heroCardsProp
+        : vehicles.slice(0, 4);
 
     const itemsPerPage = viewMode === 'grid' ? ITEMS_PER_PAGE_GRID : ITEMS_PER_PAGE_LIST;
     const totalPages = Math.ceil(vehicles.length / itemsPerPage);
@@ -142,7 +146,7 @@ export default function Nuevos({ data, footer, vehicles = [] }: { data: any; foo
                                                 <span className="text-center text-2xl font-semibold uppercase leading-none text-white drop-shadow">
                                                     {card.name}
                                                 </span>
-                                                {vehicleElectric(card) && <ElectricBadge />}
+                                                {(card.force_electric_badge ?? vehicleElectric(card)) && <ElectricBadge />}
                                             </div>
                                             <div
                                                 className={`mb-3 flex flex-col items-center gap-3 transition-all duration-600 ease-out group-hover:-translate-y-6 ${
