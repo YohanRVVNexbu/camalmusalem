@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, ListChecks, LogOut, Mail, Newspaper, RefreshCw, Shirt, Tag, UserCog, Users, Wrench, Wrench as WrenchIcon, KeySquare } from 'lucide-react';
+import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, Layers, ListChecks, LogOut, Mail, Newspaper, RefreshCw, Shirt, Tag, UserCog, Users, Wrench, Wrench as WrenchIcon, KeySquare } from 'lucide-react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
 import {
     DropdownMenu,
@@ -33,9 +33,10 @@ const paginasItems: NavItem[] = [
 ];
 
 const catalogoTecnicoItems: NavItem[] = [
-    { title: 'Marcas',          href: '/admin/brands',          icon: Tag },
-    { title: 'Modelos',         href: '/admin/vehicle-models',  icon: Car },
-    { title: 'Equipamiento',    href: '/admin/features',        icon: ListChecks },
+    { title: 'Marcas',          href: '/admin/brands',            icon: Tag },
+    { title: 'Modelos',         href: '/admin/vehicle-models',    icon: Car },
+    { title: 'Versiones',       href: '/admin/vehicle-versions',  icon: Layers },
+    { title: 'Equipamiento',    href: '/admin/features',          icon: ListChecks },
 ];
 
 const catalogoItems: NavItem[] = [

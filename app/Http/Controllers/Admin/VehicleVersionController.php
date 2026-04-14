@@ -1,0 +1,267 @@
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Feature;
+use App\Models\VehicleModel;
+use App\Models\VehicleVersion;
+use App\Models\VersionCapacities;
+use App\Models\VersionChassis;
+use App\Models\VersionColor;
+use App\Models\VersionDimensions;
+use App\Models\VersionElectric;
+use App\Models\VersionEngine;
+use App\Models\VersionPerformance;
+use App\Services\SiteSettingsService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
+use Inertia\Inertia;
+
+class VehicleVersionController extends Controller
+{
+    public function __construct(private SiteSettingsService $settings) {}
+
+    public function index(Request $request)
+    {
+        $query = VehicleVersion::with('model.brand')->orderBy('model_year', 'desc');
+
+        if ($request->filled('model_id')) {
+            $query->where('vehicle_model_id', $request->integer('model_id'));
+        }
+
+        return Inertia::render('admin/vehicle-versions/index', [
+            'versions' => $query->get(),
+            'models' => VehicleModel::with('brand')->where('is_active', true)->orderBy('name')->get(['id', 'name', 'brand_id']),
+            'filters' => $request->only(['model_id']),
+        ]);
+    }
+
+    public function create()
+    {
+        return Inertia::render('admin/vehicle-versions/form', $this->formProps(null));
+    }
+
+    public function store(Request $request)
+    {
+        $data = $this->validated($request);
+        $data['slug'] = Str::slug($data['trim_name']);
+
+        $version = DB::transaction(function () use ($request, $data) {
+            $version = VehicleVersion::create([
+                'vehicle_model_id' => $data['vehicle_model_id'],
+                'trim_name' => $data['trim_name'],
+                'slug' => $data['slug'],
+                'model_year' => $data['model_year'],
+                'powertrain_type' => $data['powertrain_type'],
+                'drivetrain' => $data['drivetrain'],
+                'transmission_type' => $data['transmission_type'] ?? null,
+                'transmission_speeds' => $data['transmission_speeds'] ?? null,
+                'msrp_clp' => $data['msrp_clp'] ?? null,
+                'sales_code' => $data['sales_code'] ?? null,
+                'description' => $data['description'] ?? null,
+                'is_active' => $data['is_active'] ?? true,
+                'display_order' => $data['display_order'] ?? 0,
+            ]);
+
+            $this->syncSatellites($version, $request);
+            $this->syncFeatures($version, $request->input('feature_ids', []));
+            $this->syncColors($version, $request->input('colors', []));
+
+            return $version;
+        });
+
+        if ($request->hasFile('hero_image')) {
+            $version->update([
+                'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-versions/'.$version->id),
+            ]);
+        }
+
+        return redirect('/admin/vehicle-versions')->with('success', 'Versión creada correctamente.');
+    }
+
+    public function edit(VehicleVersion $vehicleVersion)
+    {
+        return Inertia::render('admin/vehicle-versions/form', $this->formProps($vehicleVersion));
+    }
+
+    public function update(Request $request, VehicleVersion $vehicleVersion)
+    {
+        $data = $this->validated($request);
+        $data['slug'] = Str::slug($data['trim_name']);
+
+        DB::transaction(function () use ($request, $data, $vehicleVersion) {
+            $vehicleVersion->update([
+                'vehicle_model_id' => $data['vehicle_model_id'],
+                'trim_name' => $data['trim_name'],
+                'slug' => $data['slug'],
+                'model_year' => $data['model_year'],
+                'powertrain_type' => $data['powertrain_type'],
+                'drivetrain' => $data['drivetrain'],
+                'transmission_type' => $data['transmission_type'] ?? null,
+                'transmission_speeds' => $data['transmission_speeds'] ?? null,
+                'msrp_clp' => $data['msrp_clp'] ?? null,
+                'sales_code' => $data['sales_code'] ?? null,
+                'description' => $data['description'] ?? null,
+                'is_active' => $data['is_active'] ?? true,
+                'display_order' => $data['display_order'] ?? 0,
+            ]);
+
+            $this->syncSatellites($vehicleVersion, $request);
+            $this->syncFeatures($vehicleVersion, $request->input('feature_ids', []));
+            $this->syncColors($vehicleVersion, $request->input('colors', []));
+        });
+
+        if ($request->hasFile('hero_image')) {
+            $this->settings->deleteOldFile($vehicleVersion->hero_image);
+            $vehicleVersion->update([
+                'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-versions/'.$vehicleVersion->id),
+            ]);
+        }
+
+        return back()->with('success', 'Versión actualizada correctamente.');
+    }
+
+    public function destroy(VehicleVersion $vehicleVersion)
+    {
+        $this->settings->deleteOldFile($vehicleVersion->hero_image);
+        $vehicleVersion->delete();
+
+        return redirect('/admin/vehicle-versions')->with('success', 'Versión eliminada.');
+    }
+
+    private function formProps(?VehicleVersion $version): array
+    {
+        $version?->load([
+            'engine', 'electric', 'dimensions', 'capacities',
+            'performance', 'chassis', 'features', 'colors', 'model.brand',
+        ]);
+
+        return [
+            'version' => $version ? [
+                ...$version->toArray(),
+                'feature_ids' => $version->features->pluck('id')->all(),
+            ] : null,
+            'models' => VehicleModel::with('brand')->where('is_active', true)->orderBy('name')
+                ->get(['id', 'name', 'brand_id'])
+                ->map(fn ($m) => ['id' => $m->id, 'name' => $m->name, 'brand_name' => $m->brand->name]),
+            'features' => Feature::where('is_active', true)
+                ->orderBy('category')
+                ->orderBy('display_order')
+                ->get(['id', 'code', 'name_es', 'category'])
+                ->groupBy('category'),
+            'enums' => self::ENUMS,
+        ];
+    }
+
+    private function syncSatellites(VehicleVersion $version, Request $request): void
+    {
+        $sections = [
+            'engine' => VersionEngine::class,
+            'electric' => VersionElectric::class,
+            'dimensions' => VersionDimensions::class,
+            'capacities' => VersionCapacities::class,
+            'performance' => VersionPerformance::class,
+            'chassis' => VersionChassis::class,
+        ];
+
+        foreach ($sections as $key => $modelClass) {
+            $payload = $request->input($key);
+            if (! is_array($payload) || empty(array_filter($payload, fn ($v) => $v !== null && $v !== ''))) {
+                $modelClass::where('vehicle_version_id', $version->id)->delete();
+
+                continue;
+            }
+            $modelClass::updateOrCreate(['vehicle_version_id' => $version->id], $payload);
+        }
+    }
+
+    private function syncFeatures(VehicleVersion $version, array $featureIds): void
+    {
+        $sync = collect($featureIds)->mapWithKeys(fn ($id) => [(int) $id => ['value_bool' => true]])->all();
+        $version->features()->sync($sync);
+    }
+
+    private function syncColors(VehicleVersion $version, array $colors): void
+    {
+        $existingIds = $version->colors()->pluck('id')->all();
+        $keepIds = [];
+
+        foreach ($colors as $i => $c) {
+            if (empty($c['name'])) {
+                continue;
+            }
+            $row = [
+                'vehicle_version_id' => $version->id,
+                'name' => $c['name'],
+                'hex' => $c['hex'] ?? null,
+                'type' => $c['type'] ?? 'solid',
+                'is_available' => (bool) ($c['is_available'] ?? true),
+                'display_order' => $i,
+            ];
+            if (! empty($c['id'])) {
+                VersionColor::where('id', $c['id'])->update($row);
+                $keepIds[] = (int) $c['id'];
+            } else {
+                $new = VersionColor::create($row);
+                $keepIds[] = $new->id;
+            }
+        }
+
+        $toDelete = array_diff($existingIds, $keepIds);
+        if ($toDelete) {
+            VersionColor::whereIn('id', $toDelete)->delete();
+        }
+    }
+
+    private function validated(Request $request): array
+    {
+        return $request->validate([
+            'vehicle_model_id' => ['required', 'exists:vehicle_models,id'],
+            'trim_name' => ['required', 'string', 'max:255'],
+            'model_year' => ['required', 'integer', 'min:1990', 'max:2100'],
+            'powertrain_type' => ['required', 'in:gasoline,diesel,hybrid,phev,bev'],
+            'drivetrain' => ['required', 'in:fwd,rwd,awd,4wd'],
+            'transmission_type' => ['nullable', 'in:MT,AT,CVT,eCVT,DCT,AMT'],
+            'transmission_speeds' => ['nullable', 'integer', 'min:1', 'max:12'],
+            'msrp_clp' => ['nullable', 'integer', 'min:0'],
+            'sales_code' => ['nullable', 'string', 'max:100'],
+            'description' => ['nullable', 'string'],
+            'is_active' => ['boolean'],
+            'display_order' => ['integer'],
+            'engine' => ['nullable', 'array'],
+            'electric' => ['nullable', 'array'],
+            'dimensions' => ['nullable', 'array'],
+            'capacities' => ['nullable', 'array'],
+            'performance' => ['nullable', 'array'],
+            'chassis' => ['nullable', 'array'],
+            'feature_ids' => ['nullable', 'array'],
+            'feature_ids.*' => ['integer', 'exists:features,id'],
+            'colors' => ['nullable', 'array'],
+        ]);
+    }
+
+    private const ENUMS = [
+        'powertrain' => [
+            'gasoline' => 'Gasolina', 'diesel' => 'Diésel', 'hybrid' => 'Híbrido',
+            'phev' => 'Híbrido Enchufable', 'bev' => 'Eléctrico',
+        ],
+        'drivetrain' => [
+            'fwd' => 'Delantera (FWD)', 'rwd' => 'Trasera (RWD)',
+            'awd' => 'Integral (AWD)', '4wd' => '4x4 (4WD)',
+        ],
+        'transmission' => [
+            'MT' => 'Manual (MT)', 'AT' => 'Automática (AT)', 'CVT' => 'CVT',
+            'eCVT' => 'eCVT', 'DCT' => 'Doble embrague (DCT)', 'AMT' => 'Automatizada (AMT)',
+        ],
+        'color_type' => [
+            'solid' => 'Sólido', 'metallic' => 'Metalizado', 'pearl' => 'Perlado', 'matte' => 'Mate',
+        ],
+        'category_labels' => [
+            'safety' => 'Seguridad', 'tss' => 'Toyota Safety Sense', 'comfort' => 'Confort',
+            'infotainment' => 'Infoentretenimiento', 'interior' => 'Interior', 'exterior' => 'Exterior',
+            'offroad' => 'Off-road', 'performance' => 'Rendimiento', 'other' => 'Otros',
+        ],
+    ];
+}
