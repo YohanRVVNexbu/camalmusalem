@@ -38,9 +38,14 @@ class VehicleVersionController extends Controller
         ]);
     }
 
-    public function create()
+    public function create(Request $request)
     {
-        return Inertia::render('admin/vehicle-versions/form', $this->formProps(null));
+        $props = $this->formProps(null);
+        if ($request->filled('model_id')) {
+            $props['prefill_model_id'] = $request->integer('model_id');
+        }
+
+        return Inertia::render('admin/vehicle-versions/form', $props);
     }
 
     public function store(Request $request)

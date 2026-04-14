@@ -50,7 +50,12 @@ class VehicleModelController extends Controller
             ]);
         }
 
-        return redirect('/admin/vehicle-models')->with('success', 'Modelo creado correctamente.');
+        if ($request->boolean('add_version_after')) {
+            return redirect('/admin/vehicle-versions/create?model_id='.$model->id)
+                ->with('success', 'Vehículo creado. Ahora agrega su ficha técnica.');
+        }
+
+        return redirect('/admin/vehicle-models')->with('success', 'Vehículo creado correctamente.');
     }
 
     public function edit(VehicleModel $vehicleModel)

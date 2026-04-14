@@ -44,8 +44,8 @@ export default function VehicleModelForm({
     const [heroFile, setHeroFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
 
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
+    const submit = (e: React.SyntheticEvent | null, addVersionAfter = false) => {
+        e?.preventDefault();
         setProcessing(true);
 
         const formData = new FormData();
@@ -58,6 +58,7 @@ export default function VehicleModelForm({
         formData.append('is_active', data.is_active ? '1' : '0');
         formData.append('display_order', String(data.display_order));
         if (heroFile) formData.append('hero_image', heroFile);
+        if (addVersionAfter) formData.append('add_version_after', '1');
         if (isEdit) formData.append('_method', 'PUT');
 
         router.post(
@@ -158,10 +159,20 @@ export default function VehicleModelForm({
                         <Label htmlFor="is_active">Activo</Label>
                     </div>
 
-                    <div className="flex gap-3 pt-2">
+                    <div className="flex flex-wrap gap-3 pt-2">
                         <Button type="submit" disabled={processing || !data.brand_id}>
-                            {processing ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear modelo'}
+                            {processing ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear vehículo'}
                         </Button>
+                        {!isEdit && (
+                            <Button
+                                type="button"
+                                variant="secondary"
+                                onClick={(e) => submit(e as any, true)}
+                                disabled={processing || !data.brand_id}
+                            >
+                                Crear y agregar ficha técnica
+                            </Button>
+                        )}
                         <Button variant="outline" asChild>
                             <Link href="/admin/vehicle-models">Cancelar</Link>
                         </Button>

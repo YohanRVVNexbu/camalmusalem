@@ -46,17 +46,17 @@ export default function VehicleModelsIndex({
     return (
         <AdminLayout breadcrumbs={[
             { title: 'Dashboard', href: '/admin' },
-            { title: 'Modelos', href: '/admin/vehicle-models' },
+            { title: 'Vehículos nuevos', href: '/admin/vehicle-models' },
         ]}>
-            <Head title="Admin — Modelos" />
+            <Head title="Admin — Vehículos nuevos" />
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-semibold">Modelos</h1>
-                        <p className="text-sm text-muted-foreground">Modelos del catálogo (Hilux, RAV4, bZ4X, etc.). Cada modelo tiene una o más versiones con su ficha técnica.</p>
+                        <h1 className="text-2xl font-semibold">Vehículos nuevos</h1>
+                        <p className="text-sm text-muted-foreground">Modelos del catálogo (Hilux, RAV4, bZ4X, etc.). Para ficha técnica detallada por versión ve a Mantenedores → Versiones.</p>
                     </div>
                     <Button asChild>
-                        <Link href="/admin/vehicle-models/create"><Plus className="mr-1 size-4" />Nuevo modelo</Link>
+                        <Link href="/admin/vehicle-models/create"><Plus className="mr-1 size-4" />Nuevo vehículo</Link>
                     </Button>
                 </div>
 

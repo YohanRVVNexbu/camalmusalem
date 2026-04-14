@@ -1,6 +1,8 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronsUpDown, FileText, Home, LayoutGrid, Layers, ListChecks, LogOut, Mail, Newspaper, RefreshCw, Shirt, Tag, UserCog, Users, Wrench, Wrench as WrenchIcon, KeySquare } from 'lucide-react';
+import { Car, ChevronDown, ChevronsUpDown, FileText, KeySquare, Layers, LayoutGrid, ListChecks, LogOut, Mail, MessageSquare, Newspaper, Package, RefreshCw, Settings, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
+import { useState } from 'react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -28,49 +30,71 @@ import type { NavItem } from '@/types';
 
 const dashboardItem: NavItem = { title: 'Dashboard', href: '/admin', icon: LayoutGrid };
 
-const paginasItems: NavItem[] = [
-    { title: 'Páginas', href: '/admin/paginas', icon: FileText },
-];
-
-const catalogoTecnicoItems: NavItem[] = [
-    { title: 'Marcas',          href: '/admin/brands',            icon: Tag },
-    { title: 'Modelos',         href: '/admin/vehicle-models',    icon: Car },
-    { title: 'Versiones',       href: '/admin/vehicle-versions',  icon: Layers },
-    { title: 'Equipamiento',    href: '/admin/features',          icon: ListChecks },
-];
-
 const catalogoItems: NavItem[] = [
-    { title: 'Seminuevos',       href: '/admin/seminuevos', icon: RefreshCw },
-    { title: 'Repuestos',        href: '/admin/repuestos',  icon: Wrench },
-    { title: 'Accesorios',       href: '/admin/accesorios', icon: Shirt },
-    { title: 'Noticias',         href: '/admin/noticias',   icon: Newspaper },
-    { title: 'Contactos',        href: '/admin/contactos',          icon: Mail },
-    { title: 'Mantenciones',     href: '/admin/mantenciones',       icon: WrenchIcon },
-    { title: 'Solicitudes Kinto',href: '/admin/kinto-solicitudes',  icon: KeySquare },
-    { title: 'Usuarios',         href: '/admin/users',              icon: Users },
+    { title: 'Vehículos nuevos', href: '/admin/vehicle-models',  icon: Car },
+    { title: 'Seminuevos',       href: '/admin/seminuevos',      icon: RefreshCw },
+    { title: 'Repuestos',        href: '/admin/repuestos',       icon: Wrench },
+    { title: 'Accesorios',       href: '/admin/accesorios',      icon: Shirt },
+    { title: 'Noticias',         href: '/admin/noticias',        icon: Newspaper },
 ];
 
-function NavGroup({ label, items, isCurrentUrl }: { label: string; items: NavItem[]; isCurrentUrl: (href: string) => boolean }) {
+const mantenedoresItems: NavItem[] = [
+    { title: 'Marcas',        href: '/admin/brands',            icon: Tag },
+    { title: 'Versiones',     href: '/admin/vehicle-versions',  icon: Layers },
+    { title: 'Equipamiento',  href: '/admin/features',          icon: ListChecks },
+];
+
+const solicitudesItems: NavItem[] = [
+    { title: 'Contactos',         href: '/admin/contactos',         icon: Mail },
+    { title: 'Mantenciones',      href: '/admin/mantenciones',      icon: MessageSquare },
+    { title: 'Solicitudes Kinto', href: '/admin/kinto-solicitudes', icon: KeySquare },
+];
+
+const sistemaItems: NavItem[] = [
+    { title: 'Páginas',  href: '/admin/paginas', icon: FileText },
+    { title: 'Usuarios', href: '/admin/users',   icon: Users },
+];
+
+type GroupProps = {
+    label: string;
+    items: NavItem[];
+    isCurrentUrl: (href: string) => boolean;
+    defaultOpen?: boolean;
+};
+
+function CollapsibleNavGroup({ label, items, isCurrentUrl, defaultOpen = false }: GroupProps) {
+    const hasActive = items.some((i) => isCurrentUrl(i.href));
+    const [open, setOpen] = useState(defaultOpen || hasActive);
+
     return (
-        <SidebarGroup className="px-2 py-0">
-            <SidebarGroupLabel>{label}</SidebarGroupLabel>
-            <SidebarMenu>
-                {items.map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                        <SidebarMenuButton
-                            asChild
-                            isActive={isCurrentUrl(item.href)}
-                            tooltip={{ children: item.title }}
-                        >
-                            <Link href={item.href} prefetch>
-                                {item.icon && <item.icon />}
-                                <span>{item.title}</span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                ))}
-            </SidebarMenu>
-        </SidebarGroup>
+        <Collapsible open={open} onOpenChange={setOpen} className="group/collapsible">
+            <SidebarGroup className="px-2 py-0">
+                <CollapsibleTrigger className="w-full">
+                    <SidebarGroupLabel className="flex w-full cursor-pointer items-center justify-between hover:text-sidebar-foreground">
+                        <span>{label}</span>
+                        <ChevronDown className="size-4 transition-transform duration-200 group-data-[state=closed]/collapsible:-rotate-90" />
+                    </SidebarGroupLabel>
+                </CollapsibleTrigger>
+                <CollapsibleContent className="data-[state=closed]:animate-collapsible-up data-[state=open]:animate-collapsible-down overflow-hidden">
+                    <SidebarMenu>
+                        {items.map((item) => (
+                            <SidebarMenuItem key={item.title}>
+                                <SidebarMenuButton
+                                    asChild
+                                    isActive={isCurrentUrl(item.href)}
+                                    tooltip={{ children: item.title }}
+                                >
+                                    <Link href={item.href} prefetch>
+                                        {item.icon && <item.icon />}
+                                        <span>{item.title}</span>
+                                    </Link>
+                                </SidebarMenuButton>
+                            </SidebarMenuItem>
+                        ))}
+                    </SidebarMenu>
+                </CollapsibleContent>
+            </SidebarGroup>
+        </Collapsible>
     );
 }
 
@@ -142,7 +166,7 @@ export function AdminSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                {/* Dashboard */}
+                {/* Dashboard fijo */}
                 <SidebarGroup className="px-2 py-0">
                     <SidebarMenu>
                         <SidebarMenuItem>
@@ -160,14 +184,10 @@ export function AdminSidebar() {
                     </SidebarMenu>
                 </SidebarGroup>
 
-                {/* Administración de páginas */}
-                <NavGroup label="Administración de páginas" items={paginasItems} isCurrentUrl={isCurrentUrl} />
-
-                {/* Catálogo técnico (mantenedores) */}
-                <NavGroup label="Catálogo técnico" items={catalogoTecnicoItems} isCurrentUrl={isCurrentUrl} />
-
-                {/* Catálogo y contenido */}
-                <NavGroup label="Catálogo y contenido" items={catalogoItems} isCurrentUrl={isCurrentUrl} />
+                <CollapsibleNavGroup label="Catálogo"      items={catalogoItems}      isCurrentUrl={isCurrentUrl} defaultOpen />
+                <CollapsibleNavGroup label="Mantenedores"  items={mantenedoresItems}  isCurrentUrl={isCurrentUrl} />
+                <CollapsibleNavGroup label="Solicitudes"   items={solicitudesItems}   isCurrentUrl={isCurrentUrl} />
+                <CollapsibleNavGroup label="Sistema"       items={sistemaItems}       isCurrentUrl={isCurrentUrl} />
             </SidebarContent>
 
             <SidebarFooter>

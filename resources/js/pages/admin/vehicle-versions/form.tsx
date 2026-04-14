@@ -71,6 +71,7 @@ type Props = {
     features: FeaturesByCategory;
     enums: Enums;
     suggestions: Suggestions;
+    prefill_model_id?: number | null;
 };
 
 type SectionKey = 'basico' | 'motor' | 'electrico' | 'dimensiones' | 'capacidades' | 'rendimiento' | 'chasis' | 'equipamiento' | 'colores';
@@ -107,12 +108,18 @@ const empty = (): VersionPayload => ({
     colors: [],
 });
 
-export default function VehicleVersionForm({ version, models, features, enums, suggestions }: Props) {
+export default function VehicleVersionForm({ version, models, features, enums, suggestions, prefill_model_id }: Props) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!version?.id;
 
     const [data, setData] = useState<VersionPayload>(() => {
-        if (!version) return empty();
+        if (!version) {
+            const base = empty();
+            if (prefill_model_id) base.vehicle_model_id = prefill_model_id;
+
+            return base;
+        }
+
         return {
             ...empty(),
             ...version,
