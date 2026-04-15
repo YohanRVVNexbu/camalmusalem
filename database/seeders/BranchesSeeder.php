@@ -21,9 +21,9 @@ class BranchesSeeder extends Seeder
             [
                 'slug' => 'ovalle',
                 'name' => 'Sucursal Ovalle',
-                'address' => null,
+                'address' => 'Ariztía #358',
                 'city' => 'Ovalle',
-                'maps_url' => 'https://www.google.com/maps/search/Sucursal+Toyota+Ovalle,+Chile',
+                'maps_url' => 'https://www.google.com/maps/search/Ariztia+358,+Ovalle,+Chile',
                 'phone' => null,
             ],
         ];
