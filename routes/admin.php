@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AccesorioController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\BrandController;
+use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\FeatureController;
 use App\Http\Controllers\Admin\LookupController;
 use App\Http\Controllers\Admin\VehicleModelController;
@@ -43,6 +44,11 @@ Route::middleware('admin')->group(function () {
     Route::resource('brands', BrandController::class)
         ->except(['show'])
         ->names('admin.brands');
+
+    // Sucursales
+    Route::resource('branches', BranchController::class)
+        ->except(['show'])
+        ->names('admin.branches');
 
     // Catálogo técnico — Equipamiento (features)
     Route::resource('features', FeatureController::class)

@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
+import { FileText, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -11,7 +11,11 @@ import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
 
 type SpecRow = { label: string; value: string };
-type Specs = { general: SpecRow[]; equipment: SpecRow[]; downloads: SpecRow[] };
+type Download = { label: string; url: string };
+type Specs = { general: SpecRow[]; equipment: SpecRow[]; downloads: Download[] };
+type NewDownload = { label: string; file: File | null };
+
+type BranchLite = { id: number; name: string; city: string | null };
 
 type Seminuevo = {
     id?: number; brand: string; model: string; slug: string | null; year: number; km: number;
@@ -20,6 +24,7 @@ type Seminuevo = {
     doors: number; seats: number; color: string | null; description: string | null;
     gallery: string[]; featured_gallery: string[]; specs: Specs | null;
     is_visible: boolean; order: number;
+    branch_id: number | null;
 };
 
 const emptySpecs = (): Specs => ({
@@ -28,7 +33,7 @@ const emptySpecs = (): Specs => ({
         { label: 'Rendimiento', value: '' },
     ],
     equipment: [{ label: '', value: '' }],
-    downloads: [{ label: '', value: '' }],
+    downloads: [],
 });
 
 function SpecsSection({
@@ -78,7 +83,102 @@ function SpecsSection({
     );
 }
 
-export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | null }) {
+function DownloadsSection({
+    existing,
+    onChangeExisting,
+    newItems,
+    onChangeNew,
+    removed,
+    onChangeRemoved,
+}: {
+    existing: Download[];
+    onChangeExisting: (rows: Download[]) => void;
+    newItems: NewDownload[];
+    onChangeNew: (rows: NewDownload[]) => void;
+    removed: string[];
+    onChangeRemoved: (urls: string[]) => void;
+}) {
+    const updateExisting = (i: number, label: string) => {
+        onChangeExisting(existing.map((r, idx) => (idx === i ? { ...r, label } : r)));
+    };
+    const removeExisting = (i: number) => {
+        const url = existing[i].url;
+        onChangeExisting(existing.filter((_, idx) => idx !== i));
+        if (url) onChangeRemoved([...removed, url]);
+    };
+    const updateNew = (i: number, patch: Partial<NewDownload>) => {
+        onChangeNew(newItems.map((r, idx) => (idx === i ? { ...r, ...patch } : r)));
+    };
+    const addNew = () => onChangeNew([...newItems, { label: '', file: null }]);
+    const removeNew = (i: number) => onChangeNew(newItems.filter((_, idx) => idx !== i));
+
+    const fileName = (url: string) => url.split('/').pop() ?? url;
+
+    return (
+        <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-between">
+                <div>
+                    <Label className="text-sm font-semibold">Descargables</Label>
+                    <p className="text-xs text-muted-foreground">Archivos (PDF, imágenes, etc.) que el usuario podrá descargar desde la ficha.</p>
+                </div>
+                <Button type="button" size="sm" variant="outline" onClick={addNew}>
+                    <Plus className="mr-1 size-3" /> Agregar archivo
+                </Button>
+            </div>
+
+            {/* Archivos ya subidos */}
+            {existing.map((row, i) => (
+                <div key={`ex-${i}`} className="flex items-center gap-2 rounded-md border p-2">
+                    <Input
+                        placeholder="Etiqueta (ej: Ficha técnica.pdf)"
+                        value={row.label}
+                        onChange={(e) => updateExisting(i, e.target.value)}
+                        className="flex-1"
+                    />
+                    <a
+                        href={row.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 text-xs text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                        title={row.url}
+                    >
+                        <FileText className="size-4" />
+                        {fileName(row.url)}
+                    </a>
+                    <Button type="button" size="sm" variant="ghost" onClick={() => removeExisting(i)}>
+                        <Trash2 className="size-4 text-destructive" />
+                    </Button>
+                </div>
+            ))}
+
+            {/* Nuevos para subir */}
+            {newItems.map((row, i) => (
+                <div key={`new-${i}`} className="flex items-center gap-2 rounded-md border border-dashed p-2">
+                    <Input
+                        placeholder="Etiqueta (ej: Manual del propietario)"
+                        value={row.label}
+                        onChange={(e) => updateNew(i, { label: e.target.value })}
+                        className="w-64"
+                    />
+                    <Input
+                        type="file"
+                        className="flex-1"
+                        onChange={(e) => updateNew(i, { file: e.target.files?.[0] ?? null })}
+                    />
+                    <Button type="button" size="sm" variant="ghost" onClick={() => removeNew(i)}>
+                        <Trash2 className="size-4 text-destructive" />
+                    </Button>
+                </div>
+            ))}
+
+            {existing.length === 0 && newItems.length === 0 && (
+                <p className="text-xs text-muted-foreground py-2">Sin archivos descargables.</p>
+            )}
+        </div>
+    );
+}
+
+export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo: Seminuevo | null; branches?: BranchLite[] }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!seminuevo?.id;
 
@@ -87,6 +187,7 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
         price: '', down_payment: null, fuel: null, transmission: null, traction: null,
         doors: 5, seats: 5, color: null, description: null,
         gallery: [], featured_gallery: [], specs: emptySpecs(), is_visible: true, order: 0,
+        branch_id: null,
     });
     const specs = data.specs ?? emptySpecs();
 
@@ -94,10 +195,12 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
     const [removeGallery, setRemoveGallery] = useState<string[]>([]);
     const [newFeatured, setNewFeatured] = useState<File[]>([]);
     const [removeFeatured, setRemoveFeatured] = useState<string[]>([]);
+    const [newDownloads, setNewDownloads] = useState<NewDownload[]>([]);
+    const [removedDownloads, setRemovedDownloads] = useState<string[]>([]);
     const [processing, setProcessing] = useState(false);
 
     const set = (field: keyof Seminuevo, val: any) => setData({ ...data, [field]: val });
-    const setSpecs = (section: keyof Specs, rows: SpecRow[]) =>
+    const setSpecs = (section: keyof Specs, rows: any) =>
         set('specs', { ...specs, [section]: rows });
 
     const submit = (e: React.FormEvent) => {
@@ -106,7 +209,7 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
         const formData = new FormData();
         const fields: (keyof Seminuevo)[] = [
             'brand', 'model', 'slug', 'year', 'km', 'price', 'down_payment',
-            'fuel', 'transmission', 'traction', 'doors', 'seats', 'color', 'description', 'is_visible', 'order',
+            'fuel', 'transmission', 'traction', 'doors', 'seats', 'color', 'description', 'is_visible', 'order', 'branch_id',
         ];
         fields.forEach((f) => formData.append(f as string, String(data[f] ?? '')));
         formData.set('is_visible', data.is_visible ? '1' : '0');
@@ -116,6 +219,14 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
         removeGallery.forEach((u) => formData.append('gallery_remove[]', u));
         newFeatured.forEach((f) => formData.append('featured_new[]', f));
         removeFeatured.forEach((u) => formData.append('featured_remove[]', u));
+
+        newDownloads.forEach((d, i) => {
+            if (d.file) {
+                formData.append(`downloads_new[${i}][label]`, d.label);
+                formData.append(`downloads_new[${i}][file]`, d.file);
+            }
+        });
+        removedDownloads.forEach((u) => formData.append('downloads_remove[]', u));
 
         if (isEdit) formData.append('_method', 'PUT');
 
@@ -210,6 +321,26 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                             <Input value={data.color ?? ''} onChange={(e) => set('color', e.target.value)} />
                         </div>
                         <div className="grid gap-2">
+                            <Label>Sucursal</Label>
+                            <Select
+                                value={data.branch_id ? String(data.branch_id) : 'none'}
+                                onValueChange={(v) => set('branch_id', v === 'none' ? null : Number(v))}
+                            >
+                                <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">— Sin asignar —</SelectItem>
+                                    {branches.map((b) => (
+                                        <SelectItem key={b.id} value={String(b.id)}>
+                                            {b.name}{b.city ? ` · ${b.city}` : ''}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            {branches.length === 0 && (
+                                <p className="text-xs text-muted-foreground">No hay sucursales activas. <Link href="/admin/branches/create" className="underline">Crear una</Link>.</p>
+                            )}
+                        </div>
+                        <div className="grid gap-2">
                             <Label>Puertas</Label>
                             <Input type="number" value={data.doors} onChange={(e) => set('doors', Number(e.target.value))} min={2} max={6} />
                         </div>
@@ -277,7 +408,14 @@ export default function SeminuevoForm({ seminuevo }: { seminuevo: Seminuevo | nu
                         <Separator />
                         <SpecsSection title="Equipamiento y seguridad" rows={specs.equipment} onChange={(rows) => setSpecs('equipment', rows)} />
                         <Separator />
-                        <SpecsSection title="Descargables" rows={specs.downloads} onChange={(rows) => setSpecs('downloads', rows)} />
+                        <DownloadsSection
+                            existing={specs.downloads}
+                            onChangeExisting={(rows) => setSpecs('downloads', rows)}
+                            newItems={newDownloads}
+                            onChangeNew={setNewDownloads}
+                            removed={removedDownloads}
+                            onChangeRemoved={setRemovedDownloads}
+                        />
                     </div>
 
                     <div className="flex gap-3">

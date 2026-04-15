@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\Seminuevo;
 use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
@@ -22,7 +23,10 @@ class SeminuevoController extends Controller
 
     public function create()
     {
-        return Inertia::render('admin/seminuevos/form', ['seminuevo' => null]);
+        return Inertia::render('admin/seminuevos/form', [
+            'seminuevo' => null,
+            'branches' => Branch::where('is_active', true)->orderBy('display_order')->get(['id', 'name', 'city']),
+        ]);
     }
 
     public function store(Request $request)
@@ -32,13 +36,17 @@ class SeminuevoController extends Controller
         $seminuevo = Seminuevo::create($data);
         $this->handleGallery($request, $seminuevo);
         $this->handleFeaturedGallery($request, $seminuevo);
+        $this->handleDownloads($request, $seminuevo);
 
         return redirect('/admin/seminuevos')->with('success', 'Seminuevo creado correctamente.');
     }
 
     public function edit(Seminuevo $seminuevo)
     {
-        return Inertia::render('admin/seminuevos/form', ['seminuevo' => $seminuevo]);
+        return Inertia::render('admin/seminuevos/form', [
+            'seminuevo' => $seminuevo,
+            'branches' => Branch::where('is_active', true)->orderBy('display_order')->get(['id', 'name', 'city']),
+        ]);
     }
 
     public function update(Request $request, Seminuevo $seminuevo)
@@ -51,6 +59,7 @@ class SeminuevoController extends Controller
         $seminuevo->update($data);
         $this->handleGallery($request, $seminuevo);
         $this->handleFeaturedGallery($request, $seminuevo);
+        $this->handleDownloads($request, $seminuevo);
 
         return back()->with('success', 'Seminuevo actualizado correctamente.');
     }
@@ -126,6 +135,45 @@ class SeminuevoController extends Controller
         $seminuevo->update(['featured_gallery' => $featured]);
     }
 
+    /**
+     * Procesa los archivos descargables. Trabaja sobre specs.downloads que ya
+     * fue deserializado por validated(): elimina las URLs marcadas para borrar,
+     * sube los archivos nuevos con su etiqueta y persiste el specs actualizado.
+     */
+    private function handleDownloads(Request $request, Seminuevo $seminuevo): void
+    {
+        $specs = $seminuevo->specs ?? [];
+        $downloads = $specs['downloads'] ?? [];
+
+        // Remover entradas cuya URL figura en downloads_remove
+        if ($request->has('downloads_remove')) {
+            $toRemove = $request->input('downloads_remove', []);
+            foreach ($toRemove as $url) {
+                $this->settings->deleteOldFile($url);
+            }
+            $downloads = array_values(array_filter(
+                $downloads,
+                fn ($d) => ! in_array($d['url'] ?? null, $toRemove, true)
+            ));
+        }
+
+        // Agregar nuevos uploads
+        $newInputs = $request->input('downloads_new', []);
+        $newFiles = $request->file('downloads_new', []);
+        foreach ($newFiles as $i => $entry) {
+            $file = $entry['file'] ?? null;
+            if (! $file instanceof \Illuminate\Http\UploadedFile) {
+                continue;
+            }
+            $label = $newInputs[$i]['label'] ?? $file->getClientOriginalName();
+            $url = $this->settings->uploadFile($file, 'seminuevos/'.$seminuevo->id.'/downloads');
+            $downloads[] = ['label' => $label, 'url' => $url];
+        }
+
+        $specs['downloads'] = array_values($downloads);
+        $seminuevo->update(['specs' => $specs]);
+    }
+
     private function validated(Request $request): array
     {
         $data = $request->validate([
@@ -145,6 +193,7 @@ class SeminuevoController extends Controller
             'description'  => ['nullable', 'string'],
             'is_visible'   => ['boolean'],
             'order'        => ['integer'],
+            'branch_id'    => ['nullable', 'exists:branches,id'],
         ]);
 
         // specs comes as a JSON string from FormData

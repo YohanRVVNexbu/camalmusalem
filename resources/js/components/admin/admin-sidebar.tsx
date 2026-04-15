@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronDown, ChevronsUpDown, FileText, KeySquare, Layers, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MessageSquare, Newspaper, Package, RefreshCw, Settings, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
+import { Car, ChevronDown, ChevronsUpDown, FileText, KeySquare, Layers, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MapPin, MessageSquare, Newspaper, Package, RefreshCw, Settings, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -40,6 +40,7 @@ const catalogoItems: NavItem[] = [
 
 const mantenedoresItems: NavItem[] = [
     { title: 'Marcas',           href: '/admin/brands',   icon: Tag },
+    { title: 'Sucursales',       href: '/admin/branches', icon: MapPin },
     { title: 'Equipamiento',     href: '/admin/features', icon: ListChecks },
     { title: 'Listas editables', href: '/admin/lookups',  icon: ListTree },
 ];

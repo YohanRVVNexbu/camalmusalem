@@ -34,8 +34,13 @@ class SeminuevosController extends Controller
 
     public function show(string $slug)
     {
-        $seminuevo = Seminuevo::where('slug', $slug)
-            ->orWhere('id', is_numeric($slug) ? (int) $slug : 0)
+        $seminuevo = Seminuevo::with('branch')
+            ->where(function ($q) use ($slug) {
+                $q->where('slug', $slug);
+                if (is_numeric($slug)) {
+                    $q->orWhere('id', (int) $slug);
+                }
+            })
             ->where('is_visible', true)
             ->firstOrFail();
 

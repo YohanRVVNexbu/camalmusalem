@@ -18,11 +18,20 @@ import { useEffect, useState } from 'react';
 type SpecRow = { label: string; value: string };
 type Specs = { general: SpecRow[]; equipment: SpecRow[]; downloads: SpecRow[] };
 
+type Branch = {
+    id: number;
+    name: string;
+    address: string | null;
+    city: string | null;
+    maps_url: string | null;
+};
+
 type Seminuevo = {
     id: number;
     brand: string;
     model: string;
     slug: string | null;
+    branch?: Branch | null;
     year: number;
     km: number;
     price: string;
@@ -190,12 +199,30 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
                                 <div className="flex flex-col gap-3.5 p-2.5">
                                     {tabRows[detailsTab].length > 0 ? (
-                                        tabRows[detailsTab].map((item, i) => (
-                                            <div key={i} className="flex items-start justify-between">
-                                                <span className="shrink-0 text-sm leading-none text-black">{item.label}</span>
-                                                <span className="text-right text-sm leading-[120%] text-black">{item.value}</span>
-                                            </div>
-                                        ))
+                                        tabRows[detailsTab].map((item: any, i: number) => {
+                                            const url: string | undefined = item.url;
+                                            if (detailsTab === 'downloads' && url) {
+                                                return (
+                                                    <a
+                                                        key={i}
+                                                        href={url}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        download
+                                                        className="flex items-center justify-between rounded-md border border-transparent p-2 transition hover:border-black/20 hover:bg-black/3"
+                                                    >
+                                                        <span className="text-sm leading-none text-black">{item.label || url.split('/').pop()}</span>
+                                                        <span className="text-xs leading-none text-black/60 underline underline-offset-2">Descargar</span>
+                                                    </a>
+                                                );
+                                            }
+                                            return (
+                                                <div key={i} className="flex items-start justify-between">
+                                                    <span className="shrink-0 text-sm leading-none text-black">{item.label}</span>
+                                                    <span className="text-right text-sm leading-[120%] text-black">{item.value}</span>
+                                                </div>
+                                            );
+                                        })
                                     ) : (
                                         <p className="text-sm text-black/40">Sin información disponible.</p>
                                     )}
@@ -287,23 +314,41 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                             </div>
 
                             {/* Branch */}
-                            <div className="flex flex-col gap-1.5">
-                                <span className="text-lg leading-none text-black/60">Disponible en:</span>
-                                <a
-                                    href="https://www.google.com/maps/search/Av.+Francisco+de+Aguirre+070,+La+Serena,+Chile"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex items-center gap-5 rounded-[10px] bg-[#EAEAF1] px-10 py-5 transition hover:bg-[#dddde6]"
-                                >
-                                    <svg className="size-6 shrink-0" viewBox="0 0 17 24" fill="none">
-                                        <path d="M8.5 0C3.81 0 0 3.81 0 8.5C0 14.875 8.5 24 8.5 24S17 14.875 17 8.5C17 3.81 13.19 0 8.5 0ZM8.5 11.5C6.84 11.5 5.5 10.16 5.5 8.5S6.84 5.5 8.5 5.5 11.5 6.84 11.5 8.5 10.16 11.5 8.5 11.5Z" fill="#EA4335" />
-                                    </svg>
-                                    <div className="flex flex-col gap-2">
-                                        <span className="text-base leading-none text-black/60">Sucursal La Serena</span>
-                                        <span className="text-base leading-none text-black/60 underline">Av. Francisco de Aguirre #070</span>
-                                    </div>
-                                </a>
-                            </div>
+                            {seminuevo.branch && (
+                                <div className="flex flex-col gap-1.5">
+                                    <span className="text-lg leading-none text-black/60">Disponible en:</span>
+                                    {seminuevo.branch.maps_url ? (
+                                        <a
+                                            href={seminuevo.branch.maps_url}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex items-center gap-5 rounded-[10px] bg-[#EAEAF1] px-10 py-5 transition hover:bg-[#dddde6]"
+                                        >
+                                            <svg className="size-6 shrink-0" viewBox="0 0 17 24" fill="none">
+                                                <path d="M8.5 0C3.81 0 0 3.81 0 8.5C0 14.875 8.5 24 8.5 24S17 14.875 17 8.5C17 3.81 13.19 0 8.5 0ZM8.5 11.5C6.84 11.5 5.5 10.16 5.5 8.5S6.84 5.5 8.5 5.5 11.5 6.84 11.5 8.5 10.16 11.5 8.5 11.5Z" fill="#EA4335" />
+                                            </svg>
+                                            <div className="flex flex-col gap-2">
+                                                <span className="text-base leading-none text-black/60">{seminuevo.branch.name}</span>
+                                                {seminuevo.branch.address && (
+                                                    <span className="text-base leading-none text-black/60 underline">{seminuevo.branch.address}</span>
+                                                )}
+                                            </div>
+                                        </a>
+                                    ) : (
+                                        <div className="flex items-center gap-5 rounded-[10px] bg-[#EAEAF1] px-10 py-5">
+                                            <svg className="size-6 shrink-0" viewBox="0 0 17 24" fill="none">
+                                                <path d="M8.5 0C3.81 0 0 3.81 0 8.5C0 14.875 8.5 24 8.5 24S17 14.875 17 8.5C17 3.81 13.19 0 8.5 0ZM8.5 11.5C6.84 11.5 5.5 10.16 5.5 8.5S6.84 5.5 8.5 5.5 11.5 6.84 11.5 8.5 10.16 11.5 8.5 11.5Z" fill="#EA4335" />
+                                            </svg>
+                                            <div className="flex flex-col gap-2">
+                                                <span className="text-base leading-none text-black/60">{seminuevo.branch.name}</span>
+                                                {seminuevo.branch.address && (
+                                                    <span className="text-base leading-none text-black/60">{seminuevo.branch.address}</span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
                         </div>
                     </div>
 

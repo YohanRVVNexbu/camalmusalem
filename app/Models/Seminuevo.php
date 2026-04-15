@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Seminuevo extends Model
 {
@@ -10,7 +11,7 @@ class Seminuevo extends Model
         'brand', 'model', 'slug', 'year', 'km', 'price', 'down_payment',
         'fuel', 'transmission', 'traction', 'doors', 'seats',
         'color', 'description', 'gallery', 'featured_gallery', 'specs',
-        'is_visible', 'order',
+        'is_visible', 'order', 'branch_id',
     ];
 
     protected $casts = [
@@ -23,4 +24,9 @@ class Seminuevo extends Model
         'doors'            => 'integer',
         'seats'            => 'integer',
     ];
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
+    }
 }

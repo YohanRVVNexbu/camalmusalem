@@ -22,7 +22,9 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://localhost:8765/admin/paginas/nuevos)",
       "Bash(mv \"C_CROSS_XEI_HEV_LAT_PILOTO_AZUL_OSC.png\" \"corolla-cross.png\")",
       "Bash(mv \"bZ4X_360_2SC_20_03.png\" \"bz4x.png\")",
-      "Bash(mv \"fortuner_grs.png\" \"fortuner-gr-sport.png\")"
+      "Bash(mv \"fortuner_grs.png\" \"fortuner-gr-sport.png\")",
+      "Bash(grep -n 'class Seminuevo\\\\|protected $fillable\\\\|use HasFactory' /Users/nexbuescl/Sites/camalmusalem/app/Models/Seminuevo.php)",
+      "Bash(git commit -m ' *)"
     ],
     "additionalDirectories": [
       "/tmp"
