@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\BrandController;
 use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\FeatureController;
 use App\Http\Controllers\Admin\LookupController;
+use App\Http\Controllers\Admin\MerchController;
 use App\Http\Controllers\Admin\VehicleModelController;
 use App\Http\Controllers\Admin\VehicleVersionController;
 use App\Http\Controllers\Admin\ContactoController;
@@ -68,25 +69,47 @@ Route::middleware('admin')->group(function () {
         ->names('admin.vehicle-models');
 
     // Catálogo técnico — Versiones (ficha técnica)
+    Route::post('vehicle-versions/import', [VehicleVersionController::class, 'import'])->name('admin.vehicle-versions.import');
+    Route::get('vehicle-versions/export', [VehicleVersionController::class, 'export'])->name('admin.vehicle-versions.export');
+    Route::get('vehicle-versions/template', [VehicleVersionController::class, 'template'])->name('admin.vehicle-versions.template');
+    Route::get('vehicle-versions/precios/export', [VehicleVersionController::class, 'preciosExport'])->name('admin.vehicle-versions.precios.export');
+    Route::post('vehicle-versions/precios/import', [VehicleVersionController::class, 'preciosImport'])->name('admin.vehicle-versions.precios.import');
     Route::resource('vehicle-versions', VehicleVersionController::class)
         ->except(['show'])
         ->parameters(['vehicle-versions' => 'vehicleVersion'])
         ->names('admin.vehicle-versions');
 
     // Repuestos
+    Route::post('repuestos/import', [RepuestoController::class, 'import'])->name('admin.repuestos.import');
+    Route::get('repuestos/export', [RepuestoController::class, 'export'])->name('admin.repuestos.export');
+    Route::get('repuestos/template', [RepuestoController::class, 'template'])->name('admin.repuestos.template');
     Route::resource('repuestos', RepuestoController::class)
         ->except(['show'])
         ->names('admin.repuestos');
 
     // Accesorios
+    Route::post('accesorios/import', [AccesorioController::class, 'import'])->name('admin.accesorios.import');
+    Route::get('accesorios/export', [AccesorioController::class, 'export'])->name('admin.accesorios.export');
+    Route::get('accesorios/template', [AccesorioController::class, 'template'])->name('admin.accesorios.template');
     Route::resource('accesorios', AccesorioController::class)
         ->except(['show'])
         ->names('admin.accesorios');
 
     // Seminuevos
+    Route::post('seminuevos/import', [SeminuevoController::class, 'import'])->name('admin.seminuevos.import');
+    Route::get('seminuevos/export', [SeminuevoController::class, 'export'])->name('admin.seminuevos.export');
+    Route::get('seminuevos/template', [SeminuevoController::class, 'template'])->name('admin.seminuevos.template');
     Route::resource('seminuevos', SeminuevoController::class)
         ->except(['show'])
         ->names('admin.seminuevos');
+
+    // Merch
+    Route::post('merch/import', [MerchController::class, 'import'])->name('admin.merch.import');
+    Route::get('merch/export', [MerchController::class, 'export'])->name('admin.merch.export');
+    Route::get('merch/template', [MerchController::class, 'template'])->name('admin.merch.template');
+    Route::resource('merch', MerchController::class)
+        ->except(['show'])
+        ->names('admin.merch');
 
     // Noticias
     Route::resource('noticias', NoticiaController::class)

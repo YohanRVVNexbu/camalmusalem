@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Repuesto extends Model
 {
     protected $fillable = [
-        'name', 'sku', 'description', 'price', 'category',
-        'images', 'stock_la_serena', 'stock_ovalle', 'is_visible', 'order',
+        'name', 'sku', 'description', 'price', 'price_offer', 'compatible_with',
+        'category', 'images', 'stock_la_serena', 'stock_ovalle', 'is_visible', 'order',
     ];
 
     protected $casts = [

@@ -16,7 +16,8 @@ class VehicleVersion extends Model
     protected $fillable = [
         'vehicle_model_id', 'trim_name', 'slug', 'model_year',
         'powertrain_type', 'drivetrain', 'transmission_type', 'transmission_speeds',
-        'msrp_clp', 'sales_code', 'description', 'hero_image',
+        'msrp_clp', 'bono_marca', 'bono_financiamiento_r9', 'bono_financiamiento_tradicional',
+        'sales_code', 'description', 'hero_image',
         'is_active', 'display_order',
     ];
 

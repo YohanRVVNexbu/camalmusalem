@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\CatalogExport\ListaPreciosExporter;
+use App\Services\CatalogExport\VehicleVersionsExporter;
+use App\Services\CatalogImport\ListaPreciosImporter;
+use App\Services\CatalogImport\VehicleVersionsImporter;
 use App\Models\ColorType;
 use App\Models\Drivetrain;
 use App\Models\Feature;
@@ -69,7 +73,10 @@ class VehicleVersionController extends Controller
                 'drivetrain' => $data['drivetrain'],
                 'transmission_type' => $data['transmission_type'] ?? null,
                 'transmission_speeds' => $data['transmission_speeds'] ?? null,
-                'msrp_clp' => $data['msrp_clp'] ?? null,
+                'msrp_clp'                       => $data['msrp_clp'] ?? null,
+                'bono_marca'                      => $data['bono_marca'] ?? null,
+                'bono_financiamiento_r9'          => $data['bono_financiamiento_r9'] ?? null,
+                'bono_financiamiento_tradicional' => $data['bono_financiamiento_tradicional'] ?? null,
                 'sales_code' => $data['sales_code'] ?? null,
                 'description' => $data['description'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
@@ -112,7 +119,10 @@ class VehicleVersionController extends Controller
                 'drivetrain' => $data['drivetrain'],
                 'transmission_type' => $data['transmission_type'] ?? null,
                 'transmission_speeds' => $data['transmission_speeds'] ?? null,
-                'msrp_clp' => $data['msrp_clp'] ?? null,
+                'msrp_clp'                       => $data['msrp_clp'] ?? null,
+                'bono_marca'                      => $data['bono_marca'] ?? null,
+                'bono_financiamiento_r9'          => $data['bono_financiamiento_r9'] ?? null,
+                'bono_financiamiento_tradicional' => $data['bono_financiamiento_tradicional'] ?? null,
                 'sales_code' => $data['sales_code'] ?? null,
                 'description' => $data['description'] ?? null,
                 'is_active' => $data['is_active'] ?? true,
@@ -140,6 +150,37 @@ class VehicleVersionController extends Controller
         $vehicleVersion->delete();
 
         return redirect('/admin/vehicle-versions')->with('success', 'Versión eliminada.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
+        $result = (new VehicleVersionsImporter)->import($request->file('file'));
+
+        return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());
+    }
+
+    public function export()
+    {
+        return (new VehicleVersionsExporter)->download('vehiculos_nuevos_'.date('Y-m-d').'.xlsx');
+    }
+
+    public function template()
+    {
+        return (new VehicleVersionsExporter(templateOnly: true))->download('plantilla_vehiculos_nuevos.xlsx');
+    }
+
+    public function preciosExport()
+    {
+        return (new ListaPreciosExporter)->download('lista_precios_'.date('Y-m-d').'.xlsx');
+    }
+
+    public function preciosImport(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
+        $result = (new ListaPreciosImporter)->import($request->file('file'));
+
+        return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());
     }
 
     private function formProps(?VehicleVersion $version): array
@@ -295,7 +336,10 @@ class VehicleVersionController extends Controller
             'drivetrain' => ['required', 'string', 'exists:drivetrains,code'],
             'transmission_type' => ['nullable', 'string', 'exists:transmission_types,code'],
             'transmission_speeds' => ['nullable', 'integer', 'min:1', 'max:12'],
-            'msrp_clp' => ['nullable', 'integer', 'min:0'],
+            'msrp_clp'                       => ['nullable', 'integer', 'min:0'],
+            'bono_marca'                      => ['nullable', 'integer', 'min:0'],
+            'bono_financiamiento_r9'          => ['nullable', 'integer', 'min:0'],
+            'bono_financiamiento_tradicional' => ['nullable', 'integer', 'min:0'],
             'sales_code' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'is_active' => ['boolean'],

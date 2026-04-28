@@ -35,6 +35,9 @@ type VersionPayload = {
     transmission_type: string | null;
     transmission_speeds: number | null;
     msrp_clp: number | null;
+    bono_marca: number | null;
+    bono_financiamiento_r9: number | null;
+    bono_financiamiento_tradicional: number | null;
     sales_code: string | null;
     description: string | null;
     is_active: boolean;
@@ -98,6 +101,9 @@ const empty = (): VersionPayload => ({
     transmission_type: null,
     transmission_speeds: null,
     msrp_clp: null,
+    bono_marca: null,
+    bono_financiamiento_r9: null,
+    bono_financiamiento_tradicional: null,
     sales_code: null,
     description: null,
     is_active: true,
@@ -169,6 +175,9 @@ export default function VehicleVersionForm({ version, models, features, enums, s
         if (data.transmission_type) fd.append('transmission_type', data.transmission_type);
         if (data.transmission_speeds) fd.append('transmission_speeds', String(data.transmission_speeds));
         if (data.msrp_clp) fd.append('msrp_clp', String(data.msrp_clp));
+        if (data.bono_marca) fd.append('bono_marca', String(data.bono_marca));
+        if (data.bono_financiamiento_r9) fd.append('bono_financiamiento_r9', String(data.bono_financiamiento_r9));
+        if (data.bono_financiamiento_tradicional) fd.append('bono_financiamiento_tradicional', String(data.bono_financiamiento_tradicional));
         if (data.sales_code) fd.append('sales_code', data.sales_code);
         if (data.description) fd.append('description', data.description);
         fd.append('is_active', data.is_active ? '1' : '0');
@@ -335,6 +344,31 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                                 <div className="grid gap-1.5 col-span-2">
                                     <Label>Precio lista (CLP)</Label>
                                     <Input type="number" value={data.msrp_clp ?? ''} onChange={(e) => setData({ ...data, msrp_clp: e.target.value === '' ? null : Number(e.target.value) })} placeholder="Ej: 32990000" />
+                                </div>
+                                <div className="grid gap-1.5">
+                                    <Label>Bono Marca (CLP)</Label>
+                                    <Input type="number" value={data.bono_marca ?? ''} onChange={(e) => setData({ ...data, bono_marca: e.target.value === '' ? null : Number(e.target.value) })} placeholder="Ej: 1500000" />
+                                </div>
+                                <div className="grid gap-1.5">
+                                    <Label>Bono Financiamiento R9 (CLP)</Label>
+                                    <Input type="number" value={data.bono_financiamiento_r9 ?? ''} onChange={(e) => setData({ ...data, bono_financiamiento_r9: e.target.value === '' ? null : Number(e.target.value) })} placeholder="Ej: 800000" />
+                                </div>
+                                <div className="grid gap-1.5 col-span-2">
+                                    <Label>Bono Financiamiento Tradicional (CLP)</Label>
+                                    <Input type="number" value={data.bono_financiamiento_tradicional ?? ''} onChange={(e) => setData({ ...data, bono_financiamiento_tradicional: e.target.value === '' ? null : Number(e.target.value) })} placeholder="Ej: 500000" />
+                                </div>
+                                <div className="grid gap-1.5 col-span-4">
+                                    <Label>Precios calculados</Label>
+                                    <div className="rounded-md border bg-muted/40 px-3 py-2 text-xs text-muted-foreground space-y-0.5">
+                                        {[
+                                            { label: 'Precio Lista', val: data.msrp_clp },
+                                            { label: 'Precio Bono Marca', val: data.msrp_clp && data.bono_marca ? data.msrp_clp - data.bono_marca : null },
+                                            { label: 'Precio Bono R9', val: data.msrp_clp && data.bono_marca && data.bono_financiamiento_r9 ? data.msrp_clp - data.bono_marca - data.bono_financiamiento_r9 : null },
+                                            { label: 'Precio Bono Financiamiento Trad.', val: data.msrp_clp && data.bono_marca && data.bono_financiamiento_tradicional ? data.msrp_clp - data.bono_marca - data.bono_financiamiento_tradicional : null },
+                                        ].map(r => r.val !== null && r.val !== undefined ? (
+                                            <div key={r.label} className="flex justify-between"><span>{r.label}</span><span className="font-medium text-foreground">${r.val.toLocaleString('es-CL')}</span></div>
+                                        ) : null)}
+                                    </div>
                                 </div>
                                 <div className="grid gap-1.5 col-span-2">
                                     <Label>Descripción</Label>

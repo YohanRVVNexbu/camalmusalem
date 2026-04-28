@@ -105,19 +105,58 @@ class CatalogPresenter
 
     public function presentVersion(VehicleVersion $v): array
     {
+        $pricing = $this->buildPricing($v);
+
         return [
-            'name' => $v->trim_name,
-            'price' => $v->msrp_clp ? '$'.number_format($v->msrp_clp, 0, ',', '.') : 'Consultar',
+            'id'       => $v->id,
+            'name'     => $v->trim_name,
+            'price'    => $pricing['precio_lista'] ?? 'Consultar',
             'electric' => $v->powertrain_type === 'bev',
-            'bonus' => '',
-            'pricing' => array_values(array_filter([
-                $v->msrp_clp ? ['label' => 'Precio de lista', 'value' => '$'.number_format($v->msrp_clp, 0, ',', '.')] : null,
-            ])),
-            'motor' => $this->motorRows($v),
-            'interior' => $this->interiorRows($v),
-            'exterior' => $this->exteriorRows($v),
-            'seguridad' => $this->safetyRows($v),
-            'rendimiento' => $this->performanceRows($v),
+            'bonos'    => [
+                'bono_marca'                      => $v->bono_marca,
+                'bono_financiamiento_r9'          => $v->bono_financiamiento_r9,
+                'bono_financiamiento_tradicional' => $v->bono_financiamiento_tradicional,
+            ],
+            'pricing'      => $pricing['rows'],
+            'motor'        => $this->motorRows($v),
+            'interior'     => $this->interiorRows($v),
+            'exterior'     => $this->exteriorRows($v),
+            'seguridad'    => $this->safetyRows($v),
+            'rendimiento'  => $this->performanceRows($v),
+        ];
+    }
+
+    /**
+     * Genera los 4 precios según la lógica de negocio:
+     *   Precio Lista CLP
+     *   Precio Bono Marca = lista - bono_marca
+     *   Precio Bono R9    = lista - bono_marca - bono_r9
+     *   Precio Bono Financiamiento Tradicional = lista - bono_marca - bono_trad
+     */
+    private function buildPricing(VehicleVersion $v): array
+    {
+        $fmt = fn (?int $val) => $val ? '$'.number_format($val, 0, ',', '.') : null;
+
+        $lista  = $v->msrp_clp;
+        $bMarca = $v->bono_marca;
+        $bR9    = $v->bono_financiamiento_r9;
+        $bTrad  = $v->bono_financiamiento_tradicional;
+
+        $precioLista  = $lista ? $fmt($lista) : null;
+        $precioBono   = ($lista && $bMarca)  ? $fmt($lista - $bMarca)        : null;
+        $precioR9     = ($lista && $bMarca && $bR9)   ? $fmt($lista - $bMarca - $bR9)   : null;
+        $precioTrad   = ($lista && $bMarca && $bTrad) ? $fmt($lista - $bMarca - $bTrad) : null;
+
+        $rows = array_values(array_filter([
+            $precioLista ? ['label' => 'Precio de lista',                           'value' => $precioLista,  'highlight' => false] : null,
+            $precioBono  ? ['label' => 'Precio Bono Marca',                         'value' => $precioBono,   'highlight' => true,  'bono' => $fmt($bMarca)] : null,
+            $precioR9    ? ['label' => 'Precio Bono Financiamiento R9',             'value' => $precioR9,     'highlight' => true,  'bono' => $fmt($bMarca + $bR9)] : null,
+            $precioTrad  ? ['label' => 'Precio Bono Financiamiento Tradicional',    'value' => $precioTrad,   'highlight' => true,  'bono' => $fmt($bMarca + $bTrad)] : null,
+        ]));
+
+        return [
+            'precio_lista' => $precioLista ?? 'Consultar',
+            'rows'         => $rows,
         ];
     }
 

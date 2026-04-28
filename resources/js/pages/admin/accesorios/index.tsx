@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { ImportExportBar } from '@/components/admin/import-export-bar';
 import { useState } from 'react';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -21,8 +22,16 @@ export default function AccesoriosIndex({ accesorios }: { accesorios: Accesorio[
             <Head title="Admin — Accesorios" />
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-semibold">Accesorios y Merch</h1>
-                    <Button asChild><Link href="/admin/accesorios/create"><Plus className="mr-1 size-4" />Nuevo accesorio</Link></Button>
+                    <h1 className="text-2xl font-semibold">Accesorios</h1>
+                    <div className="flex gap-2">
+                        <ImportExportBar
+                            entityLabel="accesorios"
+                            exportUrl="/admin/accesorios/export"
+                            importUrl="/admin/accesorios/import"
+                            templateUrl="/admin/accesorios/template"
+                        />
+                        <Button asChild><Link href="/admin/accesorios/create"><Plus className="mr-1 size-4" />Nuevo accesorio</Link></Button>
+                    </div>
                 </div>
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
                 <div className="rounded-lg border">

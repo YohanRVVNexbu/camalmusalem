@@ -7,8 +7,8 @@ use Illuminate\Database\Eloquent\Model;
 class Accesorio extends Model
 {
     protected $fillable = [
-        'name', 'description', 'price', 'category',
-        'images', 'is_visible', 'order',
+        'sku', 'name', 'description', 'price', 'price_offer', 'compatible_with',
+        'category', 'images', 'is_visible', 'order',
     ];
 
     protected $casts = [

@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Accesorio;
+use App\Services\CatalogExport\AccesoriosExporter;
+use App\Services\CatalogImport\AccesoriosImporter;
 use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -55,6 +57,24 @@ class AccesorioController extends Controller
         $accesorio->delete();
 
         return redirect('/admin/accesorios')->with('success', 'Accesorio eliminado.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
+        $result = (new AccesoriosImporter)->import($request->file('file'));
+
+        return redirect('/admin/accesorios')->with('success', $result->toFlashMessage());
+    }
+
+    public function export()
+    {
+        return (new AccesoriosExporter)->download('accesorios_'.date('Y-m-d').'.xlsx');
+    }
+
+    public function template()
+    {
+        return (new AccesoriosExporter(templateOnly: true))->download('plantilla_accesorios.xlsx');
     }
 
     private function handleImages(Request $request, Accesorio $accesorio): void

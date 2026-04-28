@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -46,6 +47,12 @@ class HandleInertiaRequests extends Middleware
                 'success' => $request->session()->get('success'),
                 'error' => $request->session()->get('error'),
             ],
+            'branchesShared' => fn () => Branch::where('is_active', true)
+                ->orderBy('display_order')
+                ->get([
+                    'id', 'name', 'address', 'city', 'maps_url',
+                    'phone_sucursal', 'phone_repuestos', 'phones_servicio_tecnico',
+                ]),
         ];
     }
 

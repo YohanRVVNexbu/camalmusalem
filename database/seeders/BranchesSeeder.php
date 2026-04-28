@@ -16,7 +16,10 @@ class BranchesSeeder extends Seeder
                 'address' => 'Av. Francisco de Aguirre #070',
                 'city' => 'La Serena',
                 'maps_url' => 'https://www.google.com/maps/search/Av.+Francisco+de+Aguirre+070,+La+Serena,+Chile',
-                'phone' => null,
+                'phone' => '(51) 2 543 775',
+                'phone_sucursal' => '(51) 2 543 775',
+                'phone_repuestos' => '(51) 2 543 775',
+                'phones_servicio_tecnico' => ['(51) 2 544 710', '(51) 2 544 711'],
             ],
             [
                 'slug' => 'ovalle',
@@ -24,7 +27,10 @@ class BranchesSeeder extends Seeder
                 'address' => 'Ariztía #358',
                 'city' => 'Ovalle',
                 'maps_url' => 'https://www.google.com/maps/search/Ariztia+358,+Ovalle,+Chile',
-                'phone' => null,
+                'phone' => '(53) 2 433 277',
+                'phone_sucursal' => '(53) 2 433 277',
+                'phone_repuestos' => '(53) 2 433 223',
+                'phones_servicio_tecnico' => ['(53) 2 433 229'],
             ],
         ];
 

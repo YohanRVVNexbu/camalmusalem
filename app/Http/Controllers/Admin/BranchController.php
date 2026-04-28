@@ -66,6 +66,10 @@ class BranchController extends Controller
             'city' => ['nullable', 'string', 'max:100'],
             'maps_url' => ['nullable', 'url', 'max:500'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'phone_sucursal' => ['nullable', 'string', 'max:50'],
+            'phone_repuestos' => ['nullable', 'string', 'max:50'],
+            'phones_servicio_tecnico' => ['nullable', 'array'],
+            'phones_servicio_tecnico.*' => ['string', 'max:50'],
             'is_active' => ['boolean'],
             'display_order' => ['integer'],
         ]);

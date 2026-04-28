@@ -24,7 +24,11 @@
       "Bash(mv \"bZ4X_360_2SC_20_03.png\" \"bz4x.png\")",
       "Bash(mv \"fortuner_grs.png\" \"fortuner-gr-sport.png\")",
       "Bash(grep -n 'class Seminuevo\\\\|protected $fillable\\\\|use HasFactory' /Users/nexbuescl/Sites/camalmusalem/app/Models/Seminuevo.php)",
-      "Bash(git commit -m ' *)"
+      "Bash(git commit -m ' *)",
+      "Bash(python3 -c \"import openpyxl; wb = openpyxl.load_workbook\\('catalogo_vehiculos.xlsx'\\); print\\('Sheets:', wb.sheetnames\\)\")",
+      "Bash(python3 -c \"import xlrd; wb = xlrd.open_workbook\\('catalogo_vehiculos.xlsx'\\); print\\('Sheets:', wb.sheet_names\\(\\)\\)\")",
+      "Bash(python3)",
+      "Bash(composer show *)"
     ],
     "additionalDirectories": [
       "/tmp"

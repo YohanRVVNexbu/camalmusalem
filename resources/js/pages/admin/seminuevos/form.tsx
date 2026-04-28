@@ -36,6 +36,20 @@ const emptySpecs = (): Specs => ({
     downloads: [],
 });
 
+const normalizeSpecs = (raw: any): Specs => {
+    if (!raw) return emptySpecs();
+    if (Array.isArray(raw.general) && Array.isArray(raw.equipment)) return raw as Specs;
+    // Objeto plano proveniente del importador {"ABS": true, "Bluetooth": true, ...}
+    const equipment = Object.entries(raw)
+        .filter(([k]) => k !== 'downloads')
+        .map(([label, v]) => ({ label, value: v ? 'Sí' : 'No' }));
+    return {
+        general: emptySpecs().general,
+        equipment: equipment.length > 0 ? equipment : emptySpecs().equipment,
+        downloads: Array.isArray(raw.downloads) ? raw.downloads : [],
+    };
+};
+
 function SpecsSection({
     title,
     rows,
@@ -182,12 +196,15 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!seminuevo?.id;
 
-    const [data, setData] = useState<Seminuevo>(seminuevo ?? {
-        brand: 'Toyota', model: '', slug: null, year: new Date().getFullYear(), km: 0,
-        price: '', down_payment: null, fuel: null, transmission: null, traction: null,
-        doors: 5, seats: 5, color: null, description: null,
-        gallery: [], featured_gallery: [], specs: emptySpecs(), is_visible: true, order: 0,
-        branch_id: null,
+    const [data, setData] = useState<Seminuevo>(() => {
+        const base = seminuevo ?? {
+            brand: 'Toyota', model: '', slug: null, year: new Date().getFullYear(), km: 0,
+            price: '', down_payment: null, fuel: null, transmission: null, traction: null,
+            doors: 5, seats: 5, color: null, description: null,
+            gallery: [], featured_gallery: [], specs: null, is_visible: true, order: 0,
+            branch_id: null,
+        };
+        return { ...base, specs: normalizeSpecs(base.specs) };
     });
     const specs = data.specs ?? emptySpecs();
 

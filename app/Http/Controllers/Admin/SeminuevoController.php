@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Seminuevo;
+use App\Services\CatalogExport\SeminuevosExporter;
+use App\Services\CatalogImport\SeminuevosImporter;
 use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -75,6 +77,24 @@ class SeminuevoController extends Controller
         $seminuevo->delete();
 
         return redirect('/admin/seminuevos')->with('success', 'Seminuevo eliminado.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
+        $result = (new SeminuevosImporter)->import($request->file('file'));
+
+        return redirect('/admin/seminuevos')->with('success', $result->toFlashMessage());
+    }
+
+    public function export()
+    {
+        return (new SeminuevosExporter)->download('seminuevos_'.date('Y-m-d').'.xlsx');
+    }
+
+    public function template()
+    {
+        return (new SeminuevosExporter(templateOnly: true))->download('plantilla_seminuevos.xlsx');
     }
 
     private function uniqueSlug(string $brand, string $model, int $year, ?int $excludeId = null): string

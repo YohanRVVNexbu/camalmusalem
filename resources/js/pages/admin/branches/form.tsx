@@ -1,4 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
+import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -13,6 +14,9 @@ type Branch = {
     city: string | null;
     maps_url: string | null;
     phone: string | null;
+    phone_sucursal: string | null;
+    phone_repuestos: string | null;
+    phones_servicio_tecnico: string[] | null;
     is_active: boolean;
     display_order: number;
 };
@@ -23,6 +27,7 @@ export default function BranchForm({ branch }: { branch: Branch | null }) {
 
     const [data, setData] = useState<Branch>(branch ?? {
         name: '', address: null, city: null, maps_url: null, phone: null,
+        phone_sucursal: null, phone_repuestos: null, phones_servicio_tecnico: [],
         is_active: true, display_order: 0,
     });
     const [processing, setProcessing] = useState(false);
@@ -80,6 +85,50 @@ export default function BranchForm({ branch }: { branch: Branch | null }) {
                         <Label>URL de Google Maps</Label>
                         <Input value={data.maps_url ?? ''} onChange={(e) => set('maps_url', e.target.value || null)} placeholder="https://www.google.com/maps/..." />
                         <p className="text-xs text-muted-foreground">Pega el link de Google Maps para que al hacer click en la sucursal se abra en una pestaña nueva.</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="grid gap-2">
+                            <Label>Teléfono sucursal</Label>
+                            <Input value={data.phone_sucursal ?? ''} onChange={(e) => set('phone_sucursal', e.target.value || null)} placeholder="Ej: (51) 2 543 775" />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Teléfono repuestos</Label>
+                            <Input value={data.phone_repuestos ?? ''} onChange={(e) => set('phone_repuestos', e.target.value || null)} placeholder="Ej: (51) 2 543 776" />
+                        </div>
+                    </div>
+
+                    <div className="grid gap-2">
+                        <div className="flex items-center justify-between">
+                            <Label>Teléfonos servicio técnico</Label>
+                            <Button type="button" variant="outline" size="sm" onClick={() => set('phones_servicio_tecnico', [...(data.phones_servicio_tecnico ?? []), ''])}>
+                                <Plus className="mr-1 size-3" /> Agregar
+                            </Button>
+                        </div>
+                        {(data.phones_servicio_tecnico ?? []).length === 0 && (
+                            <p className="text-xs text-muted-foreground">Sin teléfonos de servicio técnico. Puedes agregar uno o varios.</p>
+                        )}
+                        {(data.phones_servicio_tecnico ?? []).map((tel, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                                <Input
+                                    value={tel}
+                                    onChange={(e) => {
+                                        const next = [...(data.phones_servicio_tecnico ?? [])];
+                                        next[i] = e.target.value;
+                                        set('phones_servicio_tecnico', next);
+                                    }}
+                                    placeholder="Ej: (51) 2 544 710"
+                                />
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    onClick={() => set('phones_servicio_tecnico', (data.phones_servicio_tecnico ?? []).filter((_, j) => j !== i))}
+                                >
+                                    <Trash2 className="size-4 text-destructive" />
+                                </Button>
+                            </div>
+                        ))}
                     </div>
 
                     <div className="grid gap-2">

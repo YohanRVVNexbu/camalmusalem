@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Repuesto;
+use App\Services\CatalogExport\RepuestosExporter;
+use App\Services\CatalogImport\RepuestosImporter;
 use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -55,6 +57,24 @@ class RepuestoController extends Controller
         $repuesto->delete();
 
         return redirect('/admin/repuestos')->with('success', 'Repuesto eliminado.');
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
+        $result = (new RepuestosImporter)->import($request->file('file'));
+
+        return redirect('/admin/repuestos')->with('success', $result->toFlashMessage());
+    }
+
+    public function export()
+    {
+        return (new RepuestosExporter)->download('repuestos_'.date('Y-m-d').'.xlsx');
+    }
+
+    public function template()
+    {
+        return (new RepuestosExporter(templateOnly: true))->download('plantilla_repuestos.xlsx');
     }
 
     private function handleImages(Request $request, Repuesto $repuesto): void

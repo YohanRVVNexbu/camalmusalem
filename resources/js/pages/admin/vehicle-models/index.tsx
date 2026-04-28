@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { Layers, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { ImportExportBar } from '@/components/admin/import-export-bar';
 import AdminLayout from '@/layouts/admin-layout';
 
 type VehicleModel = {
@@ -53,11 +54,27 @@ export default function VehicleModelsIndex({
                 <div className="flex items-center justify-between">
                     <div>
                         <h1 className="text-2xl font-semibold">Vehículos nuevos</h1>
-                        <p className="text-sm text-muted-foreground">Modelos del catálogo (Hilux, RAV4, bZ4X, etc.). Para ficha técnica detallada por versión ve a Mantenedores → Versiones.</p>
+                        <p className="text-sm text-muted-foreground">Modelos del catálogo. Haz clic en <strong>Versiones</strong> de cada modelo para editar fichas técnicas y precios.</p>
                     </div>
-                    <Button asChild>
-                        <Link href="/admin/vehicle-models/create"><Plus className="mr-1 size-4" />Nuevo vehículo</Link>
-                    </Button>
+                    <div className="flex gap-2">
+                        <ImportExportBar
+                            entityLabel="lista de precios"
+                            exportUrl="/admin/vehicle-versions/precios/export"
+                            importUrl="/admin/vehicle-versions/precios/import"
+                            templateUrl="/admin/vehicle-versions/precios/export"
+                            label="Precios"
+                        />
+                        <ImportExportBar
+                            entityLabel="catálogo completo"
+                            exportUrl="/admin/vehicle-versions/export"
+                            importUrl="/admin/vehicle-versions/import"
+                            templateUrl="/admin/vehicle-versions/template"
+                            label="Catálogo"
+                        />
+                        <Button asChild>
+                            <Link href="/admin/vehicle-models/create"><Plus className="mr-1 size-4" />Nuevo modelo</Link>
+                        </Button>
+                    </div>
                 </div>
 
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
@@ -104,7 +121,14 @@ export default function VehicleModelsIndex({
                                     <TableCell>
                                         {m.body_type ? <Badge variant="outline">{bodyTypes[m.body_type] ?? m.body_type}</Badge> : '—'}
                                     </TableCell>
-                                    <TableCell><Badge variant="outline">{m.versions_count}</Badge></TableCell>
+                                    <TableCell>
+                                        <Button variant="outline" size="sm" asChild className="gap-1.5 h-7 text-xs">
+                                            <Link href={`/admin/vehicle-versions?model_id=${m.id}`}>
+                                                <Layers className="size-3" />
+                                                {m.versions_count} {m.versions_count === 1 ? 'versión' : 'versiones'}
+                                            </Link>
+                                        </Button>
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant={m.is_active ? 'default' : 'secondary'}>{m.is_active ? 'Activo' : 'Inactivo'}</Badge>
                                     </TableCell>

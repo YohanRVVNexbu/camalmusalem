@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
+import { ImportExportBar } from '@/components/admin/import-export-bar';
 import { useState } from 'react';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -22,7 +23,15 @@ export default function SeminuevosIndex({ seminuevos }: { seminuevos: Seminuevo[
             <div className="flex flex-col gap-4 p-4">
                 <div className="flex items-center justify-between">
                     <h1 className="text-2xl font-semibold">Seminuevos</h1>
-                    <Button asChild><Link href="/admin/seminuevos/create"><Plus className="mr-1 size-4" />Nuevo seminuevo</Link></Button>
+                    <div className="flex gap-2">
+                        <ImportExportBar
+                            entityLabel="seminuevos"
+                            exportUrl="/admin/seminuevos/export"
+                            importUrl="/admin/seminuevos/import"
+                            templateUrl="/admin/seminuevos/template"
+                        />
+                        <Button asChild><Link href="/admin/seminuevos/create"><Plus className="mr-1 size-4" />Nuevo seminuevo</Link></Button>
+                    </div>
                 </div>
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
                 <div className="rounded-lg border">
