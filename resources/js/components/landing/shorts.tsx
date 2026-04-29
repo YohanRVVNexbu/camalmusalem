@@ -242,34 +242,34 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
     const { ref: sectionRef, visible } = useInView(0.1);
 
     return (
-        <section ref={sectionRef} className="flex flex-col gap-10 self-stretch bg-black px-15 pt-15 pb-25">
+        <section ref={sectionRef} className="flex flex-col gap-10 self-stretch bg-black px-5 pt-15 pb-15 md:px-15 md:pb-25">
             {/* Header */}
-            <div className={`flex items-end justify-between self-stretch transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                <div className="flex flex-col gap-10">
-                    <div className="flex flex-col gap-5">
-                        <div className="flex flex-col gap-2.5">
-                            <span className="text-xl leading-none text-white">
-                                {data.label}
-                            </span>
-                            <h2 className="text-[32px] leading-none text-white">
-                                {data.title.split('\n').map((line, i, arr) => (
-                                    <span key={i}>
-                                        {line}
-                                        {i < arr.length - 1 && <br />}
-                                    </span>
-                                ))}
-                            </h2>
-                        </div>
-                        <p className="text-base leading-none text-white">
-                            {data.description}
-                        </p>
+            <div className={`flex flex-col items-start gap-5 self-stretch transition-all duration-700 ease-out md:flex-row md:items-end md:justify-between md:gap-0 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <div className="flex flex-col gap-5">
+                    <div className="flex flex-col gap-2.5">
+                        <span className="text-base leading-[120%] text-white">
+                            {data.label}
+                        </span>
+                        <h2 className="text-2xl leading-[120%] text-white md:text-[32px] md:leading-none">
+                            {data.title.split('\n').map((line, i, arr) => (
+                                <span key={i}>
+                                    {line}
+                                    {i < arr.length - 1 && <br />}
+                                </span>
+                            ))}
+                        </h2>
                     </div>
+                    <p className="text-base leading-[120%] text-white md:leading-none">
+                        {data.description}
+                    </p>
                 </div>
                 <a
                     href={data.button_href}
-                    className="flex h-12 items-center gap-2.5 rounded-full bg-white py-1 pr-1 pl-6 text-base leading-none text-black transition hover:bg-white/90"
+                    className="flex items-center gap-2.5 rounded-full bg-white p-1 transition hover:bg-white/90"
                 >
-                    {data.button_text}
+                    <span className="pl-2.5 text-base leading-none text-black">
+                        {data.button_text}
+                    </span>
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
                         <ArrowIcon className="text-white" />
                     </span>
@@ -285,15 +285,20 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
                                   <button
                                       key={video.id}
                                       onClick={() => setActiveVideo(video)}
-                                      className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
+                                      className="relative shrink-0 cursor-pointer overflow-hidden rounded-[30px] w-75 h-125 md:h-150.5 md:min-w-0 md:basis-[calc(25%-15px)] md:w-auto"
                                       style={{
-                                          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${video.thumbnail})`,
+                                          backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${video.thumbnail})`,
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                           backgroundColor: '#333',
                                       }}
                                   >
-                                      <div className="absolute inset-0 flex items-center justify-center">
+                                      {/* Mobile: logo bottom-right */}
+                                      <div className="absolute inset-0 flex flex-col items-end justify-end p-[17.5px] md:hidden">
+                                          <img src={data.logo} alt="YouTube Shorts" className="w-14" />
+                                      </div>
+                                      {/* Desktop: logo centered */}
+                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
                                           <img src={data.logo} alt="YouTube Shorts" className="w-17" />
                                       </div>
                                   </button>
@@ -301,15 +306,20 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
                             : data.images.map((image, index) => (
                                   <div
                                       key={index}
-                                      className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
+                                      className="relative shrink-0 cursor-pointer overflow-hidden rounded-[30px] w-75 h-125 md:h-150.5 md:min-w-0 md:basis-[calc(25%-15px)] md:w-auto"
                                       style={{
-                                          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`,
+                                          backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${image})`,
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                           backgroundColor: '#333',
                                       }}
                                   >
-                                      <div className="absolute inset-0 flex items-center justify-center">
+                                      {/* Mobile: logo bottom-right */}
+                                      <div className="absolute inset-0 flex flex-col items-end justify-end p-[17.5px] md:hidden">
+                                          <img src={data.logo} alt="YouTube Shorts" className="w-14" />
+                                      </div>
+                                      {/* Desktop: logo centered */}
+                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
                                           <img src={data.logo} alt="YouTube Shorts" className="w-17" />
                                       </div>
                                   </div>

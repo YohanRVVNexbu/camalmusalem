@@ -80,18 +80,18 @@ export function Footer({ data }: { data: FooterData }) {
     const { ref, visible } = useInView(0.1);
 
     return (
-        <footer ref={ref} className="rounded-t-[30px] bg-white px-15 pt-20 pb-20">
+        <footer ref={ref} className="rounded-t-[30px] border border-[rgba(35,31,32,0.20)] bg-white px-5 py-15 md:px-15 md:py-20">
             <div className="flex flex-col gap-15">
                 {/* Top section */}
-                <div className={`flex items-start justify-between transition-all duration-700 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <div className={`flex flex-col items-start gap-10 transition-all duration-700 ease-out md:flex-row md:justify-between md:gap-0 ${visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                     {/* Logo + socials */}
-                    <div className="flex w-67.5 flex-col gap-5">
+                    <div className="flex flex-col gap-7.5 md:w-67.5 md:gap-5">
                         <img
                             src={data.logo}
                             alt="Toyota Musalem"
-                            className="h-12 w-auto object-contain object-left"
+                            className="h-12.5 w-auto object-contain object-left"
                         />
-                        <div className="flex gap-2.5">
+                        <div className="flex gap-5">
                             {Object.entries(data.social_links).map(([key, url]) => {
                                 const Icon = socialIcons[key];
                                 if (!Icon) return null;
@@ -105,17 +105,17 @@ export function Footer({ data }: { data: FooterData }) {
                     </div>
 
                     {/* Columns */}
-                    <div className="flex gap-15">
+                    <div className="flex flex-col gap-15 md:flex-row">
                         {/* MUSALEM */}
-                        <div className="flex w-30 flex-col gap-5">
-                            <span className="text-sm leading-none font-normal text-black">
+                        <div className="flex flex-col gap-5 md:w-30">
+                            <span className="text-sm font-semibold leading-none text-[#231F20]">
                                 MUSALEM
                             </span>
                             {data.nav_links.map((link) => (
                                 <a
                                     key={link.label}
                                     href={link.href}
-                                    className="text-sm leading-none text-black/80 transition hover:text-black"
+                                    className="text-sm leading-none text-[rgba(35,31,32,0.80)] transition hover:text-black"
                                 >
                                     {link.label}
                                 </a>
@@ -125,11 +125,11 @@ export function Footer({ data }: { data: FooterData }) {
                         {/* Locations */}
                         {data.locations.map((loc) => (
                             <div key={loc.title} className="flex flex-col gap-5">
-                                <span className="text-base leading-none font-normal uppercase text-black">
+                                <span className="text-sm font-semibold leading-none uppercase text-[#231F20]">
                                     {loc.title}
                                 </span>
                                 {loc.items.map((item, i) => (
-                                    <span key={i} className="text-sm leading-none text-black/80">
+                                    <span key={i} className="text-sm leading-none text-[rgba(35,31,32,0.80)]">
                                         {item}
                                     </span>
                                 ))}
@@ -137,15 +137,15 @@ export function Footer({ data }: { data: FooterData }) {
                         ))}
 
                         {/* LEGALES */}
-                        <div className="flex w-40 flex-col gap-5">
-                            <span className="text-base leading-none font-normal uppercase text-black">
+                        <div className="flex flex-col gap-5 md:w-40">
+                            <span className="text-sm font-semibold leading-none uppercase text-[#231F20]">
                                 Legales
                             </span>
                             {data.legal_links.map((item) => (
                                 <a
                                     key={item}
                                     href="#"
-                                    className="text-sm leading-normal text-black/80 transition hover:text-black"
+                                    className="text-sm leading-normal text-[rgba(35,31,32,0.80)] transition hover:text-black"
                                 >
                                     {item}
                                 </a>
@@ -155,7 +155,7 @@ export function Footer({ data }: { data: FooterData }) {
                 </div>
 
                 {/* Copyright */}
-                <span className={`text-xs leading-none text-[#231F20] transition-all duration-700 delay-200 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
+                <span className={`text-sm leading-none text-[#231F20] transition-all duration-700 delay-200 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-4 opacity-0'}`}>
                     &copy; {new Date().getFullYear()} {data.copyright}
                 </span>
             </div>
