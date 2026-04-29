@@ -53,16 +53,14 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
             <main className="flex flex-col bg-black">
 
                 {/* Hero + Form */}
-                <section className="px-15 pb-20 pt-32" style={{ background: 'linear-gradient(180deg, #000000 0%, #ffffff 100%)' }}>
-                    <div className="flex overflow-hidden rounded-[30px] shadow-2xl">
+                <section className="pb-10 lg:px-15 lg:pb-20 lg:pt-32" style={{ background: 'linear-gradient(180deg, #000000 0%, #ffffff 100%)' }}>
+                    <div className="flex flex-col overflow-hidden shadow-2xl lg:flex-row lg:rounded-[30px]">
 
                         {/* Left: Image */}
                         <div
-                            className="flex shrink-0 flex-col items-stretch justify-end gap-2.5 pb-15 pl-7.5 pr-7.5 pt-7.5"
+                            className="flex aspect-3/4 w-full shrink-0 flex-col items-stretch justify-end gap-2 p-3 lg:aspect-auto lg:h-215 lg:w-1/2 lg:gap-2.5 lg:px-7.5 lg:pt-7.5 lg:pb-15"
                             style={{
-                                width: '50%',
-                                height: '860px',
-                                background: `url(${formImg}) lightgray -41.714px -299.096px / 111.496% 134.746% no-repeat`,
+                                background: `url(${formImg}) lightgray center / cover no-repeat`,
                             }}
                         >
                             {/* Horario de atención */}
@@ -74,11 +72,11 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                                     <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                         Horario de atención
                                     </span>
-                                    <div className="flex items-center justify-between self-stretch h-3.5">
+                                    <div className="flex h-3.5 items-center justify-between self-stretch">
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Lunes a Viernes</span>
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.horario_lv ?? '09:00 a 13:30 - 14:45 a 18:30'}</span>
                                     </div>
-                                    <div className="flex items-center justify-between self-stretch h-3.5">
+                                    <div className="flex h-3.5 items-center justify-between self-stretch">
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Sábado / Domingo</span>
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.horario_sab ?? 'Cerrado'}</span>
                                     </div>
@@ -94,7 +92,7 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                                     <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                         Contacto directo
                                     </span>
-                                    <div className="flex items-center justify-between self-stretch h-3.5">
+                                    <div className="flex h-3.5 items-center justify-between self-stretch">
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Correo electrónico</span>
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.email ?? 'info@camalmusalem.cl'}</span>
                                     </div>
@@ -103,26 +101,26 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                         </div>
 
                         {/* Right: Form */}
-                        <form onSubmit={submit} className="flex flex-1 flex-col items-start justify-center gap-2.5 overflow-hidden bg-[#EAEAF1] px-10 pb-2.5 pt-20">
+                        <form onSubmit={submit} className="flex flex-1 flex-col items-start justify-center gap-2.5 overflow-hidden bg-[#EAEAF1] px-5 py-7.5 lg:px-10 lg:pt-20 lg:pb-2.5">
                             <div className="flex w-full flex-col gap-10 items-end justify-center">
                                 <div className="flex w-full flex-col gap-5 items-start">
 
                                     {/* Header text */}
-                                    <div className="flex flex-col gap-5 items-start self-stretch">
+                                    <div className="flex flex-col gap-3 items-start self-stretch lg:gap-5">
                                         <h1
-                                            className="text-[24px] font-semibold leading-[120%] text-black"
+                                            className="text-2xl font-semibold leading-[120%] text-black lg:text-[24px]"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             {info.form_title ?? 'Contacto'}
                                         </h1>
                                         <p
-                                            className="text-lg leading-[120%] text-black"
+                                            className="text-base leading-[120%] text-black lg:text-lg"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             {info.form_subtitle ?? '¿En qué te podemos ayudar?'}
                                         </p>
                                         <p
-                                            className="text-base leading-[120%] text-black"
+                                            className="text-sm leading-[120%] text-black lg:text-base"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             {info.form_desc ?? 'Completa el formulario y nuestro equipo se pondrá en contacto contigo a la brevedad.'}
@@ -181,7 +179,7 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                                         </div>
 
                                         {/* Email + Teléfono */}
-                                        <div className="flex w-full flex-row gap-5 items-center self-stretch">
+                                        <div className="flex w-full flex-col gap-5 self-stretch lg:flex-row lg:items-center">
                                             <div className="flex flex-1 flex-col gap-2.5 items-start">
                                                 <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                     Email
@@ -249,7 +247,7 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                                 <button
                                     type="submit"
                                     disabled={processing}
-                                    className="flex h-12 w-50 items-center justify-center rounded-[60px] bg-black px-5 disabled:opacity-60"
+                                    className="flex h-12 w-full items-center justify-center rounded-[60px] bg-black px-5 disabled:opacity-60 lg:w-50"
                                 >
                                     <span className="text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                         {processing ? 'Enviando…' : 'Enviar solicitud'}
