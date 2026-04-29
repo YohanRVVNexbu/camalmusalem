@@ -2,7 +2,7 @@ import { Head, router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { ContactCta } from '@/components/landing/contact-cta';
+import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { useEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
 import { DayPicker } from 'react-day-picker';
@@ -156,22 +156,22 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                 {/* Hero */}
                 <section ref={heroInView.ref}>
                     <div
-                        className={`flex h-165 flex-col items-start justify-end gap-10 rounded-b-[30px] px-10 py-15 transition-all duration-700 ease-out ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                        className={`flex h-125 flex-col items-start justify-end gap-7.5 rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:gap-10 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
                         style={{
-                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.30) 100%), url(${heroImg}) lightgray 0px -134.607px / 110.409% 140.677% no-repeat`,
+                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.30) 0%, rgba(0,0,0,0.30) 100%), url(${heroImg}) lightgray center / cover no-repeat`,
                         }}
                     >
-                        <div className="flex items-end justify-between self-stretch">
+                        <div className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:items-end lg:justify-between lg:self-stretch">
                             {/* Izquierda: título + descripción */}
-                            <div className="flex flex-col gap-10 items-start">
+                            <div className="flex flex-col items-start gap-5 lg:gap-10">
                                 <h1
-                                    className="text-[48px] font-normal leading-[100%] text-white"
+                                    className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]"
                                     style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off', whiteSpace: 'pre-line' }}
                                 >
                                     {heroData.title || "Arrienda con KINTO\ndesde Musalem"}
                                 </h1>
                                 <p
-                                    className="w-124 text-base leading-[120%] text-white"
+                                    className="text-sm leading-[120%] text-white lg:w-124 lg:text-base"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
                                     {heroData.description || 'Con KINTO puedes reservar, retirar y usar un Toyota directamente desde la app. En Musalem te orientamos durante el proceso y te ayudamos a encontrar la alternativa disponible que mejor se adapte a tu necesidad, ya sea por horas, días o semanas.'}
@@ -179,12 +179,12 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                             </div>
 
                             {/* Derecha: botón + nota */}
-                            <div className="flex flex-col gap-5 items-start">
-                                <button className="flex cursor-pointer items-center rounded-[60px] border border-transparent bg-white p-1 transition-opacity hover:opacity-90">
+                            <div className="flex w-full flex-col items-start gap-2.5 lg:w-auto lg:gap-5">
+                                <button className="flex w-full cursor-pointer items-center justify-between rounded-[60px] border border-transparent bg-white p-1 transition-opacity hover:opacity-90 lg:w-auto lg:justify-start">
                                     <span className="pl-2.5 text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                         {heroData.button_text || 'Descargar app KINTO'}
                                     </span>
-                                    <span className="ml-2.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
+                                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black lg:ml-2.5">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
                                             <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                         </svg>
@@ -199,32 +199,31 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                 </section>
 
                 {/* ¿Cómo funciona KINTO? */}
-                <section ref={comoFuncionaInView.ref} className="bg-black px-15 py-20">
-                    <div className={`flex flex-col items-center gap-10 rounded-[30px] bg-[#EAEAF1] p-10 transition-all duration-700 ease-out ${comoFuncionaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <section ref={comoFuncionaInView.ref} className="bg-black px-5 py-10 lg:px-15 lg:py-20">
+                    <div className={`flex flex-col items-center gap-7.5 rounded-[30px] bg-[#EAEAF1] p-5 transition-all duration-700 ease-out lg:gap-10 lg:p-10 ${comoFuncionaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                         <h2
-                            className="text-center text-[32px] font-normal leading-[120%] text-black"
+                            className="text-center text-2xl font-normal leading-[120%] text-black lg:text-[32px]"
                             style={{ fontFamily: '"Toyota Type"' }}
                         >
                             {kinto_pasos?.title || '¿Cómo funciona KINTO en Musalem?'}
                         </h2>
-                        <div className="flex w-full gap-5">
+                        <div className="flex w-full flex-col gap-5 lg:flex-row">
                             {pasos.map((paso, i) => (
                                 <div
                                     key={i}
-                                    className="flex flex-1 flex-col items-center justify-center gap-5 rounded-[40.8px] px-10 py-15"
+                                    className="flex h-75 flex-1 flex-col items-center justify-center gap-3 rounded-[30px] px-5 py-10 lg:h-102 lg:gap-5 lg:rounded-[40.8px] lg:px-10 lg:py-15"
                                     style={{
-                                        height: '408px',
                                         background: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.80) 100%), url(${paso.img}) lightgray 50% / cover no-repeat`,
                                     }}
                                 >
                                     <span
-                                        className="text-center text-[28px] font-semibold leading-[120%] text-white"
+                                        className="text-center text-2xl font-semibold leading-[120%] text-white lg:text-[28px]"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         {paso.titulo}
                                     </span>
                                     <p
-                                        className="text-center text-base font-normal leading-[120%] text-white"
+                                        className="text-center text-sm font-normal leading-[120%] text-white lg:text-base"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         {paso.subtitulo}
@@ -236,23 +235,23 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                 </section>
 
                 {/* Vehículos disponibles */}
-                <section ref={vehiculosInView.ref} className="bg-black px-15 py-20">
-                    <div className={`flex flex-col gap-10 transition-all duration-700 ease-out ${vehiculosInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <section ref={vehiculosInView.ref} className="bg-black px-5 py-10 lg:px-15 lg:py-20">
+                    <div className={`flex flex-col gap-7.5 transition-all duration-700 ease-out lg:gap-10 ${vehiculosInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
 
                         {/* Header con tabs */}
-                        <div className="flex items-center justify-between self-stretch">
+                        <div className="flex flex-col items-start gap-5 self-stretch lg:flex-row lg:items-center lg:justify-between">
                             <h2
-                                className="text-[32px] font-normal leading-[120%] text-white"
+                                className="text-2xl font-normal leading-[120%] text-white lg:text-[32px]"
                                 style={{ fontFamily: '"Toyota Type"' }}
                             >
                                 {kinto_vehiculos?.title || 'Vehículos disponibles'}
                             </h2>
-                            <div className="flex items-center gap-1.5 rounded-[60px] bg-white p-1.5">
+                            <div className="flex w-full items-center gap-1.5 rounded-[60px] bg-white p-1.5 lg:w-auto">
                                 {(['la-serena', 'ovalle'] as const).map((key) => (
                                     <button
                                         key={key}
                                         onClick={() => setSucursal(key)}
-                                        className={`h-11 cursor-pointer rounded-[60px] border border-transparent px-5 py-1 text-base leading-none transition-colors ${
+                                        className={`h-9.5 flex-1 cursor-pointer rounded-[60px] border border-transparent px-3 py-1 text-sm leading-none transition-colors lg:h-11 lg:flex-none lg:px-5 lg:text-base ${
                                             sucursal === key
                                                 ? 'bg-black text-white'
                                                 : 'bg-[#EAEAF1] text-black'
@@ -266,17 +265,17 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                         </div>
 
                         {/* Cards de vehículos */}
-                        <div className="flex gap-5">
+                        <div className="flex flex-col gap-5 lg:flex-row">
                             {vehiculos.map((vehiculo) => (
                                 <div
                                     key={vehiculo.nombre}
-                                    className="flex h-162.5 flex-1 flex-col items-center justify-between overflow-hidden rounded-[30px] bg-white py-15"
+                                    className="flex flex-1 flex-col items-center justify-between gap-7.5 overflow-hidden rounded-[30px] bg-white px-5 py-10 lg:h-162.5 lg:gap-0 lg:px-0 lg:py-15"
                                 >
                                     {/* Nombre */}
                                     <div className="flex items-end gap-2.5">
                                         <KintoIcon />
                                         <span
-                                            className="text-[32px] font-semibold uppercase leading-none text-black"
+                                            className="text-2xl font-semibold uppercase leading-none text-black lg:text-[32px]"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             {vehiculo.nombre}
@@ -284,11 +283,11 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                     </div>
 
                                     {/* Imagen */}
-                                    <div className="flex h-66 w-full items-center justify-center">
+                                    <div className="flex h-40 w-full items-center justify-center lg:h-66">
                                         {vehiculo.img ? (
                                             <img src={vehiculo.img} alt={vehiculo.nombre} className="h-full object-contain" />
                                         ) : (
-                                            <div className="h-full w-144.5 rounded-xl bg-gray-100" />
+                                            <div className="h-full w-full rounded-xl bg-gray-100 lg:w-144.5" />
                                         )}
                                     </div>
 
@@ -298,24 +297,24 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                     </span>
 
                                     {/* Botones */}
-                                    <div className="flex items-center gap-2.5">
+                                    <div className="flex w-full flex-col items-stretch gap-2.5 lg:w-auto lg:flex-row lg:items-center">
                                         {/* Ver detalles */}
-                                        <button className="flex h-12 cursor-pointer items-center rounded-[60px] border border-transparent bg-black p-1 transition-opacity hover:opacity-80">
+                                        <button className="flex h-12 cursor-pointer items-center justify-between rounded-[60px] border border-transparent bg-black p-1 transition-opacity hover:opacity-80 lg:justify-start">
                                             <span className="pb-0.5 pl-2.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Ver detalles vehículo
                                             </span>
-                                            <span className="ml-2.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-white">
+                                            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white lg:ml-2.5">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
                                                     <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                                 </svg>
                                             </span>
                                         </button>
                                         {/* Solicitar información */}
-                                        <button className="flex h-12 cursor-pointer items-center rounded-[60px] border border-black p-1 pl-1.5 transition-opacity hover:opacity-80">
+                                        <button className="flex h-12 cursor-pointer items-center justify-between rounded-[60px] border border-black p-1 pl-1.5 transition-opacity hover:opacity-80 lg:justify-start">
                                             <span className="pb-0.5 pl-2.5 text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Solicitar información
                                             </span>
-                                            <span className="ml-2.5 flex size-10 shrink-0 items-center justify-center rounded-[80px] bg-black" style={{ backdropFilter: 'blur(20px)' }}>
+                                            <span className="flex size-10 shrink-0 items-center justify-center rounded-[80px] bg-black lg:ml-2.5" style={{ backdropFilter: 'blur(20px)' }}>
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="19" height="15" viewBox="0 0 19 15" fill="none">
                                                     <path d="M0.699816 7.28646L18.2554 7.28646M18.2554 7.28646L11.672 13.8698M18.2554 7.28646L11.672 0.703125" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                                                 </svg>
@@ -329,27 +328,27 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                 </section>
 
                 {/* Solicita tu arriendo */}
-                <section className="bg-black px-15 py-20">
-                    <div className="rounded-[30px] bg-[#EAEAF1] p-15 flex flex-col gap-20 items-center">
+                <section className="bg-black px-5 py-10 lg:px-15 lg:py-20">
+                    <div className="flex flex-col items-center gap-10 rounded-[30px] bg-[#EAEAF1] p-5 lg:gap-20 lg:p-15">
                         {!showForm ? (
                             /* ── Vista inicial ── */
-                            <div className="flex items-center justify-between self-stretch">
-                                <div className="flex flex-col gap-10 items-start justify-center">
+                            <div className="flex flex-col items-start gap-7.5 self-stretch lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+                                <div className="order-2 flex flex-col items-start justify-center gap-5 lg:order-1 lg:gap-10">
                                     <h2
-                                        className="text-[40px] font-semibold leading-[120%] text-black"
+                                        className="text-[28px] font-semibold leading-[120%] text-black lg:text-[40px]"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         Solicita tu arriendo<br />Kinto en Musalem
                                     </h2>
                                     <p
-                                        className="w-115.5 text-base leading-[120%] text-black"
+                                        className="text-sm leading-[120%] text-black lg:w-115.5 lg:text-base"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         Conoce la opción de arriendo disponible a través de KINTO y déjanos tu solicitud para que un asesor de Musalem te contacte y te ayude a gestionar el proceso según sucursal, disponibilidad y fecha estimada.
                                     </p>
                                     <button
                                         onClick={() => { setShowForm(true); setFormStep(1); }}
-                                        className="cursor-pointer rounded-[60px] border border-transparent bg-black px-15 py-4.75 text-base leading-none text-white transition-opacity hover:opacity-80"
+                                        className="w-full cursor-pointer rounded-[60px] border border-transparent bg-black px-8 py-4 text-base leading-none text-white transition-opacity hover:opacity-80 lg:w-auto lg:px-15 lg:py-4.75"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         Solicitar arriendo Kinto
@@ -358,32 +357,33 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                 <img
                                     src={formImg}
                                     alt="Solicitar arriendo Kinto"
-                                    className="h-140 w-140 shrink-0 rounded-[30px] object-cover"
+                                    className="order-1 h-65 w-full shrink-0 rounded-[30px] object-cover lg:order-2 lg:h-140 lg:w-140"
+                                    style={{ objectPosition: 'center top' }}
                                 />
                             </div>
                         ) : formSent ? (
                             /* ── Éxito ── */
-                            <div className="flex items-center justify-center w-full py-20">
-                                <div className="flex flex-col gap-10 items-center justify-center flex-1">
-                                    <h3 className="text-[24px] font-semibold leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                            <div className="flex w-full items-center justify-center py-10 lg:py-20">
+                                <div className="flex flex-1 flex-col items-center justify-center gap-7.5 lg:gap-10">
+                                    <h3 className="text-center text-2xl font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                         Solicitud enviada con éxito
                                     </h3>
-                                    <p className="text-base leading-[120%] text-black text-center w-122" style={{ fontFamily: '"Toyota Type"' }}>
+                                    <p className="text-center text-sm leading-[120%] text-black lg:w-122 lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                         Hemos recibido tu solicitud de arriendo y te enviaremos un correo a{' '}
                                         <span className="font-semibold uppercase">{formCorreo}</span>
                                         {' '}con los detalles de tu solicitud.
                                     </p>
-                                    <div className="flex flex-col gap-5 items-stretch">
+                                    <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:gap-5">
                                         <button
                                             onClick={() => { setShowForm(false); setFormSent(false); }}
-                                            className="cursor-pointer rounded-[60px] bg-black px-15 py-4.75 text-base leading-none text-white transition-opacity hover:opacity-80"
+                                            className="cursor-pointer rounded-[60px] bg-black px-8 py-4 text-base leading-none text-white transition-opacity hover:opacity-80 lg:px-15 lg:py-4.75"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             Volver a inicio
                                         </button>
                                         <button
                                             onClick={() => { setFormSent(false); setFormStep(1); setFormSucursal(''); setFormFecha(''); setFormDuracion(''); setFormVehiculo(''); setFormNombre(''); setFormRut(''); setFormTelefono('+569'); setFormCorreo(''); setFormLicencia(false); }}
-                                            className="cursor-pointer rounded-[60px] border border-black bg-transparent px-15 py-4.75 text-base leading-none text-black transition-opacity hover:opacity-70"
+                                            className="cursor-pointer rounded-[60px] border border-black bg-transparent px-8 py-4 text-base leading-none text-black transition-opacity hover:opacity-70 lg:px-15 lg:py-4.75"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             Enviar otra solicitud
@@ -412,15 +412,16 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                     </button>
 
                                     {/* Tabs */}
-                                    <div className="flex gap-5 w-full h-12">
+                                    <div className="flex h-10 w-full gap-2 lg:h-12 lg:gap-5">
                                         {['Arriendo y sucursal', 'Datos de contacto', 'Confirmar'].map((tab, i) => (
                                             <button
                                                 key={i}
                                                 onClick={() => setFormStep(i + 1)}
-                                                className={`flex-1 h-12 rounded-[60px] text-base leading-none transition-colors cursor-pointer ${formStep === i + 1 ? 'bg-black text-white' : 'bg-white text-black'}`}
+                                                className={`flex h-10 flex-1 items-center justify-center rounded-[60px] text-xs leading-none transition-colors cursor-pointer lg:h-12 lg:text-base ${formStep === i + 1 ? 'bg-black text-white' : 'bg-white text-black'}`}
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
-                                                {i + 1}. {tab}
+                                                <span className="lg:hidden">{i + 1}</span>
+                                                <span className="hidden lg:inline">{i + 1}. {tab}</span>
                                             </button>
                                         ))}
                                     </div>
@@ -428,17 +429,17 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
 
                                 {/* Contenido paso 1 */}
                                 {formStep === 1 && (
-                                    <div className="flex gap-15 items-start w-full">
+                                    <div className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:gap-15">
 
                                         {/* Imagen izquierda con overlay sucursales */}
-                                        <div className="shrink-0 w-140 h-140 rounded-[30px] bg-white overflow-hidden relative shadow-sm">
+                                        <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[30px] bg-white shadow-sm lg:h-140 lg:w-140">
                                             <img
                                                 src={formStep1Img}
                                                 alt="Sucursales"
                                                 className="absolute inset-0 w-full h-full object-cover"
                                             />
                                             <div
-                                                className="absolute left-7.5 bottom-7.5 w-92.25 rounded-2xl p-5 flex flex-col gap-2.5 overflow-hidden"
+                                                className="absolute right-2.5 bottom-2.5 left-2.5 flex flex-col gap-2.5 overflow-hidden rounded-2xl p-5 lg:right-auto lg:bottom-7.5 lg:left-7.5 lg:w-92.25"
                                                 style={{ background: 'rgba(0,0,0,0.60)', backdropFilter: 'blur(30px)' }}
                                             >
                                                 <div className="flex flex-col gap-4 items-start w-full">
@@ -456,13 +457,13 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                         </div>
 
                                         {/* Campos del formulario */}
-                                        <div className="flex flex-col gap-10 flex-1">
+                                        <div className="flex w-full flex-1 flex-col gap-7.5 lg:gap-10">
 
                                             <div className="flex flex-col gap-2.5">
-                                                <h3 className="text-[24px] font-semibold leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                <h3 className="text-xl font-semibold leading-[120%] text-black lg:text-[24px] lg:leading-none" style={{ fontFamily: '"Toyota Type"' }}>
                                                     Arriendo y sucursal
                                                 </h3>
-                                                <p className="text-base leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                <p className="text-sm leading-[120%] text-black lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                                     Cuéntanos cuándo quieres arrendar, por cuánto tiempo y desde qué sucursal te gustaría gestionar tu solicitud.
                                                 </p>
                                             </div>
@@ -563,7 +564,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
 
                                             <button
                                                 onClick={() => setFormStep(2)}
-                                                className="self-start cursor-pointer rounded-[60px] border border-transparent bg-black px-15 py-4.75 text-base leading-none text-white transition-opacity hover:opacity-80"
+                                                className="w-full cursor-pointer rounded-[60px] border border-transparent bg-black px-8 py-4 text-base leading-none text-white transition-opacity hover:opacity-80 lg:w-auto lg:self-start lg:px-15 lg:py-4.75"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
                                                 Siguiente
@@ -574,10 +575,10 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
 
                                 {/* Paso 2 — Datos de contacto */}
                                 {formStep === 2 && (
-                                    <div className="flex gap-15 items-start w-full">
+                                    <div className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:gap-15">
 
                                         {/* Imagen izquierda */}
-                                        <div className="shrink-0 w-140 h-140 rounded-[30px] overflow-hidden">
+                                        <div className="aspect-square w-full shrink-0 overflow-hidden rounded-[30px] lg:h-140 lg:w-140">
                                             <img
                                                 src={formStep2Img}
                                                 alt="Datos de contacto"
@@ -586,9 +587,9 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                         </div>
 
                                         {/* Campos */}
-                                        <div className="flex flex-col gap-10 flex-1 justify-center">
+                                        <div className="flex w-full flex-1 flex-col justify-center gap-7.5 lg:gap-10">
 
-                                            <h3 className="text-[24px] font-semibold leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                            <h3 className="text-xl font-semibold leading-[120%] text-black lg:text-[24px] lg:leading-none" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Datos de contacto
                                             </h3>
 
@@ -665,7 +666,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
 
                                             <button
                                                 onClick={() => setFormStep(3)}
-                                                className="self-start cursor-pointer rounded-[60px] border border-transparent bg-black px-15 py-4.75 text-base leading-none text-white transition-opacity hover:opacity-80"
+                                                className="w-full cursor-pointer rounded-[60px] border border-transparent bg-black px-8 py-4 text-base leading-none text-white transition-opacity hover:opacity-80 lg:w-auto lg:self-start lg:px-15 lg:py-4.75"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
                                                 Siguiente
@@ -676,10 +677,10 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
 
                                 {/* Paso 3 — Confirmar */}
                                 {formStep === 3 && (
-                                    <div className="flex gap-15 items-start w-full">
+                                    <div className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:gap-15">
 
                                         {/* Imagen izquierda */}
-                                        <div className="shrink-0 w-140 h-140 rounded-[30px] overflow-hidden">
+                                        <div className="aspect-square w-full shrink-0 overflow-hidden rounded-[30px] lg:h-140 lg:w-140">
                                             <img
                                                 src={formStep3Img}
                                                 alt="Confirmar solicitud"
@@ -688,17 +689,17 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                         </div>
 
                                         {/* Resumen + botón */}
-                                        <div className="flex flex-col gap-5 flex-1 justify-center">
+                                        <div className="flex w-full flex-1 flex-col justify-center gap-5">
 
-                                            <h3 className="text-[24px] font-semibold leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                            <h3 className="text-xl font-semibold leading-[120%] text-black lg:text-[24px] lg:leading-none" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Confirmar solicitud
                                             </h3>
-                                            <p className="text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                            <p className="text-sm leading-[120%] text-black lg:text-base lg:leading-none" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Revisa tu información antes de enviarla. Una vez recibida, un asesor de Musalem se pondrá en contacto contigo para continuar la gestión.
                                             </p>
 
                                             {/* Tarjeta resumen */}
-                                            <div className="bg-white rounded-[20px] p-10 flex flex-col gap-5 items-start w-full">
+                                            <div className="flex w-full flex-col items-start gap-5 rounded-[20px] bg-white p-5 lg:p-10">
                                                 {[
                                                     {
                                                         label: 'Sucursal',
@@ -753,7 +754,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                         onError: () => { setSubmitting(false); toast.error('Hubo un problema al enviar. Intenta nuevamente.'); },
                                                     });
                                                 }}
-                                                className="self-start cursor-pointer rounded-[60px] border border-transparent bg-black px-15 py-4.75 text-base leading-none text-white transition-opacity hover:opacity-80 disabled:opacity-50"
+                                                className="w-full cursor-pointer rounded-[60px] border border-transparent bg-black px-8 py-4 text-base leading-none text-white transition-opacity hover:opacity-80 disabled:opacity-50 lg:w-auto lg:self-start lg:px-15 lg:py-4.75"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
                                                 {submitting ? 'Enviando…' : 'Enviar solicitud'}
@@ -767,7 +768,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                     </div>
                 </section>
 
-                <ContactCta backgroundImage={ctaImg} bg="negro" />
+                <ContactCtaBanner image={ctaImg} bg="dark" />
 
             </main>
 

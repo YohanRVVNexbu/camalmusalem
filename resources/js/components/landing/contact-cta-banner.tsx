@@ -7,6 +7,7 @@ interface ContactCtaBannerProps {
     text?: string;
     ctaLabel?: string;
     rounded?: 'all' | 'bottom';
+    bg?: 'light' | 'dark';
 }
 
 export function ContactCtaBanner({
@@ -15,11 +16,13 @@ export function ContactCtaBanner({
     text = 'Contáctanos para recibir asesoría personalizada',
     ctaLabel = 'Contactar ventas',
     rounded = 'all',
+    bg = 'light',
 }: ContactCtaBannerProps) {
     const wrapperRounded = rounded === 'bottom' ? 'rounded-b-[30px]' : '';
+    const wrapperBg = bg === 'dark' ? 'bg-black' : 'bg-[#EAEAF1]';
 
     return (
-        <div className={`flex flex-col items-center bg-[#EAEAF1] px-5 py-10 lg:p-15 ${wrapperRounded}`}>
+        <div className={`flex flex-col items-center px-5 py-10 lg:p-15 ${wrapperBg} ${wrapperRounded}`}>
             <div className="relative flex h-115 w-full flex-col items-start justify-end gap-2.5 overflow-hidden rounded-[30px] p-5 lg:h-85 lg:p-7.5">
                 <img
                     src={image || ejemploVideo}

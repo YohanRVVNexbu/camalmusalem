@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { ContactCta } from '@/components/landing/contact-cta';
+import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 import { useInView } from '@/hooks/use-in-view';
@@ -41,7 +41,7 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                 {/* Hero */}
                 <section ref={heroInView.ref}>
                     <div
-                        className={`flex h-165 flex-col items-start justify-end gap-10 rounded-b-[30px] px-10 py-15 transition-all duration-700 ease-out ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                        className={`flex h-100 flex-col items-start justify-end gap-10 rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
                         style={{
                             background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
                         }}
@@ -51,7 +51,7 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                                 fontFamily: '"Toyota Type"',
                                 fontFeatureSettings: '"liga" off, "clig" off',
                             }}
-                            className="text-[48px] font-normal leading-[100%] text-white"
+                            className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]"
                         >
                             {hero.title || 'Programas Toyota'}
                         </span>
@@ -59,17 +59,17 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                 </section>
 
                 {/* Grid de programas */}
-                <section ref={gridInView.ref} className="bg-white px-15 py-20">
-                    <div className="flex flex-col gap-10">
+                <section ref={gridInView.ref} className="bg-white px-5 py-10 lg:px-15 lg:py-20">
+                    <div className="flex flex-col gap-7.5 lg:gap-10">
                         {/* Header */}
-                        <div className={`flex items-center justify-between self-stretch transition-all duration-700 ease-out ${gridInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
+                        <div className={`flex flex-col items-start gap-5 self-stretch transition-all duration-700 ease-out lg:flex-row lg:items-center lg:justify-between lg:gap-0 ${gridInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
                             <span
-                                className="text-[32px] font-normal leading-[120%] text-black"
+                                className="text-2xl font-normal leading-[120%] text-black lg:text-[32px]"
                                 style={{ fontFamily: '"Toyota Type"' }}
                             >
                                 {grid.title || 'Descubre todos nuestros programas'}
                             </span>
-                            <div className="relative flex h-11 w-65 shrink-0 items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-5">
+                            <div className="relative flex h-11 w-full shrink-0 items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-5 lg:w-65">
                                 <select
                                     className="w-full appearance-none bg-transparent text-base leading-none text-black outline-none"
                                     style={{ fontFamily: '"Toyota Type"' }}
@@ -84,47 +84,52 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                             </div>
                         </div>
 
-                        {/* Grid */}
-                        <div className="flex flex-col gap-5 pb-10">
-                            {(grid.items ?? [
-                                { img: grid1, title: 'App Mundo Toyota', desc: 'Accede al historial de mantenciones, revisa pautas y precios, agenda servicios, suma puntos y descubre beneficios, descuentos y comercios asociados desde una sola aplicación.', link: '#' },
-                                { img: grid2, title: 'Kinto', desc: 'Movilidad flexible, directo desde tu celular. Con Kinto SHARE puedes reservar, retirar y usar tu Toyota desde la app, sin trámites ni complicaciones.', link: '#' },
-                                { img: grid3, title: 'Kinto One', desc: 'Programa de arriendo Toyota que contempla dos modalidades: Business, orientado a empresas con necesidad de flota, y Personal, con periodos de 12, 24, 36 y 48 meses.', link: '#' },
-                                { img: grid4, title: 'Beyond Zero', desc: 'Una iniciativa de Toyota que reúne su visión de movilidad sostenible a través de vehículos híbridos y eléctricos, orientada a reducir el impacto ambiental y avanzar hacia la neutralidad de carbono.', link: '#' },
-                                { img: grid5, title: 'Toyota 10 Relax', desc: 'Entrega una cobertura adicional de hasta 5 años o 200.000 km, lo que ocurra primero.', link: '#' },
-                                { img: grid6, title: 'Llamado a revisión', desc: 'Campañas de revisión y reemplazo preventivo para ciertos modelos Toyota, realizadas con repuestos originales y orientadas a mantener la seguridad de tu vehículo.', link: '#' },
-                            ]).reduce<{ img: string; title: string; desc: string; link?: string }[][]>((rows, item, i) => {
+                        {/* Grid: 1 columna en mobile, 2 en desktop */}
+                        <div className="flex flex-col gap-5 pb-10 lg:gap-5">
+                            {(() => {
+                                const fallbackImgs = [grid1, grid2, grid3, grid4, grid5, grid6];
+                                const items = (grid.items ?? [
+                                    { img: grid1, title: 'App Mundo Toyota', desc: 'Accede al historial de mantenciones, revisa pautas y precios, agenda servicios, suma puntos y descubre beneficios, descuentos y comercios asociados desde una sola aplicación.', link: '#' },
+                                    { img: grid2, title: 'Kinto', desc: 'Movilidad flexible, directo desde tu celular. Con Kinto SHARE puedes reservar, retirar y usar tu Toyota desde la app, sin trámites ni complicaciones.', link: '#' },
+                                    { img: grid3, title: 'Kinto One', desc: 'Programa de arriendo Toyota que contempla dos modalidades: Business, orientado a empresas con necesidad de flota, y Personal, con periodos de 12, 24, 36 y 48 meses.', link: '#' },
+                                    { img: grid4, title: 'Beyond Zero', desc: 'Una iniciativa de Toyota que reúne su visión de movilidad sostenible a través de vehículos híbridos y eléctricos, orientada a reducir el impacto ambiental y avanzar hacia la neutralidad de carbono.', link: '#' },
+                                    { img: grid5, title: 'Toyota 10 Relax', desc: 'Entrega una cobertura adicional de hasta 5 años o 200.000 km, lo que ocurra primero.', link: '#' },
+                                    { img: grid6, title: 'Llamado a revisión', desc: 'Campañas de revisión y reemplazo preventivo para ciertos modelos Toyota, realizadas con repuestos originales y orientadas a mantener la seguridad de tu vehículo.', link: '#' },
+                                ]) as { img: string; title: string; desc: string; link?: string }[];
+                                return items.map((it, idx) => ({ ...it, _fallback: fallbackImgs[idx % fallbackImgs.length] }));
+                            })().reduce<{ img: string; title: string; desc: string; link?: string; _fallback: string }[][]>((rows, item, i) => {
                                 if (i % 2 === 0) rows.push([item]);
                                 else rows[rows.length - 1].push(item);
                                 return rows;
                             }, []).map((row, ri) => (
                                 <div
                                     key={ri}
-                                    className={`flex h-150 gap-5 transition-all duration-700 ease-out ${gridInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
+                                    className={`flex flex-col gap-5 transition-all duration-700 ease-out lg:h-150 lg:flex-row ${gridInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
                                     style={{ transitionDelay: gridInView.visible ? `${ri * 150}ms` : '0ms' }}
                                 >
                                     {row.map((item) => (
                                         <div key={item.title} className="flex flex-1 flex-col overflow-hidden rounded-[30px]">
                                             <img
-                                                src={item.img}
+                                                src={item.img || item._fallback}
                                                 alt={item.title}
-                                                className="h-95.25 w-full shrink-0 rounded-[30px] object-cover"
+                                                onError={(e) => { (e.currentTarget as HTMLImageElement).src = item._fallback; }}
+                                                className="aspect-3/2 w-full shrink-0 rounded-[30px] object-cover lg:aspect-auto lg:h-95.25"
                                             />
-                                            <div className="flex flex-col gap-7.5 px-2.5 py-5">
-                                                <div className="flex flex-col gap-5">
+                                            <div className="flex flex-col gap-5 px-2.5 py-5 lg:gap-7.5">
+                                                <div className="flex flex-col gap-3 lg:gap-5">
                                                     <h3
-                                                        className="text-[28px] font-semibold leading-[120%] text-black"
+                                                        className="text-2xl font-semibold leading-[120%] text-black lg:text-[28px]"
                                                         style={{ fontFamily: '"Toyota Type"' }}
                                                     >
                                                         {item.title}
                                                     </h3>
-                                                    <p className="text-base leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                    <p className="text-sm leading-[120%] text-black lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                                         {item.desc}
                                                     </p>
                                                 </div>
                                                 <a
                                                     href={item.link ?? '#'}
-                                                    className="flex w-38 items-center justify-between rounded-[60px] bg-black p-1"
+                                                    className="flex w-full items-center justify-between rounded-[60px] bg-black p-1 lg:w-38"
                                                 >
                                                     <span className="pl-2.5 text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                                         Ver más
@@ -145,35 +150,34 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                 </section>
 
                 {/* Card mantenimiento */}
-                <section ref={cardInView.ref} className="px-15 py-15" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #EAEAF1 100%)' }}>
-                    <div className={`flex overflow-hidden rounded-[30px] bg-black transition-all duration-700 ease-out ${cardInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                <section ref={cardInView.ref} className="px-5 py-10 lg:px-15 lg:py-15" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #EAEAF1 100%)' }}>
+                    <div className={`flex flex-col overflow-hidden rounded-[30px] bg-black transition-all duration-700 ease-out lg:flex-row ${cardInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                         <div
-                            className="flex flex-col items-start justify-end gap-2.5 self-stretch p-7.5"
+                            className="flex aspect-3/2 w-full shrink-0 flex-col items-start justify-end gap-2.5 self-stretch p-5 lg:aspect-auto lg:basis-[55%] lg:p-7.5"
                             style={{
-                                flex: '0 0 55%',
-                                background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${card2Img}) -142.481px -65.669px / 117.606% 127.377% no-repeat`,
+                                background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${card2Img}) center / cover no-repeat`,
                             }}
                         />
-                        <div className="flex h-120.75 w-[45%] shrink-0 flex-col items-start justify-center gap-10 bg-black px-10 py-15">
+                        <div className="flex w-full shrink-0 flex-col items-start justify-center gap-7.5 bg-black p-7.5 lg:h-120.75 lg:w-[45%] lg:gap-10 lg:px-10 lg:py-15">
                             <h2
-                                className="text-[32px] font-semibold leading-[120%] text-white"
+                                className="text-2xl font-semibold leading-[120%] text-white lg:text-[32px]"
                                 style={{ fontFamily: '"Toyota Type"' }}
                             >
                                 ¿Buscas mantenimiento?
                             </h2>
-                            <p className="self-stretch text-base leading-[120%] text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                            <p className="self-stretch text-sm leading-[120%] text-white lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                 Reserva tu hora aquí mismo
                                 <br /><br />
                                 Realizamos los chequeos y cambios necesarios según el kilometraje indicado para mantener tu vehículo en óptimas condiciones y conservar la garantía vigente.
                             </p>
                             <a
                                 href="/post-venta/agendar-mantencion"
-                                className="flex items-center justify-between rounded-[60px] bg-white p-1"
+                                className="flex w-full items-center justify-between rounded-[60px] bg-white p-1 lg:w-auto"
                             >
                                 <span className="pl-2.5 text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                     Ir a reservar
                                 </span>
-                                <span className="ml-2.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
+                                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black lg:ml-2.5">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
                                         <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                     </svg>
@@ -183,7 +187,7 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                     </div>
                 </section>
 
-                <ContactCta backgroundImage={ctaImg} />
+                <ContactCtaBanner image={ctaImg} />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
             </main>
