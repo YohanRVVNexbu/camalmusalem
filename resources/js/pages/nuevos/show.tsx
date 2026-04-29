@@ -2,13 +2,12 @@ import { Head } from '@inertiajs/react';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { ShortsCarousel } from '@/components/landing/shorts';
 import { Modal360, frames360 } from '@/components/nuevos/modal-360';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
 
-import ejemploVideo from '@images/seminuevos/ejemplo-video.png?format=webp';
 import destacado1 from '@images/nuevos/detalle/destacado_1.png?format=webp';
 import destacado2 from '@images/nuevos/detalle/destacado_2.png?format=webp';
 import destacado3 from '@images/nuevos/detalle/destacado_3.png?format=webp';
@@ -1187,36 +1186,8 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                 )}
 
                 {/* Contact CTA banner */}
-                <div ref={ctaBanner.ref} className="flex flex-col items-center bg-[#EAEAF1] px-5 py-10 lg:p-15">
-                    <div
-                        className={`relative flex h-115 w-full flex-col items-start justify-end gap-2.5 overflow-hidden rounded-[30px] p-5 transition-all duration-700 ease-out lg:h-85 lg:p-7.5 ${ctaBanner.visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}
-                    >
-                        <img
-                            src={ejemploVideo}
-                            alt=""
-                            aria-hidden
-                            className="absolute inset-0 h-full w-full object-cover object-center"
-                            style={{ objectPosition: 'center 30%' }}
-                        />
-                        <div
-                            className="absolute inset-0"
-                            style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.65) 100%)' }}
-                        />
-                        <div className="relative flex w-full flex-col items-start justify-end gap-7.5 lg:w-auto">
-                            <p className="text-2xl leading-[120%] font-semibold text-white lg:w-90 lg:font-normal">
-                                Contáctanos para recibir asesoría personalizada
-                            </p>
-                            <a
-                                href="#"
-                                className="flex w-full cursor-pointer items-center justify-between self-stretch rounded-[60px] border border-transparent bg-white p-1 transition hover:bg-white/90 lg:w-fit lg:gap-2.5 lg:justify-start lg:self-auto lg:pl-3.5"
-                            >
-                                <span className="pl-2.5 text-base leading-none text-black lg:pl-0">Contactar ventas</span>
-                                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
-                                    <ArrowIcon className="scale-75 text-white" />
-                                </span>
-                            </a>
-                        </div>
-                    </div>
+                <div ref={ctaBanner.ref} className={`transition-all duration-700 ease-out ${ctaBanner.visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                    <ContactCtaBanner />
                 </div>
 
                 {/* Branches section */}
