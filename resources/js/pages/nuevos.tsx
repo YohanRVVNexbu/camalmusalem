@@ -8,7 +8,8 @@ import { NuevosProductCard } from '@/components/nuevos/product-card';
 import { NuevosListItem } from '@/components/nuevos/product-list-item';
 import { Modal360 } from '@/components/nuevos/modal-360';
 import { Car } from 'lucide-react';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
 
 type Version = {
     name: string;
@@ -27,6 +28,27 @@ type Vehicle = {
     hero_image: string | null;
     versions: Version[];
 };
+
+function ChevronIcon({ className }: { className?: string }) {
+    return (
+        <svg
+            width="12"
+            height="24"
+            viewBox="0 0 12 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+            className={className}
+        >
+            <path
+                d="M1.5 1.5L10.5 12L1.5 22.5"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+            />
+        </svg>
+    );
+}
 
 function ElectricBadge() {
     return (
@@ -77,6 +99,32 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [currentPage, setCurrentPage] = useState(1);
     const [modal360, setModal360] = useState<{ open: boolean; name: string; subtitle: string }>({ open: false, name: '', subtitle: '' });
+
+    // Carousel para hero cards mobile
+    const [emblaRef, emblaApi] = useEmblaCarousel({ align: 'center', slidesToScroll: 1 });
+    const [selectedIndex, setSelectedIndex] = useState(0);
+    const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+
+    const scrollPrev = useCallback(() => emblaApi?.scrollPrev(), [emblaApi]);
+    const scrollNext = useCallback(() => emblaApi?.scrollNext(), [emblaApi]);
+    const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi]);
+
+    const onSelect = useCallback(() => {
+        if (!emblaApi) return;
+        setSelectedIndex(emblaApi.selectedScrollSnap());
+    }, [emblaApi]);
+
+    useEffect(() => {
+        if (!emblaApi) return;
+        setScrollSnaps(emblaApi.scrollSnapList());
+        emblaApi.on('select', onSelect);
+        emblaApi.on('reInit', onSelect);
+        onSelect();
+        return () => {
+            emblaApi.off('select', onSelect);
+            emblaApi.off('reInit', onSelect);
+        };
+    }, [emblaApi, onSelect]);
 
     useEffect(() => {
         const t1 = setTimeout(() => setCardsVisible(true), 200);
@@ -164,77 +212,169 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
             <Head title="Vehículos Nuevos" />
             <div className="min-h-screen bg-[#EAEAF1]">
                 <Navbar variant="white" />
-                <div style={{ padding: '60px 60px 200px 60px' }}>
+                <div className="px-0 pt-20 pb-20 lg:px-15 lg:pt-15 lg:pb-50">
                     {/* Title section */}
-                    <section className="mt-20 flex flex-col items-center">
-                        <h1 className="text-center text-[40px] font-semibold leading-[150%] text-black">
-                            Cotiza tu Toyota 0 KM
-                        </h1>
-                        <p className="text-center text-base leading-[150%] text-black">
-                            Musalem, líder Toyota en la región de Coquimbo.
-                        </p>
+                    <section className="flex flex-col items-center gap-5 self-stretch px-5 py-5 lg:mt-20 lg:gap-0 lg:px-0 lg:py-0">
+                        <div className="flex flex-col items-center justify-center gap-0 self-stretch">
+                            <h1 className="text-center text-2xl font-semibold leading-normal text-black lg:text-[40px] lg:leading-[150%]" style={{ fontFamily: '"Toyota Type"' }}>
+                                Cotiza tu Toyota 0 KM
+                            </h1>
+                            <p className="relative self-stretch text-center text-base font-normal leading-normal text-black lg:self-auto lg:leading-[150%]" style={{ fontFamily: '"Toyota Type"' }}>
+                                Musalem, líder Toyota en la región de Coquimbo.
+                            </p>
+                        </div>
 
-                        {/* Hero cards — first 4 vehicles */}
+                        {/* Hero cards — Desktop: 4 cards en fila, Mobile: carousel */}
                         {heroCards.length > 0 && (
-                            <div className="mt-10 flex gap-5">
-                                {heroCards.map((card, i) => (
-                                    <div
-                                        key={card.id}
-                                        className={`group relative h-115 w-78.75 shrink-0 overflow-hidden rounded-[30px] transition-all duration-700 ease-out hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] ${
-                                            cardsVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
-                                        }`}
-                                        style={{ transitionDelay: cardsVisible && !contentVisible ? `${i * 100}ms` : '0ms' }}
-                                    >
-                                        {card.hero_image ? (
-                                            <div
-                                                className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105"
-                                                style={{
-                                                    backgroundImage: `radial-gradient(84.02% 84.02% at 50% 48.04%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.30) 100%), url(${card.hero_image})`,
-                                                }}
-                                            />
-                                        ) : (
-                                            <div className="absolute inset-0 flex items-center justify-center bg-linear-to-b from-black/10 to-black/40">
-                                                <Car className="h-24 w-24 text-white/40" strokeWidth={1.25} />
-                                            </div>
-                                        )}
-                                        <div className="relative flex h-full flex-col items-center justify-between">
-                                            <div
-                                                className={`mt-6 flex w-65 flex-col items-center gap-3 transition-all duration-600 ease-out ${
-                                                    contentVisible ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
-                                                }`}
-                                                style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
-                                            >
-                                                <span className="text-center text-2xl font-semibold uppercase leading-none text-white drop-shadow">
-                                                    {card.name}
-                                                </span>
-                                                {(card.force_electric_badge ?? vehicleElectric(card)) && <ElectricBadge />}
-                                            </div>
-                                            <div
-                                                className={`mb-3 flex flex-col items-center gap-3 transition-all duration-600 ease-out group-hover:-translate-y-6 ${
-                                                    contentVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
-                                                }`}
-                                                style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
-                                            >
-                                                <div className="inline-flex flex-col items-center gap-1">
-                                                    <span className="text-center text-base leading-none text-white">Desde</span>
-                                                    <span className="text-[28px] leading-none text-white">{vehiclePrice(card)}</span>
+                            <>
+                                {/* Desktop view */}
+                                <div className="mt-10 hidden gap-5 lg:flex">
+                                    {heroCards.map((card, i) => (
+                                        <div
+                                            key={card.id}
+                                            className={`group relative h-115 w-78.75 shrink-0 overflow-hidden rounded-[30px] transition-all duration-700 ease-out hover:-translate-y-2 hover:shadow-[0_20px_40px_rgba(0,0,0,0.3)] ${
+                                                cardsVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+                                            }`}
+                                            style={{ transitionDelay: cardsVisible && !contentVisible ? `${i * 100}ms` : '0ms' }}
+                                        >
+                                            {card.hero_image ? (
+                                                <div
+                                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat transition-transform duration-500 ease-out group-hover:scale-105"
+                                                    style={{
+                                                        backgroundImage: `radial-gradient(84.02% 84.02% at 50% 48.04%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.30) 100%), url(${card.hero_image})`,
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div className="absolute inset-0 flex items-center justify-center bg-linear-to-b from-black/10 to-black/40">
+                                                    <Car className="h-24 w-24 text-white/40" strokeWidth={1.25} />
                                                 </div>
-                                                <a
-                                                    href={vehicleHref(card)}
-                                                    className="flex h-10 w-67.75 origin-center scale-x-50 cursor-pointer items-center justify-between rounded-[60px] bg-white p-1 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/85 group-hover:scale-x-100 group-hover:opacity-100"
+                                            )}
+                                            <div className="relative flex h-full flex-col items-center justify-between">
+                                                <div
+                                                    className={`mt-6 flex w-65 flex-col items-center gap-3 transition-all duration-600 ease-out ${
+                                                        contentVisible ? 'translate-y-0 opacity-100' : '-translate-y-8 opacity-0'
+                                                    }`}
+                                                    style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
                                                 >
-                                                    <span className="pl-4 text-sm leading-none text-black">Ver detalles</span>
-                                                    <span className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] border border-black bg-black transition-transform duration-300 hover:scale-110" style={{ backdropFilter: 'blur(15px)' }}>
-                                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 14 11" fill="none">
-                                                            <path d="M0.5 5.5L13.5 5.5M13.5 5.5L8.625 10.5M13.5 5.5L8.625 0.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
-                                                        </svg>
+                                                    <span className="text-center text-2xl font-semibold uppercase leading-none text-white drop-shadow">
+                                                        {card.name}
                                                     </span>
-                                                </a>
+                                                    {(card.force_electric_badge ?? vehicleElectric(card)) && <ElectricBadge />}
+                                                </div>
+                                                <div
+                                                    className={`mb-3 flex flex-col items-center gap-3 transition-all duration-600 ease-out group-hover:-translate-y-6 ${
+                                                        contentVisible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'
+                                                    }`}
+                                                    style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
+                                                >
+                                                    <div className="inline-flex flex-col items-center gap-1">
+                                                        <span className="text-center text-base leading-none text-white">Desde</span>
+                                                        <span className="text-[28px] leading-none text-white">{vehiclePrice(card)}</span>
+                                                    </div>
+                                                    <a
+                                                        href={vehicleHref(card)}
+                                                        className="flex h-10 w-67.75 origin-center scale-x-50 cursor-pointer items-center justify-between rounded-[60px] bg-white p-1 opacity-0 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:bg-white/85 group-hover:scale-x-100 group-hover:opacity-100"
+                                                    >
+                                                        <span className="pl-4 text-sm leading-none text-black">Ver detalles</span>
+                                                        <span className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] border border-black bg-black transition-transform duration-300 hover:scale-110" style={{ backdropFilter: 'blur(15px)' }}>
+                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 14 11" fill="none">
+                                                                <path d="M0.5 5.5L13.5 5.5M13.5 5.5L8.625 10.5M13.5 5.5L8.625 0.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+                                                            </svg>
+                                                        </span>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Mobile carousel */}
+                                <div className="w-full lg:hidden">
+                                    <div className="overflow-hidden px-5">
+                                        <div ref={emblaRef} className="overflow-hidden">
+                                            <div className="flex">
+                                                {heroCards.map((card) => (
+                                                    <div key={card.id} className="min-w-0 flex-[0_0_100%] pl-0 pr-5">
+                                                        <div className="relative h-115 w-full overflow-hidden rounded-[30px]">
+                                                            {card.hero_image ? (
+                                                                <div
+                                                                    className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+                                                                    style={{
+                                                                        backgroundImage: `radial-gradient(84.02% 84.02% at 50% 48.04%, rgba(0, 0, 0, 0.00) 0%, rgba(0, 0, 0, 0.30) 100%), url(${card.hero_image})`,
+                                                                    }}
+                                                                />
+                                                            ) : (
+                                                                <div className="absolute inset-0 flex items-center justify-center bg-linear-to-b from-black/10 to-black/40">
+                                                                    <Car className="h-24 w-24 text-white/40" strokeWidth={1.25} />
+                                                                </div>
+                                                            )}
+                                                            <div className="relative flex h-full flex-col items-center justify-between">
+                                                                <div className="mt-6 flex w-65 flex-col items-center gap-3">
+                                                                    <span className="text-center text-2xl font-semibold uppercase leading-none text-white drop-shadow">
+                                                                        {card.name}
+                                                                    </span>
+                                                                    {(card.force_electric_badge ?? vehicleElectric(card)) && <ElectricBadge />}
+                                                                </div>
+                                                                <div className="mb-3 flex flex-col items-center gap-3">
+                                                                    <div className="inline-flex flex-col items-center gap-1">
+                                                                        <span className="text-center text-base leading-none text-white">Desde</span>
+                                                                        <span className="text-[28px] leading-none text-white">{vehiclePrice(card)}</span>
+                                                                    </div>
+                                                                    <a
+                                                                        href={vehicleHref(card)}
+                                                                        className="flex h-10 w-67.75 cursor-pointer items-center justify-between rounded-[60px] bg-white p-1 transition-all duration-300 hover:bg-white/85"
+                                                                    >
+                                                                        <span className="pl-4 text-sm leading-none text-black">Ver detalles</span>
+                                                                        <span className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] border border-black bg-black" style={{ backdropFilter: 'blur(15px)' }}>
+                                                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 14 11" fill="none">
+                                                                                <path d="M0.5 5.5L13.5 5.5M13.5 5.5L8.625 10.5M13.5 5.5L8.625 0.5" stroke="white" strokeLinecap="round" strokeLinejoin="round"/>
+                                                                            </svg>
+                                                                        </span>
+                                                                    </a>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                ))}
                                             </div>
                                         </div>
                                     </div>
-                                ))}
-                            </div>
+
+                                    {/* Pagination */}
+                                    <div className="mt-5 flex items-center justify-between px-5">
+                                        <button
+                                            onClick={scrollPrev}
+                                            className="flex size-10 rotate-180 items-center justify-center rounded-[60px] bg-black/20 backdrop-blur-[10px]"
+                                            aria-label="Anterior"
+                                        >
+                                            <ChevronIcon className="h-6 w-3 text-black" />
+                                        </button>
+
+                                        <div className="flex items-end justify-center gap-5">
+                                            {scrollSnaps.map((_, index) => (
+                                                <button
+                                                    key={index}
+                                                    onClick={() => scrollTo(index)}
+                                                    className={`rounded-[20px] transition-all ${
+                                                        index === selectedIndex
+                                                            ? 'h-2.5 w-15 bg-black'
+                                                            : 'h-2.5 w-2.5 bg-black/40'
+                                                    }`}
+                                                    aria-label={`Ir a slide ${index + 1}`}
+                                                />
+                                            ))}
+                                        </div>
+
+                                        <button
+                                            onClick={scrollNext}
+                                            className="flex size-10 items-center justify-center rounded-[60px] bg-black/20 backdrop-blur-[10px]"
+                                            aria-label="Siguiente"
+                                        >
+                                            <ChevronIcon className="h-6 w-3 text-black" />
+                                        </button>
+                                    </div>
+                                </div>
+                            </>
                         )}
                     </section>
 
