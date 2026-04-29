@@ -27,12 +27,12 @@ function HeroCarousel({ images }: { images: string[] }) {
     const [current, setCurrent] = useState(0);
 
     if (images.length === 0) return (
-        <div className="h-120.75 w-full rounded-[30px] bg-[#d0d0d0]" />
+        <div className="aspect-3/2 w-full rounded-[20px] bg-[#d0d0d0] lg:aspect-auto lg:h-120.75 lg:rounded-[30px]" />
     );
 
     if (images.length === 1) return (
         <div
-            className="h-120.75 w-full rounded-[30px]"
+            className="aspect-3/2 w-full rounded-[20px] lg:aspect-auto lg:h-120.75 lg:rounded-[30px]"
             style={{
                 background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${images[0]}) lightgray 50% / cover no-repeat`,
             }}
@@ -40,7 +40,7 @@ function HeroCarousel({ images }: { images: string[] }) {
     );
 
     return (
-        <div className="relative h-120.75 w-full overflow-hidden rounded-[30px]">
+        <div className="relative aspect-3/2 w-full overflow-hidden rounded-[20px] lg:aspect-auto lg:h-120.75 lg:rounded-[30px]">
             <div
                 className="h-full w-full transition-all duration-500"
                 style={{
@@ -49,17 +49,17 @@ function HeroCarousel({ images }: { images: string[] }) {
             />
             <button
                 onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
-                className="absolute left-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70"
+                className="absolute left-3 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 lg:left-4 lg:size-10"
             >
-                <ChevronLeft className="size-5" />
+                <ChevronLeft className="size-4 lg:size-5" />
             </button>
             <button
                 onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
-                className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70"
+                className="absolute right-3 top-1/2 flex size-9 -translate-y-1/2 items-center justify-center rounded-full bg-black/50 text-white backdrop-blur transition hover:bg-black/70 lg:right-4 lg:size-10"
             >
-                <ChevronRight className="size-5" />
+                <ChevronRight className="size-4 lg:size-5" />
             </button>
-            <div className="absolute bottom-4 left-1/2 flex -translate-x-1/2 gap-1.5">
+            <div className="absolute bottom-3 left-1/2 flex -translate-x-1/2 gap-1.5 lg:bottom-4">
                 {images.map((_, i) => (
                     <button
                         key={i}
@@ -81,11 +81,11 @@ function GalleryCarousel({ images }: { images: string[] }) {
 
     if (images.length <= 2) {
         return (
-            <div className={`grid gap-5 ${images.length === 2 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+            <div className={`grid gap-5 grid-cols-1 ${images.length === 2 ? 'lg:grid-cols-2' : ''}`}>
                 {images.map((img, i) => (
                     <div
                         key={i}
-                        className="h-120.75 rounded-[30px]"
+                        className="aspect-3/2 rounded-[20px] lg:aspect-auto lg:h-120.75 lg:rounded-[30px]"
                         style={{
                             background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${img}) lightgray 50% / cover no-repeat`,
                         }}
@@ -95,12 +95,26 @@ function GalleryCarousel({ images }: { images: string[] }) {
         );
     }
 
-    // carousel for 3+
-    const visible = [images[current], images[(current + 1) % images.length]];
+    // carousel for 3+: 1 visible mobile, 2 visible desktop
+    const visibleMobile = [images[current]];
+    const visibleDesktop = [images[current], images[(current + 1) % images.length]];
     return (
         <div className="flex flex-col gap-3">
-            <div className="grid grid-cols-2 gap-5">
-                {visible.map((img, i) => (
+            {/* Mobile: 1 image */}
+            <div className="grid grid-cols-1 gap-5 lg:hidden">
+                {visibleMobile.map((img, i) => (
+                    <div
+                        key={i}
+                        className="aspect-3/2 rounded-[20px] transition-all duration-500"
+                        style={{
+                            background: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${img}) lightgray 50% / cover no-repeat`,
+                        }}
+                    />
+                ))}
+            </div>
+            {/* Desktop: 2 images */}
+            <div className="hidden grid-cols-2 gap-5 lg:grid">
+                {visibleDesktop.map((img, i) => (
                     <div
                         key={i}
                         className="h-120.75 rounded-[30px] transition-all duration-500"
@@ -113,16 +127,16 @@ function GalleryCarousel({ images }: { images: string[] }) {
             <div className="flex items-center justify-center gap-4">
                 <button
                     onClick={() => setCurrent((c) => (c === 0 ? images.length - 1 : c - 1))}
-                    className="flex size-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-black/70"
+                    className="flex size-9 items-center justify-center rounded-full bg-black text-white transition hover:bg-black/70 lg:size-10"
                 >
-                    <ChevronLeft className="size-5" />
+                    <ChevronLeft className="size-4 lg:size-5" />
                 </button>
                 <span className="text-sm font-medium text-black">{current + 1} / {images.length}</span>
                 <button
                     onClick={() => setCurrent((c) => (c === images.length - 1 ? 0 : c + 1))}
-                    className="flex size-10 items-center justify-center rounded-full bg-black text-white transition hover:bg-black/70"
+                    className="flex size-9 items-center justify-center rounded-full bg-black text-white transition hover:bg-black/70 lg:size-10"
                 >
-                    <ChevronRight className="size-5" />
+                    <ChevronRight className="size-4 lg:size-5" />
                 </button>
             </div>
         </div>
@@ -165,16 +179,16 @@ export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { fo
     }, []);
 
     return (
-        <div className="min-h-screen bg-[#EAEAF1]">
+        <div className="min-h-screen overflow-x-hidden bg-[#EAEAF1]">
             <Head title={`${noticia.titulo} — Toyota Musalem`} />
             <Navbar variant="white" />
 
             <main className="flex flex-col bg-[#EAEAF1]">
-                <section ref={inView.ref} className="px-15 pb-20 pt-32">
-                    <div className={`flex flex-col gap-6 transition-all duration-700 ease-out ${inView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
+                <section ref={inView.ref} className="px-5 pt-25 pb-10 lg:px-15 lg:pt-32 lg:pb-20">
+                    <div className={`flex flex-col gap-5 transition-all duration-700 ease-out lg:gap-6 ${inView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
 
-                        {/* Volver + Categoría + Fecha — mismo margen que el contenido */}
-                        <div className="flex items-center justify-between">
+                        {/* Volver + Categoría + Fecha */}
+                        <div className="mb-5 flex flex-col items-start gap-3 lg:mb-0 lg:flex-row lg:items-center lg:justify-between lg:gap-0">
                             <Link
                                 href="/noticias"
                                 className="flex h-9.5 cursor-pointer items-center gap-2.5 rounded-[60px] border border-black py-2.5 pl-2.5 pr-5 transition-opacity hover:opacity-70"
@@ -187,7 +201,7 @@ export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { fo
                                 </span>
                             </Link>
 
-                            <div className="flex items-center gap-2.5">
+                            <div className="flex flex-wrap items-center gap-2.5">
                                 <span className="rounded-[3px] bg-black/8 px-2 py-1.5 text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
                                     {noticia.categoria}
                                 </span>
@@ -199,14 +213,14 @@ export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { fo
 
                         {/* Título */}
                         <h1
-                            className="text-[48px] font-normal leading-[120%] text-black"
+                            className="text-[28px] font-normal leading-[120%] text-black lg:text-[48px]"
                             style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}
                         >
                             {noticia.titulo}
                         </h1>
 
-                        {/* Secciones dinámicas — mismo ancho que título */}
-                        <div className="flex flex-col gap-10">
+                        {/* Secciones dinámicas */}
+                        <div className="flex flex-col gap-7.5 lg:gap-10">
                             {(noticia.sections ?? []).map((section, i) => (
                                 <SectionRenderer key={i} section={section} />
                             ))}
@@ -218,14 +232,23 @@ export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { fo
 
             {/* Te podrían interesar */}
             {relacionadas.length > 0 && (
-                <section className="flex flex-col gap-10 px-15 pb-20">
+                <section className="flex flex-col gap-7.5 pb-10 lg:gap-10 lg:px-15 lg:pb-20">
                     <h2
-                        className="text-[32px] font-normal leading-[120%] text-black"
+                        className="px-5 text-2xl font-normal leading-[120%] text-black lg:px-0 lg:text-[32px]"
                         style={{ fontFamily: '"Toyota Type"' }}
                     >
                         Te podrían interesar
                     </h2>
-                    <div className="grid grid-cols-3 gap-5">
+                    {/* Mobile: carousel horizontal */}
+                    <div className="flex items-stretch gap-5 overflow-x-auto px-5 pb-1 lg:hidden" style={{ scrollbarWidth: 'none' }}>
+                        {relacionadas.map((n) => (
+                            <div key={n.id} className="w-72 shrink-0">
+                                <NoticiaCard noticia={n} />
+                            </div>
+                        ))}
+                    </div>
+                    {/* Desktop: grid */}
+                    <div className="hidden items-stretch gap-5 lg:grid lg:grid-cols-3">
                         {relacionadas.map((n) => (
                             <NoticiaCard key={n.id} noticia={n} />
                         ))}

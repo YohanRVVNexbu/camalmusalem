@@ -1,4 +1,4 @@
-import { Head } from '@inertiajs/react';
+import { Head, Link } from '@inertiajs/react';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
@@ -373,12 +373,14 @@ function VersionsSection({
     setSelectedVersion,
     versionCardTab,
     setVersionCardTab,
+    cotizarHref,
 }: {
     versions: typeof vehicleData.versions;
     selectedVersion: number;
     setSelectedVersion: (i: number) => void;
     versionCardTab: VersionTab;
     setVersionCardTab: (tab: VersionTab) => void;
+    cotizarHref: string;
 }) {
     const sectionRef = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
@@ -588,8 +590,8 @@ function VersionsSection({
 
                                     {/* CTA buttons */}
                                     <div className="flex flex-col gap-2.5">
-                                        <a
-                                            href="#"
+                                        <Link
+                                            href={cotizarHref}
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex h-10 w-full items-center justify-between rounded-[60px] border border-transparent bg-black p-1 transition hover:bg-black/85"
                                         >
@@ -599,7 +601,7 @@ function VersionsSection({
                                                     <path d="M1.39844 4.34961H11.3984M11.3984 4.34961L7.64844 0.599609M11.3984 4.34961L7.64844 8.09961" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
                                                 </svg>
                                             </span>
-                                        </a>
+                                        </Link>
                                         <a
                                             href="#"
                                             onClick={(e) => e.stopPropagation()}
@@ -721,9 +723,9 @@ function VersionsSection({
                                     </div>
 
                                     <div className="flex w-full flex-col gap-2.5">
-                                        <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
+                                        <Link href={cotizarHref} onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
                                             Cotizar
-                                        </a>
+                                        </Link>
                                         <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] border border-black text-sm leading-none text-black transition hover:bg-black/5">
                                             Comparar modelo
                                         </a>
@@ -816,6 +818,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     detailBar={{
                         backHref: '/nuevos',
                         vehicleName: vehicle.fullName,
+                        ctaHref: `/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`,
                     }}
                 />
                 {/* Hero section */}
@@ -983,6 +986,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     setSelectedVersion={setSelectedVersion}
                     versionCardTab={versionCardTab}
                     setVersionCardTab={setVersionCardTab}
+                    cotizarHref={`/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`}
                 />
 
                 {/* 360 Section */}

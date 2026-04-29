@@ -244,12 +244,12 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
                         {/* CTA buttons */}
                         <div className="flex flex-col gap-2.5">
-                            <a
-                                href="#"
+                            <Link
+                                href={`/seminuevos/${vehicleSlug}/cotizar`}
                                 className="flex h-12 cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-none text-white transition hover:bg-black/85"
                             >
                                 Cotizar
-                            </a>
+                            </Link>
                             <a
                                 href="#"
                                 className="flex h-12 cursor-pointer items-center justify-center gap-2.5 rounded-[60px] bg-[#40BE4C] text-base leading-none text-white transition hover:bg-[#38a843]"
@@ -531,12 +531,12 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
                             {/* CTA buttons */}
                             <div className="flex flex-col gap-2.5">
-                                <a
-                                    href="#"
+                                <Link
+                                    href={`/seminuevos/${vehicleSlug}/cotizar`}
                                     className="flex h-12 cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-none text-white transition hover:bg-black/85"
                                 >
                                     Cotizar
-                                </a>
+                                </Link>
                                 <a
                                     href="#"
                                     className="flex h-12 cursor-pointer items-center justify-center gap-2.5 rounded-[60px] bg-[#40BE4C] text-base leading-none text-white transition hover:bg-[#38a843]"

@@ -57,13 +57,13 @@ export default function Noticias({ footer, noticias_hero, noticias = [] }: { foo
                 {/* Hero */}
                 <section ref={heroInView.ref}>
                     <div
-                        className={`flex h-165 flex-col items-start justify-end gap-10 rounded-b-[30px] px-10 py-15 transition-all duration-700 ease-out ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                        className={`flex h-100 flex-col items-center justify-end gap-7.5 rounded-b-[30px] px-5 pt-25 pb-10 text-center transition-all duration-700 ease-out lg:h-165 lg:items-start lg:gap-10 lg:px-10 lg:pt-15 lg:pb-15 lg:text-left ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
                         style={{
                             background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
                         }}
                     >
                         <span
-                            className="text-[48px] font-normal leading-[100%] text-white"
+                            className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]"
                             style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}
                         >
                             {hero.title || 'Noticias / Blog Musalem'}
@@ -72,15 +72,15 @@ export default function Noticias({ footer, noticias_hero, noticias = [] }: { foo
                 </section>
 
                 {/* Filtros */}
-                <section className="flex flex-col gap-5 px-15 py-20">
-                    <div className="flex items-center justify-between self-stretch">
-                        <span className="text-[32px] leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                <section className="flex flex-col gap-5 px-5 py-10 lg:px-15 lg:py-20">
+                    <div className="flex flex-col items-start gap-5 self-stretch lg:flex-row lg:items-center lg:justify-between lg:gap-0">
+                        <span className="text-2xl leading-[120%] text-black lg:text-[32px]" style={{ fontFamily: '"Toyota Type"' }}>
                             Lo último en Musalem
                         </span>
 
                         {/* Ordenar */}
-                        <div className="relative flex h-11 w-65 items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5">
-                            <span className="pb-1 text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                        <div className="relative flex h-11 w-full items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 lg:w-65">
+                            <span className="pb-1 text-sm leading-none text-black lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                 Ordenar: <strong>{orden === 'recientes' ? 'Más recientes' : 'Más antiguos'}</strong>
                             </span>
                             <svg width="5" height="8" viewBox="0 0 5 8" fill="none">
@@ -97,8 +97,25 @@ export default function Noticias({ footer, noticias_hero, noticias = [] }: { foo
                         </div>
                     </div>
 
-                    {/* Categorías */}
-                    <div className="flex flex-row items-center gap-3.5">
+                    {/* Categorías: selector en mobile, chips en desktop */}
+                    <div className="relative flex h-11 w-full items-center justify-between rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 lg:hidden">
+                        <span className="pb-1 text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                            Categoría: <strong>{categoriaActiva}</strong>
+                        </span>
+                        <svg width="5" height="8" viewBox="0 0 5 8" fill="none">
+                            <path d="M1 1L4 4L1 7" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <select
+                            className="absolute inset-0 cursor-pointer opacity-0"
+                            value={categoriaActiva}
+                            onChange={(e) => setCategoriaActiva(e.target.value)}
+                        >
+                            {CATEGORIAS_FIJAS.map((cat) => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div className="hidden flex-row items-center gap-3.5 lg:flex">
                         <span className="text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                             Categorías:
                         </span>
@@ -120,9 +137,9 @@ export default function Noticias({ footer, noticias_hero, noticias = [] }: { foo
                 </section>
 
                 {/* Grid noticias */}
-                <section data-noticias-grid className="px-15 pb-20">
+                <section data-noticias-grid className="px-5 pb-10 lg:px-15 lg:pb-20">
                     {paginated.length > 0 ? (
-                        <div className="grid grid-cols-3 gap-5">
+                        <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                             {paginated.map((noticia) => (
                                 <NoticiaCard key={noticia.id} noticia={noticia} />
                             ))}
@@ -135,12 +152,12 @@ export default function Noticias({ footer, noticias_hero, noticias = [] }: { foo
 
                     {/* Paginador */}
                     {totalPages > 1 && (
-                        <div className="mt-15 flex items-center justify-center gap-2.5">
+                        <div className="mt-10 flex items-center justify-center gap-2 overflow-x-auto lg:mt-15 lg:gap-2.5" style={{ scrollbarWidth: 'none' }}>
                             {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                                 <button
                                     key={page}
                                     onClick={() => goToPage(page)}
-                                    className={`flex size-10 items-center justify-center rounded-full border border-black text-base leading-none transition-colors ${
+                                    className={`flex size-10 shrink-0 items-center justify-center rounded-full border border-black text-base leading-none transition-colors ${
                                         page === currentPage ? 'bg-black text-white' : 'bg-white text-black hover:bg-black/5'
                                     }`}
                                     style={{ fontFamily: '"Toyota Type"' }}

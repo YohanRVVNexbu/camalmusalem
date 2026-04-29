@@ -51,4 +51,22 @@ class SeminuevosController extends Controller
             'footer'    => $footer?->data ?? [],
         ]);
     }
+
+    public function cotizar(string $slug)
+    {
+        $seminuevo = Seminuevo::with('branch')
+            ->where(function ($q) use ($slug) {
+                $q->where('slug', $slug);
+                if (is_numeric($slug)) {
+                    $q->orWhere('id', (int) $slug);
+                }
+            })
+            ->where('is_visible', true)
+            ->firstOrFail();
+
+        return Inertia::render('seminuevos/cotizar', [
+            'seminuevo' => $seminuevo,
+            'footer'    => SiteSection::where('section', 'footer')->first()?->data ?? [],
+        ]);
+    }
 }

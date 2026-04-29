@@ -39,7 +39,7 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
             <div className="min-h-screen bg-white">
                 <Navbar variant="white" />
 
-                <div className="px-15 pb-20" style={{ paddingTop: '120px' }}>
+                <div className="px-5 pt-25 pb-10 lg:px-15 lg:pt-30 lg:pb-20">
                     {/* Volver */}
                     <Link
                         href={`/post-venta/accesorios/${accesorio.id}`}
@@ -54,11 +54,11 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                         Volver
                     </Link>
 
-                    {/* Two columns */}
-                    <div className="mt-5 flex items-start gap-5">
+                    {/* Two columns: stack en mobile, lado a lado en desktop */}
+                    <div className="mt-5 flex flex-col items-stretch gap-5 lg:flex-row lg:items-start">
 
                         {/* Left: Form card */}
-                        <div className="flex flex-1 flex-col gap-2.5 rounded-[20px] bg-[#EAEAF1] p-10">
+                        <div className="flex flex-1 flex-col gap-2.5 rounded-[20px] bg-[#EAEAF1] p-5 lg:p-10">
                             {!enviado ? (
                                 <form onSubmit={handleSubmit} className="flex flex-col gap-10 items-end self-stretch">
                                     <div className="flex flex-col gap-5 items-start self-stretch">
@@ -86,7 +86,7 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                                             </div>
 
                                             {/* Email + Teléfono */}
-                                            <div className="flex gap-5 items-center self-stretch">
+                                            <div className="flex flex-col gap-5 self-stretch lg:flex-row lg:items-center">
                                                 <div className="flex flex-1 flex-col gap-2.5 items-start">
                                                     <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                         Email
@@ -180,10 +180,10 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                                         </label>
                                     </div>
 
-                                    {/* Submit button — right aligned */}
+                                    {/* Submit button — full-width en mobile, fijo en desktop */}
                                     <button
                                         type="submit"
-                                        className="flex h-12 w-50 cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-none text-white transition hover:bg-black/85"
+                                        className="flex h-12 w-full cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-none text-white transition hover:bg-black/85 lg:w-50"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         Enviar solicitud
@@ -196,15 +196,15 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                                             <path d="M5 12L10 17L19 8" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                                         </svg>
                                     </div>
-                                    <h2 className="text-[28px] font-semibold leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                    <h2 className="text-2xl font-semibold leading-[120%] text-black lg:text-[28px] lg:leading-none" style={{ fontFamily: '"Toyota Type"' }}>
                                         ¡Solicitud enviada!
                                     </h2>
-                                    <p className="text-base leading-[120%] text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                    <p className="text-sm leading-[120%] text-black/60 lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                         Hemos recibido tu cotización. Un asesor de Toyota Musalem se pondrá en contacto contigo a la brevedad.
                                     </p>
                                     <Link
                                         href="/post-venta/accesorios"
-                                        className="flex h-12 cursor-pointer items-center justify-center rounded-[60px] bg-black px-8 text-base leading-none text-white transition hover:bg-black/85"
+                                        className="flex h-12 w-full cursor-pointer items-center justify-center rounded-[60px] bg-black px-8 text-base leading-none text-white transition hover:bg-black/85 lg:w-auto"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         Volver a accesorios
@@ -214,23 +214,25 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                         </div>
 
                         {/* Right: Summary card */}
-                        <div className="flex flex-1 flex-col gap-5 items-center rounded-[20px] bg-[#EAEAF1] px-7.5 py-10 self-stretch">
+                        <div className="flex flex-1 flex-col gap-5 items-center self-stretch rounded-[20px] bg-[#EAEAF1] p-5 lg:px-7.5 lg:py-10">
                             {/* Product name */}
                             <div className="flex items-center justify-center self-stretch">
-                                <span className="text-[28px] font-semibold leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                <span className="text-center text-2xl font-semibold leading-[120%] text-black lg:text-[28px] lg:leading-none" style={{ fontFamily: '"Toyota Type"' }}>
                                     {accesorio.name}
                                 </span>
                             </div>
 
                             {/* Product image */}
-                            <div
-                                className="h-60 w-62 shrink-0 overflow-hidden rounded-[20px] bg-white flex items-center justify-center"
-                            >
-                                <span className="text-sm text-black/30" style={{ fontFamily: '"Toyota Type"' }}>Imagen del producto</span>
+                            <div className="flex aspect-square w-full max-w-62 shrink-0 items-center justify-center overflow-hidden rounded-[20px] bg-white lg:h-60 lg:w-62 lg:aspect-auto">
+                                {accesorio.images?.[0] ? (
+                                    <img src={accesorio.images[0]} alt={accesorio.name} className="size-full object-cover" />
+                                ) : (
+                                    <span className="text-sm text-black/30" style={{ fontFamily: '"Toyota Type"' }}>Imagen del producto</span>
+                                )}
                             </div>
 
                             {/* Price */}
-                            <div className="rounded-[10px] p-5 self-stretch" style={{ background: 'rgba(0,0,0,0.06)' }}>
+                            <div className="self-stretch rounded-[10px] p-5" style={{ background: 'rgba(0,0,0,0.06)' }}>
                                 <div className="flex items-center justify-between self-stretch">
                                     <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                                     <span className="text-base font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
@@ -244,7 +246,7 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
 
                             {/* Branches */}
                             <div className="flex flex-col gap-1.5 items-start self-stretch">
-                                <span className="text-lg leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>Disponible en:</span>
+                                <span className="text-base leading-none text-black/60 lg:text-lg" style={{ fontFamily: '"Toyota Type"' }}>Disponible en:</span>
                                 <div className="flex flex-col gap-2.5 self-stretch">
                                     {BRANCHES.map((branch) => (
                                         <a
@@ -252,17 +254,17 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                                             href={branch.url}
                                             target="_blank"
                                             rel="noopener noreferrer"
-                                            className="flex items-center gap-5 rounded-[10px] px-10 py-5 self-stretch transition hover:opacity-80"
+                                            className="flex items-center gap-3 self-stretch rounded-[10px] p-4 transition hover:opacity-80 lg:gap-5 lg:px-10 lg:py-5"
                                             style={{ background: 'rgba(0,0,0,0.06)' }}
                                         >
-                                            <svg className="size-4.25 shrink-0" viewBox="0 0 17 24" fill="none">
+                                            <svg className="size-5 shrink-0 lg:size-4.25" viewBox="0 0 17 24" fill="none">
                                                 <path d="M8.5 0C3.81 0 0 3.81 0 8.5C0 14.875 8.5 24 8.5 24S17 14.875 17 8.5C17 3.81 13.19 0 8.5 0ZM8.5 11.5C6.84 11.5 5.5 10.16 5.5 8.5S6.84 5.5 8.5 5.5 11.5 6.84 11.5 8.5 10.16 11.5 8.5 11.5Z" fill="#EA4335" />
                                             </svg>
-                                            <div className="flex h-9.5 flex-col items-start justify-between">
-                                                <span className="text-base leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                            <div className="flex flex-col items-start gap-1 lg:h-9.5 lg:justify-between lg:gap-0">
+                                                <span className="text-sm leading-none text-black/60 lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                                     {branch.name}
                                                 </span>
-                                                <span className="text-base leading-none text-black/60 underline" style={{ fontFamily: '"Toyota Type"' }}>
+                                                <span className="text-sm leading-none text-black/60 underline lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
                                                     {branch.address}
                                                 </span>
                                             </div>

@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { ContactCta } from '@/components/landing/contact-cta';
+import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect, useState } from 'react';
 import heroImg from '@images/repuestos/hero_image.png?format=webp';
@@ -59,9 +59,9 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
             <main className="flex flex-col bg-black">
 
                 {/* Hero */}
-                <section className="bg-white pb-20">
+                <section className="bg-white pb-10 lg:pb-20">
                     <div
-                        className="relative h-119.25 shrink-0 overflow-hidden rounded-b-[30px]"
+                        className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
                         style={{
                             backgroundImage: `url(${hero.hero_image || heroImg})`,
                             backgroundSize: 'cover',
@@ -78,12 +78,10 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                             style={{ background: 'rgba(0,0,0,0.20)' }}
                         />
                         <span
-                            className="absolute left-1/2 text-center text-[48px] leading-[100%] font-normal text-white"
+                            className="absolute left-1/2 -translate-x-1/2 text-center text-[28px] leading-[110%] font-normal text-white lg:text-[48px] lg:leading-[100%]"
                             style={{
                                 top: 'calc(50% + 31.5px)',
-                                translate: '-50%',
                                 fontFamily: '"Toyota Type"',
-                                whiteSpace: 'nowrap',
                             }}
                         >
                             {hero.title || 'Repuestos'}
@@ -92,11 +90,11 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                 </section>
 
                 {/* Repuestos section */}
-                <section className="flex flex-col items-start gap-20 bg-white px-15 py-20">
+                <section className="flex flex-col items-start gap-10 bg-white px-5 py-10 lg:gap-20 lg:px-15 lg:py-20">
                     {/* Header */}
-                    <div className="flex w-full flex-row items-end justify-between">
+                    <div className="flex w-full flex-col items-start gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-0">
                         <h2
-                            className="w-[461px] text-[40px] font-semibold leading-[120%] text-black"
+                            className="text-[28px] font-semibold leading-[120%] text-black lg:w-115.25 lg:text-[40px]"
                             style={{ fontFamily: '"Toyota Type"' }}
                         >
                             Repuestos
@@ -104,7 +102,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                             Camal Musalem
                         </h2>
                         <p
-                            className="w-[520px] text-base leading-[120%] text-black"
+                            className="text-sm leading-[120%] text-black lg:w-130 lg:text-base"
                             style={{ fontFamily: '"Toyota Type"' }}
                         >
                             Disponemos de repuestos, accesorios y equipamiento para mantener y
@@ -114,13 +112,13 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                     </div>
 
                     {/* Grid de repuestos */}
-                    <div className="flex w-full flex-col gap-10 items-end">
+                    <div className="flex w-full flex-col items-stretch gap-7.5 lg:items-end lg:gap-10">
                         {/* Filtros */}
-                        <div className="flex items-center gap-2.5">
+                        <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:flex-row lg:items-center lg:gap-2.5">
                             {/* Modelo de vehículo */}
-                            <div className="relative w-80.5">
+                            <div className="relative w-full lg:w-80.5">
                                 <select
-                                    className="w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
+                                    className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
                                     <option value="">Modelo de vehículo: Todos</option>
@@ -131,9 +129,9 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                 </svg>
                             </div>
                             {/* Ordenar */}
-                            <div className="relative w-65">
+                            <div className="relative w-full lg:w-65">
                                 <select
-                                    className="w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
+                                    className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
                                     <option value="">Ordenar:</option>
@@ -147,37 +145,37 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                         </div>
 
                         {/* Cards */}
-                        <div className="grid w-full grid-cols-3 gap-5">
+                        <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                             {repuestos.length === 0 && (
-                                <p className="col-span-3 py-10 text-center text-black/50">No hay repuestos disponibles.</p>
+                                <p className="col-span-full py-10 text-center text-black/50">No hay repuestos disponibles.</p>
                             )}
                             {repuestos.map((item) => (
                                 <div
                                     key={item.id}
-                                    className="flex flex-col rounded-[20px] border border-black/5 bg-white overflow-hidden"
+                                    className="flex flex-col overflow-hidden rounded-[20px] border border-black/5 bg-white"
                                 >
                                     {item.images?.[0] ? (
-                                        <img src={item.images[0]} alt={item.name} className="h-59.5 w-full rounded-t-[14px] object-cover" />
+                                        <img src={item.images[0]} alt={item.name} className="aspect-3/2 w-full rounded-t-[14px] object-cover lg:aspect-auto lg:h-59.5" />
                                     ) : (
-                                        <div className="h-59.5 w-full rounded-t-[14px] bg-gray-100" />
+                                        <div className="aspect-3/2 w-full rounded-t-[14px] bg-gray-100 lg:aspect-auto lg:h-59.5" />
                                     )}
 
                                     {/* Info */}
                                     <div className="flex flex-col gap-5 px-5 py-5">
                                         <span
-                                            className="px-2.5 text-lg font-semibold leading-[120%] text-black"
+                                            className="line-clamp-2 px-2.5 text-base font-semibold leading-[120%] text-black lg:text-lg"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             {item.name}
                                         </span>
-                                        <div className="flex items-center justify-between px-2.5">
+                                        <div className="flex items-center justify-between gap-2 px-2.5">
                                             <span
-                                                className="text-2xl font-semibold uppercase leading-none text-black"
+                                                className="text-xl font-semibold uppercase leading-none text-black lg:text-2xl"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
                                                 {item.price ?? '—'}
                                             </span>
-                                            <Link href={`/post-venta/repuestos/${item.id}`} className="flex h-10 items-center gap-2.5 rounded-[60px] bg-black p-1 pl-3.5 transition-opacity hover:opacity-80">
+                                            <Link href={`/post-venta/repuestos/${item.id}`} className="flex h-10 shrink-0 items-center gap-2.5 rounded-[60px] bg-black p-1 pl-3.5 transition-opacity hover:opacity-80">
                                                 <span className="pb-0.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>
                                                     Ver más
                                                 </span>
@@ -194,7 +192,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                         </div>
 
                         {/* Paginación */}
-                        <div className="flex items-center gap-5 rounded-[60px] border border-black/20 p-2.5">
+                        <div className="flex w-full items-center justify-between rounded-[60px] border border-black/20 p-2.5 lg:w-auto lg:gap-5">
                             <button className="flex size-7.5 cursor-pointer items-center justify-center rounded-[60px] opacity-40">
                                 <svg width="8" height="14" viewBox="0 0 8 14" fill="none">
                                     <path d="M7 1L1 7L7 13" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -212,24 +210,24 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                     </div>
 
                     {/* Image and Card */}
-                    <div className="flex w-full flex-row items-stretch gap-5">
+                    <div className="flex w-full flex-col items-stretch gap-5 lg:flex-row">
                         <div
-                            className="flex flex-1 flex-col items-start justify-end rounded-[30px] p-[30px]"
+                            className="flex aspect-3/2 flex-1 flex-col items-start justify-end rounded-[30px] p-5 lg:aspect-auto lg:p-7.5"
                             style={{
                                 background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${section2Img}) lightgray 50% / cover no-repeat`,
-                                minHeight: '483px',
+                                minHeight: '0',
                             }}
                         />
-                        <div className="flex h-[483px] flex-1 flex-col items-start gap-10 rounded-[30px] bg-[#EAEAF1] px-10 py-15">
+                        <div className="flex flex-1 flex-col items-start gap-5 rounded-[30px] bg-[#EAEAF1] px-5 py-7.5 lg:h-120.75 lg:gap-10 lg:px-10 lg:py-15">
                             <h3
-                                className="text-[32px] font-semibold leading-[120%] text-black"
+                                className="text-2xl font-semibold leading-[120%] text-black lg:text-[32px]"
                                 style={{ fontFamily: '"Toyota Type"' }}
                             >
                                 Encargo
                                 <br />
                                 de repuestos
                             </h3>
-                            <div className="self-stretch text-base leading-[120%] text-black">
+                            <div className="self-stretch text-sm leading-[120%] text-black lg:text-base">
                                 Solicitamos el repuesto que necesites
                                 <br />
                                 <br />
@@ -249,41 +247,41 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                 </section>
 
                 {/* Solicitud de encargo */}
-                <section className="bg-white px-15 py-20">
-                    <div className="rounded-[30px] bg-[#EAEAF1] p-15">
+                <section className="bg-white px-5 py-10 lg:px-15 lg:py-20">
+                    <div className="rounded-[30px] bg-[#EAEAF1] p-5 lg:p-15">
                         <div
                             className="transition-opacity duration-300"
                             style={{ opacity: visible ? 1 : 0 }}
                         >
                             {/* Estado default */}
                             {step === 'default' && (
-                                <div className="flex w-full flex-row items-center justify-between">
-                                    <div className="flex shrink-0 flex-col items-start justify-center gap-10">
+                                <div className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:items-center lg:justify-between lg:gap-10">
+                                    <div className="flex shrink-0 flex-col items-start justify-center gap-5 lg:gap-10">
                                         <h2
-                                            className="text-[40px] font-semibold leading-[120%] text-black"
+                                            className="text-[28px] font-semibold leading-[120%] text-black lg:text-[40px]"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
                                             Solicitud de encargo
                                             <br />
                                             de repuestos
                                         </h2>
-                                        <p className="w-[520px] text-base leading-[120%] text-black">
+                                        <p className="text-sm leading-[120%] text-black lg:w-130 lg:text-base">
                                             Ahorra tiempo cotizando sus repuestos aquí mismo. Después de enviar el
                                             formulario, nos pondremos en contacto para entregarle información.
                                         </p>
                                         <button
                                             onClick={() => goTo('form')}
-                                            className="flex h-12 cursor-pointer items-center gap-2.5 rounded-[60px] bg-black px-5 text-base leading-[120%] text-white"
+                                            className="flex h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-[60px] bg-black px-8 text-base leading-[120%] text-white lg:w-auto lg:px-5"
                                         >
                                             Solicitar repuestos
                                         </button>
                                     </div>
                                     <div
-                                        className="relative flex size-[560px] shrink-0 flex-col items-start justify-end overflow-hidden rounded-[30px] p-[30px]"
+                                        className="relative flex aspect-square w-full shrink-0 flex-col items-start justify-end overflow-hidden rounded-[30px] p-3 lg:size-140 lg:aspect-auto lg:p-7.5"
                                         style={{ background: `url(${section3Img}) center / cover no-repeat` }}
                                     >
                                         <div
-                                            className="flex w-[369px] flex-col gap-4 rounded-2xl p-5"
+                                            className="flex w-full flex-col gap-4 rounded-2xl p-5 lg:w-92.25"
                                             style={{
                                                 background: 'linear-gradient(to left, rgba(0,0,0,0.2), rgba(0,0,0,0.2))',
                                                 backdropFilter: 'blur(30px)',
@@ -292,11 +290,11 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                             <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Horario de atención
                                             </span>
-                                            <div className="flex items-center justify-between text-sm leading-none text-white">
+                                            <div className="flex h-3.5 items-center justify-between self-stretch text-sm leading-none text-white">
                                                 <span>Lunes a Viernes</span>
                                                 <span>09:00 a 13:30 - 14:45 a 18:30</span>
                                             </div>
-                                            <div className="flex items-center justify-between text-sm leading-none text-white">
+                                            <div className="flex h-3.5 items-center justify-between self-stretch text-sm leading-none text-white">
                                                 <span>Domingo</span>
                                                 <span>Cerrado</span>
                                             </div>
@@ -307,20 +305,20 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
 
                             {/* Estado form */}
                             {step === 'form' && (
-                                <div key={formKey} className="flex flex-col items-end gap-10">
+                                <div key={formKey} className="flex flex-col items-end gap-7.5 lg:gap-10">
                                     {/* Breadcrumb */}
                                     <div className="flex w-full items-center">
-                                        <div className="flex h-12 flex-1 items-center justify-center rounded-[60px] bg-black px-5">
-                                            <span className="text-base leading-[120%] text-white">Solicitud de repuestos</span>
+                                        <div className="flex h-10 flex-1 items-center justify-center rounded-[60px] bg-black px-5 lg:h-12">
+                                            <span className="text-sm leading-[120%] text-white lg:text-base">Solicitud de repuestos</span>
                                         </div>
                                     </div>
 
                                     {/* Campos */}
                                     <div className="flex w-full flex-col gap-5">
-                                        <h3 className="text-2xl font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                        <h3 className="text-xl font-semibold leading-[120%] text-black lg:text-2xl" style={{ fontFamily: '"Toyota Type"' }}>
                                             Solicitud de repuestos
                                         </h3>
-                                        <div className="flex gap-10">
+                                        <div className="flex flex-col gap-5 lg:flex-row lg:gap-10">
                                             {/* Columna izquierda */}
                                             <div className="flex flex-1 flex-col gap-5">
                                                 <div className="flex flex-col gap-2.5">
@@ -418,7 +416,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                     {/* Botón enviar */}
                                     <button
                                         onClick={() => goTo('success')}
-                                        className="flex h-12 w-[200px] cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-[120%] text-white"
+                                        className="flex h-12 w-full cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-[120%] text-white lg:w-50"
                                     >
                                         Enviar solicitud
                                     </button>
@@ -428,23 +426,23 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                             {/* Estado success */}
                             {step === 'success' && (
                                 <div className="flex w-full items-center justify-center">
-                                    <div className="flex flex-col items-center gap-10">
+                                    <div className="flex flex-col items-center gap-7.5 lg:gap-10">
                                         <h3 className="text-2xl font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                             Solicitud enviada
                                         </h3>
-                                        <p className="w-[368px] text-center text-base leading-[120%] text-black">
+                                        <p className="text-center text-sm leading-[120%] text-black lg:w-92 lg:text-base">
                                             Un asesor de servicio se comunicará con usted dentro de las próximas 48 horas.
                                         </p>
-                                        <div className="flex flex-col gap-5">
+                                        <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:gap-5">
                                             <a
                                                 href="/"
-                                                className="flex h-12 items-center justify-center rounded-[60px] bg-black px-15 text-base leading-[120%] text-white"
+                                                className="flex h-12 items-center justify-center rounded-[60px] bg-black px-8 text-base leading-[120%] text-white lg:px-15"
                                             >
                                                 Volver a inicio
                                             </a>
                                             <button
                                                 onClick={() => goTo('form', true)}
-                                                className="flex h-12 cursor-pointer items-center justify-center rounded-[60px] border border-black bg-transparent px-15 text-base leading-[120%] text-black"
+                                                className="flex h-12 cursor-pointer items-center justify-center rounded-[60px] border border-black bg-transparent px-8 text-base leading-[120%] text-black lg:px-15"
                                             >
                                                 Enviar otra solicitud
                                             </button>
@@ -457,7 +455,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                 </section>
 
 
-                <ContactCta backgroundImage={ctaImg} />
+                <ContactCtaBanner image={ctaImg} />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
             </main>

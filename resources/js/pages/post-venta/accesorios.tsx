@@ -2,7 +2,7 @@ import { Head, Link } from '@inertiajs/react';
 import { useState } from 'react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { ContactCta } from '@/components/landing/contact-cta';
+import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 
@@ -42,9 +42,9 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
             <main className="flex flex-col bg-black">
 
                 {/* Hero */}
-                <section className="bg-white pb-20">
+                <section className="bg-white pb-10 lg:pb-20">
                     <div
-                        className="relative h-119.25 shrink-0 overflow-hidden rounded-b-[30px]"
+                        className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
                         style={{
                             backgroundImage: `url(${hero.hero_image || heroImg})`,
                             backgroundSize: 'cover',
@@ -61,12 +61,10 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                             style={{ background: 'rgba(0,0,0,0.20)' }}
                         />
                         <span
-                            className="absolute left-1/2 text-center text-[48px] leading-[100%] font-normal text-white"
+                            className="absolute left-1/2 -translate-x-1/2 text-center text-[28px] leading-[110%] font-normal text-white lg:text-[48px] lg:leading-[100%]"
                             style={{
                                 top: 'calc(50% + 31.5px)',
-                                translate: '-50%',
                                 fontFamily: '"Toyota Type"',
-                                whiteSpace: 'nowrap',
                             }}
                         >
                             {hero.title || 'Accesorios y merch'}
@@ -75,25 +73,25 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                 </section>
 
                 {/* Merch section */}
-                <section className="flex flex-row items-center justify-center gap-15 self-stretch bg-white px-15 pb-20">
+                <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-white px-5 pb-10 lg:flex-row lg:gap-15 lg:px-15 lg:pb-20">
                     <img
                         src={section2Img}
                         alt="Merch Oficial Toyota"
-                        className="h-103.25 w-170 shrink-0 rounded-[30px] object-cover"
+                        className="aspect-3/2 w-full shrink-0 rounded-[20px] object-cover lg:aspect-auto lg:h-103.25 lg:w-170 lg:rounded-[30px]"
                         style={{
                             background: 'linear-gradient(to left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%)',
                         }}
                     />
-                    <div className="flex h-56 w-115.25 shrink-0 flex-col items-start justify-center gap-5 pr-5">
+                    <div className="flex w-full shrink-0 flex-col items-start justify-center gap-5 lg:h-56 lg:w-115.25 lg:pr-5">
                         <h2
-                            className="w-115.25 text-[40px] font-semibold leading-[120%] text-black"
+                            className="text-[28px] font-semibold leading-[120%] text-black lg:w-115.25 lg:text-[40px]"
                             style={{ fontFamily: '"Toyota Type"' }}
                         >
                             Merch
                             <br />
                             Oficial Toyota
                         </h2>
-                        <p className="w-100 text-base leading-[120%] text-black">
+                        <p className="text-sm leading-[120%] text-black lg:w-100 lg:text-base">
                             Accesorios, prendas y productos oficiales que reflejan el estilo Toyota.
                             Visítanos en nuestras sucursales Musalem y encuentra tus favoritos.
                         </p>
@@ -101,22 +99,22 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                 </section>
 
                 {/* Products grid section */}
-                <section className="flex flex-col items-center justify-center gap-10 self-stretch bg-[#EAEAF1] px-15 py-20">
+                <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-[#EAEAF1] px-5 py-10 lg:gap-10 lg:px-15 lg:py-20">
                     {/* Title + filters row */}
-                    <div className="flex items-center self-stretch">
+                    <div className="flex flex-col items-start gap-5 self-stretch lg:flex-row lg:items-center lg:gap-0">
                         <h2
-                            className="text-[32px] font-semibold leading-[120%] text-black"
+                            className="text-2xl font-semibold leading-[120%] text-black lg:text-[32px]"
                             style={{ fontFamily: '"Toyota Type"' }}
                         >
                             Productos disponibles
                         </h2>
-                        <div className="flex flex-1 items-center justify-end gap-5">
+                        <div className="flex w-full flex-col items-stretch gap-3 lg:flex-1 lg:flex-row lg:items-center lg:justify-end lg:gap-5">
                             {/* Categorias filter */}
                             <div className="relative">
                                 <select
                                     value={categoria}
                                     onChange={(e) => setCategoria(e.target.value)}
-                                    className="w-65 appearance-none rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none"
+                                    className="h-11 w-full appearance-none rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none lg:w-65"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
                                     {categorias.map((c) => (
@@ -134,7 +132,7 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                                 <select
                                     value={ordenar}
                                     onChange={(e) => setOrdenar(e.target.value)}
-                                    className="w-65 appearance-none rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none"
+                                    className="h-11 w-full appearance-none rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none lg:w-65"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
                                     <option value="" disabled>Ordenar:</option>
@@ -150,13 +148,14 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                             </div>
                         </div>
                     </div>
-                    <div className="grid grid-cols-3 gap-5">
+                    <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
                         {accesorios
                             .filter(a => categoria === 'Todos' || a.category === categoria)
                             .map((item) => (
-                            <div
+                            <Link
                                 key={item.id}
-                                className="group relative h-80 w-80 overflow-hidden rounded-[30px] bg-gray-100"
+                                href={`/post-venta/accesorios/${item.id}`}
+                                className="group relative aspect-square w-full overflow-hidden rounded-[30px] bg-gray-100 lg:h-80 lg:w-80"
                                 style={item.images?.[0] ? {
                                     backgroundImage: `url(${item.images[0]})`,
                                     backgroundSize: 'cover',
@@ -164,16 +163,26 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                                     backgroundRepeat: 'no-repeat',
                                 } : {}}
                             >
-                                {/* Hover overlay */}
-                                <div className="absolute inset-0 flex translate-y-full flex-col items-center justify-center gap-5 rounded-[30px] bg-[#EB0A1E] px-20.5 transition-transform duration-300 ease-in-out group-hover:translate-y-0">
+                                {/* Mobile: bottom label always visible */}
+                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-[#EB0A1E] p-3 lg:hidden">
+                                    <h3 className="line-clamp-1 text-base font-semibold leading-[120%] text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                        {item.name}
+                                    </h3>
+                                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 18 14" fill="none">
+                                            <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="#EB0A1E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                {/* Desktop: hover overlay */}
+                                <div className="absolute inset-0 hidden translate-y-full flex-col items-center justify-center gap-5 rounded-[30px] bg-[#EB0A1E] px-20.5 transition-transform duration-300 ease-in-out group-hover:translate-y-0 lg:flex">
                                     <h3
                                         className="text-center text-[28px] font-semibold leading-[120%] text-white"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
                                         {item.name}
                                     </h3>
-                                    <Link
-                                        href={`/post-venta/accesorios/${item.id}`}
+                                    <span
                                         className="flex items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 transition hover:bg-white/90"
                                     >
                                         <span
@@ -187,17 +196,17 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                                                 <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                                             </svg>
                                         </span>
-                                    </Link>
+                                    </span>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                         {accesorios.filter(a => categoria === 'Todos' || a.category === categoria).length === 0 && (
-                            <p className="col-span-3 py-10 text-center text-black/50">No hay productos en esta categoría.</p>
+                            <p className="col-span-full py-10 text-center text-black/50">No hay productos en esta categoría.</p>
                         )}
                     </div>
                 </section>
 
-                <ContactCta backgroundImage={ejemploVideo} />
+                <ContactCtaBanner image={ejemploVideo} />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
                 <div className="bg-black">

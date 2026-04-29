@@ -12,9 +12,11 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/nuevos', [NuevosController::class, 'index'])->name('nuevos');
+Route::get('/nuevos/{id}/cotizar', [NuevosController::class, 'cotizar'])->name('nuevos.cotizar');
 Route::get('/nuevos/{id}', [NuevosController::class, 'show'])->name('nuevos.show');
 Route::get('/seminuevos', [SeminuevosController::class, 'index'])->name('seminuevos');
 Route::get('/seminuevos/comparar', [SeminuevosController::class, 'compare'])->name('seminuevos.compare');
+Route::get('/seminuevos/{id}/cotizar', [SeminuevosController::class, 'cotizar'])->name('seminuevos.cotizar');
 Route::get('/seminuevos/{id}', [SeminuevosController::class, 'show'])->name('seminuevos.show');
 
 Route::get('/post-venta/agendar-mantencion', [PostVentaController::class, 'agendarMantencion'])->name('post-venta.agendar-mantencion');

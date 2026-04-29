@@ -228,3 +228,18 @@
     text-decoration: underline;
     opacity: 0.7;
 }
+
+.wysiwyg-content img,
+.wysiwyg-content video,
+.wysiwyg-content iframe {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 1em 0;
+}
+
+.wysiwyg-content iframe {
+    aspect-ratio: 16 / 9;
+    width: 100%;
+    height: auto;
+}

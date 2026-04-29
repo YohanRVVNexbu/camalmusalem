@@ -166,4 +166,26 @@ class NuevosController extends Controller
             'youtubeShorts' => $youtubeService->getShorts(),
         ]);
     }
+
+    public function cotizar(string $id)
+    {
+        $model = VehicleModel::with([
+            'brand',
+            'versions' => fn ($q) => $q->where('is_active', true)->orderBy('display_order'),
+            'versions.engine', 'versions.electric',
+        ])
+            ->where('is_active', true)
+            ->where(function ($q) use ($id) {
+                $q->where('slug', $id);
+                if (is_numeric($id)) {
+                    $q->orWhere('id', (int) $id);
+                }
+            })
+            ->firstOrFail();
+
+        return Inertia::render('nuevos/cotizar', [
+            'vehicle' => $this->presenter->presentModel($model),
+            'footer' => SiteSection::where('section', 'footer')->first()?->data ?? [],
+        ]);
+    }
 }

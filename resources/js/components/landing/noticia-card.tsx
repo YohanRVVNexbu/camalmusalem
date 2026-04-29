@@ -12,10 +12,10 @@ export type NoticiaItem = {
 
 export function NoticiaCard({ noticia }: { noticia: NoticiaItem }) {
     return (
-        <div className="flex flex-col overflow-hidden rounded-[30px]">
+        <div className="flex h-full flex-col overflow-hidden rounded-[30px]">
             {/* Imagen */}
             <div
-                className="h-60 w-full"
+                className="h-60 w-full shrink-0"
                 style={{
                     background: noticia.img
                         ? `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${noticia.img}) lightgray 50% / cover no-repeat`
@@ -23,7 +23,7 @@ export function NoticiaCard({ noticia }: { noticia: NoticiaItem }) {
                 }}
             />
             {/* Contenido */}
-            <div className="flex flex-col gap-5 bg-white p-5">
+            <div className="flex flex-1 flex-col justify-between gap-5 bg-white p-5">
                 <div className="flex flex-col gap-5">
                     <div className="flex gap-2.5">
                         <span className="rounded-[3px] bg-[#EAEAF1] px-1.25 py-1.25 text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
@@ -33,10 +33,10 @@ export function NoticiaCard({ noticia }: { noticia: NoticiaItem }) {
                             {noticia.fecha}
                         </span>
                     </div>
-                    <h3 className="text-xl font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                    <h3 className="line-clamp-2 text-xl font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
                         {noticia.titulo}
                     </h3>
-                    <p className="text-base leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                    <p className="line-clamp-3 text-base leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
                         {noticia.descripcion}
                     </p>
                 </div>

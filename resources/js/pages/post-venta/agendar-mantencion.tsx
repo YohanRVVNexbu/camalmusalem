@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { BranchesSection } from '@/components/landing/branches-section';
+import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import useEmblaCarousel from 'embla-carousel-react';
@@ -180,9 +181,9 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
 
             <main className="flex flex-col bg-black">
                 {/* Hero */}
-                <section className="bg-white pb-20">
+                <section className="bg-white pb-10 lg:pb-20">
                     <div
-                        className="relative h-119.25 shrink-0 overflow-hidden rounded-b-[30px]"
+                        className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
                         style={{
                             backgroundImage: `url(${hero.hero_image || heroImg})`,
                             backgroundSize: 'cover',
@@ -202,12 +203,10 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                             style={{ background: 'rgba(0,0,0,0.20)' }}
                         />
                         <span
-                            className="absolute left-1/2 text-center text-[48px] leading-[100%] font-normal text-white"
+                            className="absolute left-1/2 -translate-x-1/2 text-center text-[32px] leading-[110%] font-normal text-white lg:text-[48px] lg:leading-[100%]"
                             style={{
-                                top: 'calc(50% - -31.5px)',
-                                translate: '-50%',
+                                top: 'calc(50% + 31.5px)',
                                 fontFamily: '"Toyota Type"',
-                                whiteSpace: 'nowrap',
                             }}
                         >
                             {hero.title || 'Servicio técnico'}
@@ -216,12 +215,12 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                 </section>
 
                 {/* Carrusel */}
-                <section className="flex w-full flex-col items-start bg-white px-15 pt-20">
-                    <div className="flex w-full items-end justify-between">
-                        <h2 className="w-115.25 text-left text-[40px] leading-[120%] font-semibold text-black">
+                <section className="flex w-full flex-col items-start bg-white px-5 pt-10 lg:px-15 lg:pt-20">
+                    <div className="flex w-full flex-col items-start gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-0">
+                        <h2 className="text-left text-2xl leading-[120%] font-semibold text-black lg:w-115.25 lg:text-[40px]">
                             Servicio técnico Musalem
                         </h2>
-                        <p className="w-130 text-left text-base leading-[120%] font-normal text-black">
+                        <p className="text-left text-sm leading-[120%] font-normal text-black lg:w-130 lg:text-base">
                             Nuestro objetivo está enfocado en ofrecer y entregar
                             a nuestros clientes un servicio de alto nivel en
                             calidad y seguridad en cada reparación que
@@ -231,7 +230,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
 
                     {/* Carousel */}
                     <div
-                        className="mt-20 w-full overflow-hidden"
+                        className="mt-10 w-full overflow-hidden lg:mt-20"
                         ref={emblaRef}
                         onMouseEnter={() => setIsPaused(true)}
                         onMouseLeave={() => setIsPaused(false)}
@@ -242,7 +241,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                 card.type === 'image' ? (
                                     <div
                                         key={i}
-                                        className="h-120.75 w-105 shrink-0 rounded-[30px]"
+                                        className="h-100 w-72 shrink-0 rounded-[20px] lg:h-120.75 lg:w-105 lg:rounded-[30px]"
                                         style={{
                                             background: `linear-gradient(0deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.00) 100%), linear-gradient(180deg, rgba(0,0,0,0.00) 0%, rgba(0,0,0,0.20) 100%), url(${card.image}) lightgray center / cover no-repeat`,
                                         }}
@@ -250,12 +249,12 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                 ) : (
                                     <div
                                         key={i}
-                                        className="flex h-120.75 w-105 shrink-0 flex-col items-start gap-10 rounded-[30px] bg-[#EAEAF1] px-10 py-15"
+                                        className="flex h-100 w-72 shrink-0 flex-col items-start gap-5 rounded-[20px] bg-[#EAEAF1] px-5 py-7.5 lg:h-120.75 lg:w-105 lg:gap-10 lg:rounded-[30px] lg:px-10 lg:py-15"
                                     >
-                                        <h3 className="text-[32px] leading-[120%] font-semibold whitespace-pre-line text-black">
+                                        <h3 className="text-2xl leading-[120%] font-semibold whitespace-pre-line text-black lg:text-[32px]">
                                             {card.titulo}
                                         </h3>
-                                        <div className="flex flex-col gap-2 text-base leading-[120%] text-black">
+                                        <div className="flex flex-col gap-2 text-sm leading-[120%] text-black lg:text-base">
                                             {card.subtitulo && (
                                                 <span className="font-semibold">
                                                     {card.subtitulo}
@@ -272,14 +271,14 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                     </div>
 
                     {/* Paginación */}
-                    <div className="mt-10 mb-20 flex w-full items-center justify-center gap-2.5">
+                    <div className="mt-7.5 mb-10 flex w-full items-center justify-center gap-2 lg:mt-10 lg:mb-20 lg:gap-2.5">
                         {scrollSnaps.map((_, i) => (
                             <div
                                 key={i}
-                                className={`h-2.5 rounded-full transition-all duration-300 ${
+                                className={`h-2 rounded-full transition-all duration-300 lg:h-2.5 ${
                                     i === selectedIndex
-                                        ? 'w-10 bg-black'
-                                        : 'w-2.5 bg-black/30'
+                                        ? 'w-8 bg-black lg:w-10'
+                                        : 'w-2 bg-black/30 lg:w-2.5'
                                 }`}
                             />
                         ))}
@@ -287,16 +286,16 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                 </section>
 
                 {/* Reserva tu hora */}
-                <section className="flex w-full flex-col items-center gap-20 bg-white py-20">
-                    <div className="flex w-330 max-w-full flex-col items-center gap-20 rounded-[30px] bg-[#EAEAF1] p-15">
+                <section className="flex w-full flex-col items-center gap-10 bg-white px-5 py-10 lg:gap-20 lg:px-0 lg:py-20">
+                    <div className="flex w-330 max-w-full flex-col items-center gap-10 rounded-[30px] bg-[#EAEAF1] p-5 lg:gap-20 lg:p-15">
                         {!showForm ? (
                             /* Contenido base */
-                            <div key="base" className="flex w-full flex-row items-center gap-20" style={{ animation: 'fadeSlideDown 0.5s ease-out' }}>
-                                <div className="flex flex-col items-start justify-center gap-10">
-                                    <h2 className="text-[40px] leading-[120%] font-semibold text-black">
+                            <div key="base" className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:items-center lg:gap-20" style={{ animation: 'fadeSlideDown 0.5s ease-out' }}>
+                                <div className="flex flex-col items-start justify-center gap-5 lg:gap-10">
+                                    <h2 className="text-[28px] leading-[120%] font-semibold text-black lg:text-[40px]">
                                         Reserva tu hora
                                     </h2>
-                                    <p className="w-130 text-base leading-[120%] font-normal text-black">
+                                    <p className="text-sm leading-[120%] font-normal text-black lg:w-130 lg:text-base">
                                         Ahorra tiempo programando el servicio aquí
                                         mismo. Después de enviar el formulario, nos
                                         pondremos en contacto para confirmar su cita de
@@ -304,19 +303,19 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                     </p>
                                     <button
                                         onClick={() => { setShowForm(true); setFormStep(0); setStepDirection('right'); prevStepRef.current = 0; }}
-                                        className="flex cursor-pointer items-center justify-center gap-2.5 rounded-[60px] bg-black px-15 py-4.75 text-base leading-[120%] font-normal text-white transition hover:bg-black/85"
+                                        className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-[60px] bg-black px-8 py-4 text-base leading-[120%] font-normal text-white transition hover:bg-black/85 lg:w-auto lg:px-15 lg:py-4.75"
                                     >
                                         Ir a agendar servicio
                                     </button>
                                 </div>
                                 <div
-                                    className="flex h-140 w-140 shrink-0 flex-col items-start justify-end gap-2.5 rounded-[30px] p-7.5"
+                                    className="flex aspect-square w-full shrink-0 flex-col items-start justify-end gap-2.5 rounded-[30px] p-3 lg:aspect-auto lg:h-140 lg:w-140 lg:p-7.5"
                                     style={{
-                                        background: `url(${thirdSectionImg}) lightgray 0.01px -163.496px / 100% 133.264% no-repeat`,
+                                        background: `url(${thirdSectionImg}) lightgray center / cover no-repeat`,
                                     }}
                                 >
                                     <div
-                                        className="flex shrink-0 flex-col items-start justify-center gap-2.5 overflow-hidden rounded-2xl p-5"
+                                        className="flex shrink-0 flex-col items-start justify-center gap-2.5 self-stretch overflow-hidden rounded-2xl p-5"
                                         style={{
                                             background: 'linear-gradient(to left, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), linear-gradient(to left, rgba(0,0,0,0.2), rgba(0,0,0,0.2))',
                                             backdropFilter: 'blur(30px)',
@@ -324,11 +323,11 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                     >
                                         <div className="flex flex-col items-start gap-4 self-stretch">
                                             <span className="text-xl leading-none font-semibold text-white uppercase">Horario de atención</span>
-                                            <div className="flex items-center justify-between self-stretch">
+                                            <div className="flex h-3.5 items-center justify-between self-stretch">
                                                 <span className="text-sm leading-none font-normal text-white">Lunes a Viernes</span>
                                                 <span className="text-sm leading-none font-normal text-white">09:00 a 13:30 - 14:45 a 18:30</span>
                                             </div>
-                                            <div className="flex items-center justify-between self-stretch">
+                                            <div className="flex h-3.5 items-center justify-between self-stretch">
                                                 <span className="text-sm leading-none font-normal text-white">Domingo</span>
                                                 <span className="text-sm leading-none font-normal text-white">Cerrado</span>
                                             </div>
@@ -338,7 +337,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                             </div>
                         ) : (
                             /* Formulario */
-                            <div key="form" className="flex w-full flex-col gap-10" style={{ animation: 'fadeSlideDown 0.5s ease-out' }}>
+                            <div key="form" className="flex w-full flex-col gap-7.5 lg:gap-10" style={{ animation: 'fadeSlideDown 0.5s ease-out' }}>
                                 {/* Volver */}
                                 <button
                                     onClick={() => setShowForm(false)}
@@ -352,28 +351,29 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                     Volver
                                 </button>
 
-                                {/* Tabs */}
-                                <div className="flex h-12 w-full gap-5">
+                                {/* Tabs: número solo en mobile, label completo en desktop */}
+                                <div className="flex h-10 w-full gap-2 lg:h-12 lg:gap-5">
                                     {['Servicio y horario', 'Datos del vehículo', 'Datos de contacto', 'Confirmar'].map((label, i) => (
                                         <button
                                             key={label}
                                             onClick={() => changeStep(i)}
-                                            className={`flex flex-1 cursor-pointer items-center justify-center rounded-[60px] px-5 text-base leading-[120%] font-normal transition ${
+                                            className={`flex h-10 flex-1 cursor-pointer items-center justify-center rounded-[60px] px-2 text-sm leading-[120%] font-normal transition lg:h-12 lg:px-5 lg:text-base ${
                                                 formStep === i
                                                     ? 'bg-black text-white'
                                                     : 'bg-white text-black hover:bg-black/5'
                                             }`}
                                         >
-                                            {label}
+                                            <span className="lg:hidden">{i + 1}</span>
+                                            <span className="hidden lg:inline">{label}</span>
                                         </button>
                                     ))}
                                 </div>
 
                                 {/* Content */}
-                                <div className="flex w-full items-center gap-15">
+                                <div className="flex w-full flex-col items-stretch gap-7.5 lg:flex-row lg:items-center lg:gap-15">
                                     {/* Imagen sucursales */}
                                     <div
-                                        className="relative h-140 w-140 shrink-0 overflow-hidden rounded-[30px]"
+                                        className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[30px] lg:h-140 lg:w-140 lg:aspect-auto"
                                         style={{ boxShadow: '2px 2px 2px 2px rgba(0,0,0,0.02)' }}
                                     >
                                         <img
@@ -383,7 +383,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                             key={formStep <= 0 ? 'step1' : formStep <= 2 ? 'step2' : 'step4'}
                                         />
                                         <div
-                                            className="absolute bottom-7.5 left-7.5 flex w-92.25 flex-col gap-2.5 overflow-hidden rounded-2xl bg-[rgba(0,0,0,0.60)] p-5"
+                                            className="absolute right-2.5 bottom-2.5 left-2.5 flex flex-col gap-2.5 overflow-hidden rounded-2xl bg-[rgba(0,0,0,0.60)] p-5 lg:right-auto lg:bottom-7.5 lg:left-7.5 lg:w-92.25"
                                             style={{ backdropFilter: 'blur(30px)' }}
                                         >
                                             <span className="text-xl leading-none font-semibold text-white uppercase">Sucursales</span>
@@ -393,8 +393,8 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                     </div>
 
                                     {/* Formulario paso actual */}
-                                    <div key={formStep} className="flex flex-1 flex-col items-start gap-10" style={{ animation: `${stepDirection === 'right' ? 'slideFromRight' : 'slideFromLeft'} 0.4s ease-out` }}>
-                                        <h3 className="text-2xl leading-none font-semibold text-black">
+                                    <div key={formStep} className="flex w-full flex-1 flex-col items-start gap-7.5 lg:gap-10" style={{ animation: `${stepDirection === 'right' ? 'slideFromRight' : 'slideFromLeft'} 0.4s ease-out` }}>
+                                        <h3 className="text-xl leading-[120%] font-semibold text-black lg:text-2xl lg:leading-none">
                                             {['Servicio y horario', 'Datos del vehículo', 'Datos de contacto', 'Resumen de tu agendamiento'][formStep]}
                                         </h3>
                                         <div className="flex w-full flex-col gap-5">
@@ -591,7 +591,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                             )}
                                             {formStep === 3 && (
                                                 <>
-                                                <div className="flex w-full flex-col gap-5 rounded-[20px] bg-white p-10">
+                                                <div className="flex w-full flex-col gap-5 rounded-[20px] bg-white p-5 lg:p-10">
                                                     <div className="flex flex-col gap-2.5">
                                                         <span className="text-sm font-semibold text-black">Servicio:</span>
                                                         <span className="text-sm font-normal text-black">{servicio || '—'}</span>
@@ -663,7 +663,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                                 }
                                             }}
                                             disabled={(formStep === 3 && !aceptaPrivacidad) || submitting}
-                                            className={`flex items-center justify-center gap-2.5 rounded-[60px] px-15 py-4.75 text-base leading-[120%] font-normal transition ${
+                                            className={`flex w-full items-center justify-center gap-2.5 rounded-[60px] px-8 py-4 text-base leading-[120%] font-normal transition lg:w-auto lg:px-15 lg:py-4.75 ${
                                                 (formStep === 3 && !aceptaPrivacidad) || submitting
                                                     ? 'cursor-not-allowed bg-black/30 text-white/60'
                                                     : 'cursor-pointer bg-black text-white hover:bg-black/85'
@@ -678,47 +678,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                     </div>
                 </section>
 
-                {/* Contact CTA banner */}
-                <div className="flex flex-col items-center bg-[#EAEAF1] p-15">
-                    <div
-                        className="flex w-full flex-col items-start justify-end rounded-[30px] p-7.5"
-                        style={{
-                            backgroundImage: `linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%), url(${ejemploVideo})`,
-                            backgroundSize: 'cover',
-                            backgroundPosition: 'center',
-                            height: '340px',
-                        }}
-                    >
-                        <div className="flex flex-col gap-7.5">
-                            <p className="w-90 text-2xl leading-[120%] text-white">
-                                Contáctanos para recibir asesoría personalizada
-                            </p>
-                            <a
-                                href="#"
-                                className="flex w-fit cursor-pointer items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 text-base leading-none text-black transition hover:bg-white/90"
-                            >
-                                Contactar ventas
-                                <span className="flex size-10 items-center justify-center rounded-full bg-black">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        width="12"
-                                        height="9"
-                                        viewBox="0 0 12 9"
-                                        fill="none"
-                                    >
-                                        <path
-                                            d="M1.39844 4.34961H11.3984M11.3984 4.34961L7.64844 0.599609M11.3984 4.34961L7.64844 8.09961"
-                                            stroke="white"
-                                            strokeWidth="1.2"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        />
-                                    </svg>
-                                </span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
+                <ContactCtaBanner image={ejemploVideo} />
 
                 {/* Branches section */}
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
