@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\KintoSolicitudMail;
 use App\Models\KintoSolicitud;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 
 class KintoSolicitudController extends Controller
@@ -33,10 +36,16 @@ class KintoSolicitudController extends Controller
             'correo'       => ['required', 'email', 'max:255'],
         ]);
 
-        KintoSolicitud::create($request->only(
+        $solicitud = KintoSolicitud::create($request->only(
             'sucursal', 'fecha', 'duracion', 'duracion_tipo',
             'vehiculo', 'nombre', 'rut', 'telefono', 'correo'
         ));
+
+        try {
+            Mail::to($solicitud->correo)->send(new KintoSolicitudMail($solicitud));
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo enviar el correo de Kinto: '.$e->getMessage());
+        }
 
         return back()->with('success', 'true');
     }

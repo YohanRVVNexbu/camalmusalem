@@ -1,4 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
@@ -35,13 +36,64 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
     const [visible, setVisible] = useState(true);
     const [formKey, setFormKey] = useState(0);
 
+    // Form state
+    const [encargoNombre, setEncargoNombre] = useState('');
+    const [encargoTelefono, setEncargoTelefono] = useState('');
+    const [encargoEmail, setEncargoEmail] = useState('');
+    const [encargoModelo, setEncargoModelo] = useState('');
+    const [encargoSucursal, setEncargoSucursal] = useState('');
+    const [encargoMarca, setEncargoMarca] = useState('');
+    const [encargoVin, setEncargoVin] = useState('');
+    const [encargoLista, setEncargoLista] = useState('');
+    const [encargoAcepta, setEncargoAcepta] = useState(false);
+    const [encargoSubmitting, setEncargoSubmitting] = useState(false);
+    const [encargoWebsite, setEncargoWebsite] = useState(''); // honeypot
+
     function goTo(next: SolicitudStep, resetForm = false) {
         setVisible(false);
         setTimeout(() => {
-            if (resetForm) setFormKey(k => k + 1);
+            if (resetForm) {
+                setFormKey(k => k + 1);
+                setEncargoNombre('');
+                setEncargoTelefono('');
+                setEncargoEmail('');
+                setEncargoModelo('');
+                setEncargoSucursal('');
+                setEncargoMarca('');
+                setEncargoVin('');
+                setEncargoLista('');
+                setEncargoAcepta(false);
+            }
             setStep(next);
             setVisible(true);
         }, 300);
+    }
+
+    function submitEncargo(e: React.FormEvent) {
+        e.preventDefault();
+        if (encargoSubmitting) return;
+        setEncargoSubmitting(true);
+        router.post('/post-venta/repuestos/encargo', {
+            nombre: encargoNombre,
+            telefono: encargoTelefono,
+            email: encargoEmail,
+            modelo: encargoModelo,
+            sucursal: encargoSucursal,
+            marca: encargoMarca,
+            vin: encargoVin,
+            lista_repuestos: encargoLista,
+            _website: encargoWebsite,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEncargoSubmitting(false);
+                goTo('success');
+            },
+            onError: () => {
+                setEncargoSubmitting(false);
+                toast.error('Hubo un problema al enviar. Revisa los campos e intenta nuevamente.');
+            },
+        });
     }
 
     useEffect(() => {
@@ -305,7 +357,12 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
 
                             {/* Estado form */}
                             {step === 'form' && (
-                                <div key={formKey} className="flex flex-col items-end gap-7.5 lg:gap-10">
+                                <form key={formKey} onSubmit={submitEncargo} className="flex flex-col items-end gap-7.5 lg:gap-10">
+                                    {/* Honeypot */}
+                                    <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+                                        <label htmlFor="_website">No rellenar</label>
+                                        <input id="_website" type="text" name="_website" value={encargoWebsite} onChange={(e) => setEncargoWebsite(e.target.value)} tabIndex={-1} autoComplete="off" />
+                                    </div>
                                     {/* Breadcrumb */}
                                     <div className="flex w-full items-center">
                                         <div className="flex h-10 flex-1 items-center justify-center rounded-[60px] bg-black px-5 lg:h-12">
@@ -325,22 +382,32 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                                     <label className="text-sm leading-none text-black">Nombre completo</label>
                                                     <input
                                                         type="text"
+                                                        value={encargoNombre}
+                                                        onChange={(e) => setEncargoNombre(e.target.value)}
                                                         placeholder="Nombre completo"
-                                                        className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none"
+                                                        required
+                                                        className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black outline-none placeholder:text-black/60"
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-2.5">
                                                     <label className="text-sm leading-none text-black">Teléfono</label>
                                                     <input
                                                         type="text"
+                                                        value={encargoTelefono}
+                                                        onChange={(e) => setEncargoTelefono(e.target.value)}
                                                         placeholder="+569"
-                                                        className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none"
+                                                        required
+                                                        className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black outline-none placeholder:text-black/60"
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-2.5">
                                                     <label className="text-sm leading-none text-black">Modelo del vehículo</label>
                                                     <div className="relative">
-                                                        <select className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black/60 outline-none">
+                                                        <select
+                                                            value={encargoModelo}
+                                                            onChange={(e) => setEncargoModelo(e.target.value)}
+                                                            className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black outline-none"
+                                                        >
                                                             <option value="">Modelo del vehículo</option>
                                                             {modelos.map(m => <option key={m} value={m}>{m}</option>)}
                                                         </select>
@@ -356,14 +423,22 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                                     <label className="text-sm leading-none text-black">Email</label>
                                                     <input
                                                         type="email"
+                                                        value={encargoEmail}
+                                                        onChange={(e) => setEncargoEmail(e.target.value)}
                                                         placeholder="Correo electrónico"
-                                                        className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none"
+                                                        required
+                                                        className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black outline-none placeholder:text-black/60"
                                                     />
                                                 </div>
                                                 <div className="flex flex-col gap-2.5">
                                                     <label className="text-sm leading-none text-black">Sucursal</label>
                                                     <div className="relative">
-                                                        <select className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black/60 outline-none">
+                                                        <select
+                                                            value={encargoSucursal}
+                                                            onChange={(e) => setEncargoSucursal(e.target.value)}
+                                                            required
+                                                            className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black outline-none"
+                                                        >
                                                             <option value="">Selecciona la sucursal con la que te quieres comunicar</option>
                                                             {sucursales.map(s => <option key={s} value={s}>{s}</option>)}
                                                         </select>
@@ -375,7 +450,11 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                                 <div className="flex flex-col gap-2.5">
                                                     <label className="text-sm leading-none text-black">Marca</label>
                                                     <div className="relative">
-                                                        <select className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black/60 outline-none">
+                                                        <select
+                                                            value={encargoMarca}
+                                                            onChange={(e) => setEncargoMarca(e.target.value)}
+                                                            className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black outline-none"
+                                                        >
                                                             <option value="">Marca</option>
                                                             {marcas.map(m => <option key={m} value={m}>{m}</option>)}
                                                         </select>
@@ -392,8 +471,10 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                             <label className="text-sm leading-none text-black">Vin o Chasis</label>
                                             <input
                                                 type="text"
+                                                value={encargoVin}
+                                                onChange={(e) => setEncargoVin(e.target.value)}
                                                 placeholder="Vin o Chasis"
-                                                className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black/60 outline-none"
+                                                className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black outline-none placeholder:text-black/60"
                                             />
                                         </div>
 
@@ -401,26 +482,36 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                         <div className="flex flex-col gap-2.5">
                                             <label className="text-sm leading-none text-black">Lista de repuestos</label>
                                             <textarea
+                                                value={encargoLista}
+                                                onChange={(e) => setEncargoLista(e.target.value)}
                                                 placeholder="Escribe aquí la lista de repuestos que quieres cotizar o solicitar"
-                                                className="h-[114px] w-full resize-none rounded-[20px] bg-white p-5 text-sm text-black/60 outline-none"
+                                                required
+                                                className="h-28.5 w-full resize-none rounded-[20px] bg-white p-5 text-sm text-black outline-none placeholder:text-black/60"
                                             />
                                         </div>
 
                                         {/* Checkbox */}
                                         <label className="flex cursor-pointer items-center gap-2.5">
-                                            <input type="checkbox" className="size-[18px] shrink-0 cursor-pointer appearance-none rounded border border-black bg-[#EAEAF1] checked:bg-[#EAEAF1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2012%2010%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M1%205l3.5%203.5L11%201%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] checked:bg-center checked:bg-no-repeat" />
+                                            <input
+                                                type="checkbox"
+                                                checked={encargoAcepta}
+                                                onChange={(e) => setEncargoAcepta(e.target.checked)}
+                                                required
+                                                className="size-4.5 shrink-0 cursor-pointer appearance-none rounded border border-black bg-[#EAEAF1] checked:bg-[#EAEAF1] checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2012%2010%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M1%205l3.5%203.5L11%201%22%20stroke%3D%22%23000%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] checked:bg-center checked:bg-no-repeat"
+                                            />
                                             <span className="text-sm leading-none text-black">He leído y acepto la política de privacidad de mis datos personales.</span>
                                         </label>
                                     </div>
 
                                     {/* Botón enviar */}
                                     <button
-                                        onClick={() => goTo('success')}
-                                        className="flex h-12 w-full cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-[120%] text-white lg:w-50"
+                                        type="submit"
+                                        disabled={encargoSubmitting}
+                                        className="flex h-12 w-full cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-[120%] text-white disabled:opacity-60 lg:w-50"
                                     >
-                                        Enviar solicitud
+                                        {encargoSubmitting ? 'Enviando…' : 'Enviar solicitud'}
                                     </button>
-                                </div>
+                                </form>
                             )}
 
                             {/* Estado success */}

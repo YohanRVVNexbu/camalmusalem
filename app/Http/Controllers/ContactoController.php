@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\ContactoMail;
 use App\Models\Contacto;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 
 class ContactoController extends Controller
@@ -31,7 +34,13 @@ class ContactoController extends Controller
             'mensaje'  => ['required', 'string'],
         ]);
 
-        Contacto::create($request->only('nombre', 'asunto', 'email', 'telefono', 'mensaje'));
+        $contacto = Contacto::create($request->only('nombre', 'asunto', 'email', 'telefono', 'mensaje'));
+
+        try {
+            Mail::to($contacto->email)->send(new ContactoMail($contacto));
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo enviar el correo de contacto: '.$e->getMessage());
+        }
 
         return back()->with('success', '¡Mensaje enviado! Nos pondremos en contacto contigo a la brevedad.');
     }

@@ -1,4 +1,5 @@
-import { Head, Link } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
+import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useState } from 'react';
@@ -29,6 +30,8 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
     const [comentarios, setComentarios] = useState('');
     const [acepta, setAcepta] = useState(false);
     const [enviado, setEnviado] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [website, setWebsite] = useState(''); // honeypot
 
     useEffect(() => {
         const html = document.documentElement;
@@ -39,7 +42,27 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
-        setEnviado(true);
+        if (submitting) return;
+        setSubmitting(true);
+        router.post('/cotizaciones/vehiculo', {
+            tipo: 'nuevo',
+            vehicle_id: vehicle.id,
+            nombre,
+            email,
+            telefono,
+            comentarios,
+            _website: website,
+        }, {
+            preserveScroll: true,
+            onSuccess: () => {
+                setEnviado(true);
+                setSubmitting(false);
+            },
+            onError: () => {
+                setSubmitting(false);
+                toast.error('Hubo un problema al enviar. Revisa los campos e intenta nuevamente.');
+            },
+        });
     };
 
     const backHref = `/nuevos/${vehicle.slug ?? vehicle.id}`;
@@ -76,6 +99,11 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                         <div className="order-2 flex flex-1 flex-col items-center justify-center self-stretch rounded-[20px] bg-[#EAEAF1] p-5 lg:order-1 lg:p-10">
                             {!enviado ? (
                                 <form onSubmit={handleSubmit} className="flex flex-col items-end justify-center gap-10 self-stretch">
+                                    {/* Honeypot — invisible para humanos, bots lo rellenan */}
+                                    <div aria-hidden="true" style={{ position: 'absolute', left: '-9999px', width: '1px', height: '1px', overflow: 'hidden' }}>
+                                        <label htmlFor="_website">No rellenar</label>
+                                        <input id="_website" type="text" name="_website" value={website} onChange={(e) => setWebsite(e.target.value)} tabIndex={-1} autoComplete="off" />
+                                    </div>
                                     <div className="flex flex-col items-start justify-start gap-5 self-stretch">
 
                                         {/* Title */}
@@ -173,10 +201,11 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                     {/* Submit button */}
                                     <button
                                         type="submit"
-                                        className="flex h-12 w-full cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-none text-white transition hover:bg-black/85 lg:w-50"
+                                        disabled={submitting}
+                                        className="flex h-12 w-full cursor-pointer items-center justify-center rounded-[60px] bg-black text-base leading-none text-white transition hover:bg-black/85 disabled:opacity-60 lg:w-50"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
-                                        Enviar solicitud
+                                        {submitting ? 'Enviando…' : 'Enviar solicitud'}
                                     </button>
                                 </form>
                             ) : (

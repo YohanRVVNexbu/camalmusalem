@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronDown, ChevronsUpDown, FileText, KeySquare, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MapPin, MessageSquare, Newspaper, Package, RefreshCw, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
+import { Car, ChevronDown, ChevronsUpDown, ClipboardList, FileText, KeySquare, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MapPin, MessageSquare, Newspaper, Package, Receipt, RefreshCw, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -47,9 +47,13 @@ const mantenedoresItems: NavItem[] = [
 ];
 
 const solicitudesItems: NavItem[] = [
-    { title: 'Contactos',         href: '/admin/contactos',         icon: Mail },
-    { title: 'Mantenciones',      href: '/admin/mantenciones',      icon: MessageSquare },
-    { title: 'Solicitudes Kinto', href: '/admin/kinto-solicitudes', icon: KeySquare },
+    { title: 'Contactos',                  href: '/admin/contactos',                 icon: Mail },
+    { title: 'Mantenciones',               href: '/admin/mantenciones',              icon: MessageSquare },
+    { title: 'Solicitudes Kinto',          href: '/admin/kinto-solicitudes',         icon: KeySquare },
+    { title: 'Cotizaciones vehículos',     href: '/admin/cotizaciones-vehiculos',    icon: Receipt },
+    { title: 'Cotizaciones accesorios',    href: '/admin/cotizaciones-accesorios',   icon: Receipt },
+    { title: 'Cotizaciones repuestos',     href: '/admin/cotizaciones-repuestos',    icon: Receipt },
+    { title: 'Encargos repuestos',         href: '/admin/solicitudes-encargo',       icon: ClipboardList },
 ];
 
 const sistemaItems: NavItem[] = [

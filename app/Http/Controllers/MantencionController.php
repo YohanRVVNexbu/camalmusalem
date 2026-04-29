@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\MantencionMail;
 use App\Models\MantencionAgendamiento;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
 
 class MantencionController extends Controller
@@ -36,11 +39,17 @@ class MantencionController extends Controller
             'correo'     => ['required', 'email', 'max:255'],
         ]);
 
-        MantencionAgendamiento::create($request->only(
+        $mantencion = MantencionAgendamiento::create($request->only(
             'servicio', 'taller', 'fecha', 'hora',
             'modelo', 'anio', 'patente', 'comentario',
             'nombre', 'rut', 'telefono', 'correo'
         ));
+
+        try {
+            Mail::to($mantencion->correo)->send(new MantencionMail($mantencion));
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo enviar el correo de mantención: '.$e->getMessage());
+        }
 
         return back()->with('success', 'true');
     }

@@ -10,9 +10,13 @@ use App\Http\Controllers\Admin\MerchController;
 use App\Http\Controllers\Admin\VehicleModelController;
 use App\Http\Controllers\Admin\VehicleVersionController;
 use App\Http\Controllers\Admin\ContactoController;
+use App\Http\Controllers\Admin\CotizacionAccesorioController;
+use App\Http\Controllers\Admin\CotizacionRepuestoController;
+use App\Http\Controllers\Admin\CotizacionVehiculoController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\KintoSolicitudController;
 use App\Http\Controllers\Admin\MantencionController;
+use App\Http\Controllers\Admin\SolicitudEncargoRepuestoController;
 use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\NoticiaController;
 use App\Http\Controllers\Admin\PageContentController;
@@ -130,6 +134,26 @@ Route::middleware('admin')->group(function () {
     Route::get('kinto-solicitudes', [KintoSolicitudController::class, 'index'])->name('admin.kinto-solicitudes');
     Route::patch('kinto-solicitudes/{solicitud}/leido', [KintoSolicitudController::class, 'marcarLeido'])->name('admin.kinto-solicitudes.leido');
     Route::delete('kinto-solicitudes/{solicitud}', [KintoSolicitudController::class, 'destroy'])->name('admin.kinto-solicitudes.destroy');
+
+    // Cotizaciones de vehículos (nuevos + seminuevos)
+    Route::get('cotizaciones-vehiculos', [CotizacionVehiculoController::class, 'index'])->name('admin.cotizaciones-vehiculos');
+    Route::patch('cotizaciones-vehiculos/{cotizacion}/leido', [CotizacionVehiculoController::class, 'marcarLeido'])->name('admin.cotizaciones-vehiculos.leido');
+    Route::delete('cotizaciones-vehiculos/{cotizacion}', [CotizacionVehiculoController::class, 'destroy'])->name('admin.cotizaciones-vehiculos.destroy');
+
+    // Cotizaciones de accesorios
+    Route::get('cotizaciones-accesorios', [CotizacionAccesorioController::class, 'index'])->name('admin.cotizaciones-accesorios');
+    Route::patch('cotizaciones-accesorios/{cotizacion}/leido', [CotizacionAccesorioController::class, 'marcarLeido'])->name('admin.cotizaciones-accesorios.leido');
+    Route::delete('cotizaciones-accesorios/{cotizacion}', [CotizacionAccesorioController::class, 'destroy'])->name('admin.cotizaciones-accesorios.destroy');
+
+    // Cotizaciones de repuestos
+    Route::get('cotizaciones-repuestos', [CotizacionRepuestoController::class, 'index'])->name('admin.cotizaciones-repuestos');
+    Route::patch('cotizaciones-repuestos/{cotizacion}/leido', [CotizacionRepuestoController::class, 'marcarLeido'])->name('admin.cotizaciones-repuestos.leido');
+    Route::delete('cotizaciones-repuestos/{cotizacion}', [CotizacionRepuestoController::class, 'destroy'])->name('admin.cotizaciones-repuestos.destroy');
+
+    // Solicitudes de encargo de repuestos
+    Route::get('solicitudes-encargo', [SolicitudEncargoRepuestoController::class, 'index'])->name('admin.solicitudes-encargo');
+    Route::patch('solicitudes-encargo/{solicitud}/leido', [SolicitudEncargoRepuestoController::class, 'marcarLeido'])->name('admin.solicitudes-encargo.leido');
+    Route::delete('solicitudes-encargo/{solicitud}', [SolicitudEncargoRepuestoController::class, 'destroy'])->name('admin.solicitudes-encargo.destroy');
 
     // Páginas estáticas (CMS por sección)
     Route::get('paginas', [PageContentController::class, 'index'])->name('admin.paginas');
