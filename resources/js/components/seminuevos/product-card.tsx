@@ -43,7 +43,7 @@ export function ProductCard({
     href = '#',
 }: ProductCardProps) {
     return (
-        <div className="relative flex w-81.75 flex-col rounded-[20px] border border-black/5 bg-white">
+        <div className="relative flex w-full flex-col rounded-[20px] border border-black/5 bg-white lg:w-81.75">
             {/* Image */}
             <div
                 className="h-59.25 rounded-t-[14px] bg-cover bg-center bg-no-repeat p-2.5"

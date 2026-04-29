@@ -318,26 +318,58 @@ export function Navbar({ variant = 'transparent', detailBar }: NavbarProps) {
 
                 {/* Detail bar */}
                 {detailBar && (
-                    <div className="flex items-center justify-between border-t border-black/10 px-5 py-2.5 lg:px-15 lg:py-3">
-                        <Link
-                            href={detailBar.backHref}
-                            className="flex h-8 items-center gap-2 rounded-[60px] border border-black py-2 pr-4 pl-2 text-xs leading-none text-black transition hover:bg-black/5 lg:h-9.5 lg:gap-2.5 lg:pr-5 lg:pl-2.5 lg:text-sm"
-                        >
-                            <span className="flex size-5 items-center justify-center rounded-full bg-black lg:size-6">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 12 9" fill="none">
-                                    <path d="M10.6016 4.34961H0.601563M0.601563 4.34961L4.35156 8.09961M0.601563 4.34961L4.35156 0.599609" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                </svg>
-                            </span>
-                            Volver
-                        </Link>
-                        <div className="flex items-center gap-3 lg:gap-5">
-                            <span className="text-base font-semibold leading-none text-black lg:text-2xl">{detailBar.vehicleName}</span>
+                    <div className="border-t border-black/10 px-5 py-2.5 lg:px-15 lg:py-3">
+                        {/* Desktop: fila única */}
+                        <div className="hidden items-center justify-between lg:flex">
+                            <Link
+                                href={detailBar.backHref}
+                                className="flex h-9.5 items-center gap-2.5 rounded-[60px] border border-black py-2 pr-5 pl-2.5 text-sm leading-none text-black transition hover:bg-black/5"
+                            >
+                                <span className="flex size-6 items-center justify-center rounded-full bg-black">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 12 9" fill="none">
+                                        <path d="M10.6016 4.34961H0.601563M0.601563 4.34961L4.35156 8.09961M0.601563 4.34961L4.35156 0.599609" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </span>
+                                Volver
+                            </Link>
+                            <div className="flex items-center gap-5">
+                                <span className="text-2xl font-semibold leading-none text-black">{detailBar.vehicleName}</span>
+                                <a
+                                    href={detailBar.ctaHref ?? '#'}
+                                    className="flex h-9.5 items-center gap-2.5 rounded-[60px] border border-black bg-black py-2 pr-2.5 pl-5 text-sm leading-none text-white transition hover:bg-black/85"
+                                >
+                                    {detailBar.ctaLabel ?? 'Cotizar'}
+                                    <span className="flex size-6 items-center justify-center rounded-full bg-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 12 9" fill="none">
+                                            <path d="M1.39844 4.34961H11.3984M11.3984 4.34961L7.64844 0.599609M11.3984 4.34961L7.64844 8.09961" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </span>
+                                </a>
+                            </div>
+                        </div>
+
+                        {/* Mobile: dos filas */}
+                        <div className="flex flex-col gap-3 lg:hidden">
+                            <div className="flex items-center justify-between">
+                                <Link
+                                    href={detailBar.backHref}
+                                    className="flex h-9.5 items-center gap-2.5 rounded-[60px] border border-black py-2 pr-5 pl-2.5 text-sm leading-none text-black transition hover:bg-black/5"
+                                >
+                                    <span className="flex size-6 items-center justify-center rounded-full bg-black">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 12 9" fill="none">
+                                            <path d="M10.6016 4.34961H0.601563M0.601563 4.34961L4.35156 8.09961M0.601563 4.34961L4.35156 0.599609" stroke="white" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                        </svg>
+                                    </span>
+                                    Volver
+                                </Link>
+                                <span className="text-xl font-semibold leading-none text-black">{detailBar.vehicleName}</span>
+                            </div>
                             <a
                                 href={detailBar.ctaHref ?? '#'}
-                                className="flex h-8 items-center gap-2 rounded-[60px] border border-black bg-black py-2 pr-2 pl-4 text-xs leading-none text-white transition hover:bg-black/85 lg:h-9.5 lg:gap-2.5 lg:pr-2.5 lg:pl-5 lg:text-sm"
+                                className="flex h-9.5 items-center justify-between rounded-[60px] border border-black bg-black py-2 pr-2.5 pl-5 text-sm leading-none text-white transition hover:bg-black/85"
                             >
                                 {detailBar.ctaLabel ?? 'Cotizar'}
-                                <span className="flex size-5 items-center justify-center rounded-full bg-white lg:size-6">
+                                <span className="flex size-6 items-center justify-center rounded-full bg-white">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 12 9" fill="none">
                                         <path d="M1.39844 4.34961H11.3984M11.3984 4.34961L7.64844 0.599609M11.3984 4.34961L7.64844 8.09961" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
                                     </svg>

@@ -97,17 +97,22 @@ function FilterSelect({ label, placeholder, disabled = false }: { label: string;
     );
 }
 
-export function Filters() {
-    return (
-        <div className="flex w-69.5 shrink-0 flex-col gap-5 overflow-hidden rounded-[20px] border border-black/10 bg-white p-5">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-                <span className="text-base font-semibold uppercase leading-none text-black">
-                    Filtros
-                </span>
-            </div>
+export function Filters({ variant = 'sidebar' }: { variant?: 'sidebar' | 'drawer' }) {
+    const containerClass = variant === 'sidebar'
+        ? 'flex w-69.5 shrink-0 flex-col gap-5 overflow-hidden rounded-[20px] border border-black/10 bg-white p-5'
+        : 'flex w-full min-w-0 flex-col gap-5';
 
-            <hr className="border-black/10" />
+    return (
+        <div className={containerClass}>
+            {/* Header — solo en sidebar */}
+            {variant === 'sidebar' && <>
+                <div className="flex items-center justify-between">
+                    <span className="text-base font-semibold uppercase leading-none text-black">
+                        Filtros
+                    </span>
+                </div>
+                <hr className="border-black/10" />
+            </>}
 
             {/* Marca */}
             <FilterAccordion title="Marca">
