@@ -134,7 +134,7 @@ export default function NuevosFilters({ options, selection, onChange }: Props) {
     ];
 
     return (
-        <div className="flex w-full flex-col gap-5">
+        <div className="flex w-full min-w-0 flex-col gap-5">
             {groups.map((g, i) => (
                 <FilterCard
                     key={g.key}

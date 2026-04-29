@@ -14,7 +14,7 @@ type ToolbarProps = {
 export function Toolbar({ filtersVisible, onToggleFilters, viewMode, onChangeViewMode }: ToolbarProps) {
 
     return (
-        <div className="mt-10 flex items-center justify-between">
+        <div className="mt-10 hidden items-center justify-between lg:flex">
             {/* Left: toggle filters */}
             <PillButton variant="solid" onClick={onToggleFilters}>
                 {filtersVisible ? 'Esconder filtros' : 'Mostrar filtros'}

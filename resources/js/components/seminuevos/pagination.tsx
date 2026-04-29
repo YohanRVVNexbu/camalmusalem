@@ -40,7 +40,32 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
     };
 
     return (
-        <div className="mt-10 flex items-center justify-center gap-2">
+        <>
+        {/* Mobile pagination */}
+        <div className="mt-5 flex lg:hidden">
+            <div className="flex flex-1 items-center justify-between rounded-[60px] border border-black/20 p-2.5">
+                <button
+                    onClick={() => onPageChange(currentPage - 1)}
+                    disabled={currentPage === 1}
+                    className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] bg-black/5 transition disabled:opacity-40"
+                >
+                    <ChevronLeft className="size-4 text-black" />
+                </button>
+                <span className="text-sm leading-none text-black/80">
+                    Página {currentPage} de {totalPages}
+                </span>
+                <button
+                    onClick={() => onPageChange(currentPage + 1)}
+                    disabled={currentPage === totalPages}
+                    className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] bg-black/5 transition disabled:opacity-40"
+                >
+                    <ChevronRight className="size-4 text-black" />
+                </button>
+            </div>
+        </div>
+
+        {/* Desktop pagination */}
+        <div className="mt-10 hidden items-center justify-center gap-2 lg:flex">
             <button
                 onClick={() => onPageChange(currentPage - 1)}
                 disabled={currentPage === 1}
@@ -77,5 +102,6 @@ export function Pagination({ currentPage, totalPages, onPageChange }: Pagination
                 <ChevronRight className="size-5 text-black" />
             </button>
         </div>
+        </>
     );
 }

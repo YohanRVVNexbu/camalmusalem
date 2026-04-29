@@ -54,7 +54,7 @@ export function NuevosProductCard({
     on360Click,
 }: NuevosProductCardProps) {
     return (
-        <div className="relative w-81.75 pt-16">
+        <div className="relative w-full pt-16 lg:w-81.75">
             {/* Vehicle image - overflows above the card */}
             <div className="absolute left-1/2 -top-4 z-10 flex h-36 w-[85%] -translate-x-1/2 items-center justify-center">
                 <VehicleImage
