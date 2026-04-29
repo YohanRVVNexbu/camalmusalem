@@ -42,13 +42,13 @@ export function BranchesSection({ branches, images, image1, image2, title, backg
     }
 
     return (
-        <div className={`flex flex-col items-center gap-10 px-15 py-20 ${bg}`} style={backgroundStyle ? { background: backgroundStyle } : undefined}>
-            <h2 className={`text-center text-[32px] leading-[120%] ${color}`}>
+        <div className={`flex flex-col items-center gap-7.5 px-5 py-15 lg:gap-10 lg:px-15 lg:py-20 ${bg}`} style={backgroundStyle ? { background: backgroundStyle } : undefined}>
+            <h2 className={`text-center text-2xl leading-[120%] lg:text-[32px] ${color}`}>
                 {heading.split('\n').map((line, i, arr) => (
                     <span key={i}>{line}{i < arr.length - 1 && <br />}</span>
                 ))}
             </h2>
-            <div className="flex w-full gap-5">
+            <div className="flex w-full flex-col gap-5 lg:flex-row">
                 {effectiveBranches.map((branch, i) => {
                     const img = effectiveImages[i];
                     const hasMaps = !!branch.maps_url;
@@ -57,12 +57,12 @@ export function BranchesSection({ branches, images, image1, image2, title, backg
                     return (
                         <div key={branch.id ?? branch.name} className="group relative flex-1 overflow-hidden rounded-[20px]">
                             {img && (
-                                <img src={img} alt={`Sucursal ${branch.name}`} className="h-135 w-full object-cover" />
+                                <img src={img} alt={`Sucursal ${branch.name}`} className="h-100 w-full object-cover lg:h-135" />
                             )}
 
                             {/* Card acordeón */}
                             <div
-                                className="absolute bottom-5 left-5 w-92.25 overflow-hidden rounded-2xl p-5 transition-all duration-500 ease-in-out"
+                                className="absolute right-2.5 bottom-2.5 left-2.5 overflow-hidden rounded-2xl p-5 transition-all duration-500 ease-in-out lg:right-auto lg:bottom-5 lg:left-5 lg:w-92.25"
                                 style={cardStyle}
                             >
                                 <div className="flex flex-col gap-4">
@@ -72,7 +72,7 @@ export function BranchesSection({ branches, images, image1, image2, title, backg
                                     </span>
 
                                     {/* Dirección + link maps */}
-                                    <div className="flex items-center justify-between gap-2">
+                                    <div className="flex flex-col items-start justify-between gap-2 lg:flex-row lg:items-center">
                                         <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                             {branch.address ?? '—'}
                                         </span>
@@ -82,7 +82,7 @@ export function BranchesSection({ branches, images, image1, image2, title, backg
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 onClick={(e) => e.stopPropagation()}
-                                                className="max-w-0 overflow-hidden whitespace-nowrap text-xs font-semibold leading-[120%] text-white underline underline-offset-2 opacity-0 transition-all duration-500 group-hover:max-w-xs group-hover:opacity-100 hover:text-white/80"
+                                                className="max-w-xs overflow-hidden whitespace-nowrap text-xs font-semibold leading-[120%] text-white underline underline-offset-2 opacity-100 transition-all duration-500 hover:text-white/80 lg:max-w-0 lg:opacity-0 lg:group-hover:max-w-xs lg:group-hover:opacity-100"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
                                                 Ver en Google Maps
@@ -90,11 +90,11 @@ export function BranchesSection({ branches, images, image1, image2, title, backg
                                         )}
                                     </div>
 
-                                    {/* Contenido expandible con teléfonos */}
-                                    <div className="grid grid-rows-[0fr] transition-all duration-500 ease-in-out group-hover:grid-rows-[1fr]">
+                                    {/* Contenido expandible con teléfonos — siempre abierto en mobile */}
+                                    <div className="grid grid-rows-[1fr] transition-all duration-500 ease-in-out lg:grid-rows-[0fr] lg:group-hover:grid-rows-[1fr]">
                                         <div className="overflow-hidden">
                                             <div className="flex flex-col gap-4 pt-0">
-                                                <div className="flex items-center justify-between">
+                                                <div className="hidden items-center justify-between lg:flex">
                                                     <span className="text-sm font-semibold leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                                         Ver teléfonos sucursal
                                                     </span>
@@ -143,8 +143,8 @@ export function BranchesSection({ branches, images, image1, image2, title, backg
                                         </div>
                                     </div>
 
-                                    {/* Ver detalles — se oculta en hover */}
-                                    <div className="grid grid-rows-[1fr] transition-all duration-500 ease-in-out group-hover:grid-rows-[0fr]">
+                                    {/* Ver detalles — solo en desktop, se oculta en hover */}
+                                    <div className="hidden lg:grid grid-rows-[1fr] transition-all duration-500 ease-in-out lg:group-hover:grid-rows-[0fr]">
                                         <div className="overflow-hidden">
                                             <div className="flex items-center justify-between">
                                                 <span className="text-sm font-semibold leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>

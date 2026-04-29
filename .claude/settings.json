@@ -28,7 +28,8 @@
       "Bash(python3 -c \"import openpyxl; wb = openpyxl.load_workbook\\('catalogo_vehiculos.xlsx'\\); print\\('Sheets:', wb.sheetnames\\)\")",
       "Bash(python3 -c \"import xlrd; wb = xlrd.open_workbook\\('catalogo_vehiculos.xlsx'\\); print\\('Sheets:', wb.sheet_names\\(\\)\\)\")",
       "Bash(python3)",
-      "Bash(composer show *)"
+      "Bash(composer show *)",
+      "Bash(awk '/\"model_slug\": \"bz4x\"/,/^    \\\\},$/' /Users/nexbuescl/Sites/camalmusalem/database/seeders/data/toyota_specs.json)"
     ],
     "additionalDirectories": [
       "/tmp"

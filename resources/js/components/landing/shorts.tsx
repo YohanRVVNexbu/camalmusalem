@@ -96,15 +96,19 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
                                   <button
                                       key={video.id}
                                       onClick={() => setActiveVideo(video)}
-                                      className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
+                                      className="relative flex w-75 shrink-0 cursor-pointer flex-col items-end justify-end overflow-hidden rounded-[30px] pt-42.5 pr-[110.875px] pl-[17.5px] md:h-150.5 md:w-auto md:min-w-0 md:basis-[calc(25%-15px)] md:p-0"
                                       style={{
                                           backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${video.thumbnail})`,
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                           backgroundColor: '#333',
+                                          gap: '257.75px',
                                       }}
                                   >
-                                      <div className="absolute inset-0 flex items-center justify-center">
+                                      {/* Mobile: logo bottom-right */}
+                                      <img src={data.logo} alt="YouTube Shorts" className="w-14 md:hidden" />
+                                      {/* Desktop: logo centered */}
+                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
                                           <img src={data.logo} alt="YouTube Shorts" className="w-17" />
                                       </div>
                                   </button>
@@ -112,15 +116,19 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
                             : data.images.map((image, index) => (
                                   <div
                                       key={index}
-                                      className="relative h-[602px] min-w-0 shrink-0 basis-[calc(25%-15px)] cursor-pointer overflow-hidden rounded-[30px]"
+                                      className="relative flex w-75 shrink-0 cursor-pointer flex-col items-end justify-end overflow-hidden rounded-[30px] pt-42.5 pr-[110.875px] pl-[17.5px] md:h-150.5 md:w-auto md:min-w-0 md:basis-[calc(25%-15px)] md:p-0"
                                       style={{
                                           backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`,
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                           backgroundColor: '#333',
+                                          gap: '257.75px',
                                       }}
                                   >
-                                      <div className="absolute inset-0 flex items-center justify-center">
+                                      {/* Mobile: logo bottom-right */}
+                                      <img src={data.logo} alt="YouTube Shorts" className="w-14 md:hidden" />
+                                      {/* Desktop: logo centered */}
+                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
                                           <img src={data.logo} alt="YouTube Shorts" className="w-17" />
                                       </div>
                                   </div>
