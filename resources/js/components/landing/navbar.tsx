@@ -158,7 +158,7 @@ export function Navbar({ variant = 'transparent', detailBar }: NavbarProps) {
                 MOBILE: menú full-screen que baja desde arriba
             ════════════════════════════════════════════════════════════ */}
             <div
-                className={`fixed inset-0 z-50 flex flex-col overflow-y-auto bg-black px-5 pt-6 pb-20 transition-transform duration-300 ease-out lg:hidden ${
+                className={`fixed inset-0 z-60 flex flex-col overflow-y-auto bg-black px-5 pt-6 pb-20 transition-transform duration-300 ease-out lg:hidden ${
                     menuOpen ? (menuVisible ? 'translate-y-0' : '-translate-y-full') : '-translate-y-full'
                 }`}
             >
