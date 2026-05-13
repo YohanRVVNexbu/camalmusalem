@@ -6,6 +6,9 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { ResetSectionButton } from '@/components/admin/reset-section-button';
+import { appendNested, dotToBracket } from '@/lib/form-data';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Vehicle = {
     name: string;
@@ -15,14 +18,19 @@ type Vehicle = {
     video: string | null;
     background_image: string | null;
     duration: number | null;
+    vehicle_model_id: number | null;
 };
+
+type VehicleModelLite = { id: number; name: string; slug: string; brand_name: string | null };
 
 type Props = {
-    data: { cta_text: string; cta_href: string; vehicles: Vehicle[] };
+    data: { cta_text: string; vehicles: Vehicle[] };
     isVisible: boolean;
+    extra?: { vehicle_models: VehicleModelLite[] };
 };
 
-export function SectionAbout({ data: initialData, isVisible: initialVisible }: Props) {
+export function SectionAbout({ data: initialData, isVisible: initialVisible, extra }: Props) {
+    const vehicleModels = extra?.vehicle_models ?? [];
     const [data, setData] = useState(initialData);
     const [isVisible, setIsVisible] = useState(initialVisible);
     const [files, setFiles] = useState<Record<string, File>>({});
@@ -38,7 +46,15 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible }: P
         e.preventDefault();
         setProcessing(true);
 
-        router.post('/admin/home/about', { data, is_visible: isVisible, _method: 'PUT', ...files }, {
+        const fd = new FormData();
+        fd.append('_method', 'PUT');
+        fd.append('is_visible', isVisible ? '1' : '0');
+        appendNested(fd, 'data', data);
+        Object.entries(files).forEach(([key, file]) => {
+            fd.append(dotToBracket(key), file);
+        });
+
+        router.post('/admin/home/about', fd, {
             onFinish: () => setProcessing(false),
             forceFormData: true,
         });
@@ -53,15 +69,10 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible }: P
 
             <Separator />
 
-            <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                    <Label>Texto CTA</Label>
-                    <Input value={data.cta_text} onChange={(e) => setData({ ...data, cta_text: e.target.value })} />
-                </div>
-                <div className="grid gap-2">
-                    <Label>Enlace CTA</Label>
-                    <Input value={data.cta_href} onChange={(e) => setData({ ...data, cta_href: e.target.value })} />
-                </div>
+            <div className="grid gap-2 max-w-md">
+                <Label>Texto del botón (común a todos los slides)</Label>
+                <Input value={data.cta_text} onChange={(e) => setData({ ...data, cta_text: e.target.value })} placeholder="Ej: Más detalles" />
+                <p className="text-xs text-muted-foreground">El destino del botón se elige por slide más abajo.</p>
             </div>
 
             {data.vehicles.map((vehicle, i) => (
@@ -82,6 +93,24 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible }: P
                             <Label>Titular</Label>
                             <Textarea value={vehicle.headline} onChange={(e) => updateVehicle(i, 'headline', e.target.value)} />
                         </div>
+                        <div className="grid gap-2">
+                            <Label>Vehículo enlazado (botón "Más detalles" lleva a su ficha)</Label>
+                            <Select
+                                value={vehicle.vehicle_model_id ? String(vehicle.vehicle_model_id) : 'none'}
+                                onValueChange={(v) => updateVehicle(i, 'vehicle_model_id', v === 'none' ? null : Number(v))}
+                            >
+                                <SelectTrigger><SelectValue placeholder="— Sin enlace —" /></SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="none">— Sin enlace (oculta el botón) —</SelectItem>
+                                    {vehicleModels.map((m) => (
+                                        <SelectItem key={m.id} value={String(m.id)}>
+                                            {m.brand_name} {m.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-xs text-muted-foreground">El botón redirige a /nuevos/{'{'}slug{'}'} del vehículo elegido.</p>
+                        </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label>Duración (seg, solo si no tiene video)</Label>
@@ -91,7 +120,11 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible }: P
                         <div className="grid grid-cols-3 gap-4">
                             <div className="grid gap-2">
                                 <Label>Imagen (miniatura)</Label>
-                                {vehicle.image && <img src={vehicle.image} className="h-20 rounded object-contain" alt="" />}
+                                {files[`vehicles.${i}.image`] ? (
+                                    <img src={URL.createObjectURL(files[`vehicles.${i}.image`])} className="h-20 rounded object-contain ring-2 ring-primary" alt="" />
+                                ) : vehicle.image ? (
+                                    <img src={vehicle.image} className="h-20 rounded object-contain" alt="" />
+                                ) : null}
                                 <Input type="file" accept="image/*" onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) setFiles({ ...files, [`vehicles.${i}.image`]: file });
@@ -99,7 +132,11 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible }: P
                             </div>
                             <div className="grid gap-2">
                                 <Label>Video</Label>
-                                {vehicle.video && <video src={vehicle.video} className="h-20 rounded" muted controls />}
+                                {files[`vehicles.${i}.video`] ? (
+                                    <video src={URL.createObjectURL(files[`vehicles.${i}.video`])} className="h-20 rounded ring-2 ring-primary" muted controls />
+                                ) : vehicle.video ? (
+                                    <video src={vehicle.video} className="h-20 rounded" muted controls />
+                                ) : null}
                                 <Input type="file" accept="video/mp4,video/webm" onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) setFiles({ ...files, [`vehicles.${i}.video`]: file });
@@ -107,7 +144,11 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible }: P
                             </div>
                             <div className="grid gap-2">
                                 <Label>Imagen de fondo (sin video)</Label>
-                                {vehicle.background_image && <img src={vehicle.background_image} className="h-20 rounded object-cover" alt="" />}
+                                {files[`vehicles.${i}.background_image`] ? (
+                                    <img src={URL.createObjectURL(files[`vehicles.${i}.background_image`])} className="h-20 rounded object-cover ring-2 ring-primary" alt="" />
+                                ) : vehicle.background_image ? (
+                                    <img src={vehicle.background_image} className="h-20 rounded object-cover" alt="" />
+                                ) : null}
                                 <Input type="file" accept="image/*" onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) setFiles({ ...files, [`vehicles.${i}.background_image`]: file });
@@ -118,9 +159,12 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible }: P
                 </div>
             ))}
 
-            <Button type="submit" disabled={processing} className="w-fit">
-                {processing ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
+            <div className="flex items-center gap-3">
+                <Button type="submit" disabled={processing} className="w-fit">
+                    {processing ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+                <ResetSectionButton section="about" />
+            </div>
         </form>
     );
 }

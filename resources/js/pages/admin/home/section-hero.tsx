@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { ResetSectionButton } from '@/components/admin/reset-section-button';
 
 type Props = {
     data: {
@@ -48,11 +49,21 @@ export function SectionHero({ data: initialData, isVisible: initialVisible }: Pr
             <Separator />
 
             <div className="grid gap-2">
-                <Label>Video de fondo</Label>
-                {data.background_video && (
-                    <video src={data.background_video} className="h-32 rounded object-cover" muted controls />
-                )}
-                <Input type="file" accept="video/mp4,video/webm" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} />
+                <Label>Fondo del hero (imagen o video)</Label>
+                {(() => {
+                    const isVideo = videoFile
+                        ? videoFile.type.startsWith('video/')
+                        : /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(data.background_video || '');
+                    const url = videoFile ? URL.createObjectURL(videoFile) : data.background_video;
+                    if (!url) return null;
+                    return isVideo ? (
+                        <video src={url} className={`h-32 rounded object-cover ${videoFile ? 'ring-2 ring-primary' : ''}`} muted controls playsInline />
+                    ) : (
+                        <img src={url} className={`h-32 rounded object-cover ${videoFile ? 'ring-2 ring-primary' : ''}`} alt="" />
+                    );
+                })()}
+                <Input type="file" accept="image/*,video/*" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} />
+                <p className="text-xs text-muted-foreground">Acepta imágenes (.jpg, .png, .webp) o videos (.mp4, .webm).</p>
             </div>
 
             <div className="grid gap-2">
@@ -95,9 +106,12 @@ export function SectionHero({ data: initialData, isVisible: initialVisible }: Pr
                 </div>
             </div>
 
-            <Button type="submit" disabled={processing} className="w-fit">
-                {processing ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
+            <div className="flex items-center gap-3">
+                <Button type="submit" disabled={processing} className="w-fit">
+                    {processing ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+                <ResetSectionButton section="hero" />
+            </div>
         </form>
     );
 }

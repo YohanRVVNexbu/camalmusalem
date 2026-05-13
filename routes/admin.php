@@ -7,6 +7,7 @@ use App\Http\Controllers\Admin\BranchController;
 use App\Http\Controllers\Admin\FeatureController;
 use App\Http\Controllers\Admin\LookupController;
 use App\Http\Controllers\Admin\MerchController;
+use App\Http\Controllers\Admin\RentalController;
 use App\Http\Controllers\Admin\VehicleModelController;
 use App\Http\Controllers\Admin\VehicleVersionController;
 use App\Http\Controllers\Admin\ContactoController;
@@ -39,6 +40,7 @@ Route::middleware('admin')->group(function () {
     // Página de inicio
     Route::get('home', [HomeContentController::class, 'index'])->name('admin.home');
     Route::put('home/{section}', [HomeContentController::class, 'update'])->name('admin.home.update');
+    Route::post('home/{section}/reset', [HomeContentController::class, 'reset'])->name('admin.home.reset');
 
     // Usuarios
     Route::resource('users', UserController::class)
@@ -71,6 +73,11 @@ Route::middleware('admin')->group(function () {
         ->except(['show'])
         ->parameters(['vehicle-models' => 'vehicleModel'])
         ->names('admin.vehicle-models');
+
+    // Arriendos KINTO
+    Route::resource('rentals', RentalController::class)
+        ->except(['show'])
+        ->names('admin.rentals');
 
     // Catálogo técnico — Versiones (ficha técnica)
     Route::post('vehicle-versions/import', [VehicleVersionController::class, 'import'])->name('admin.vehicle-versions.import');

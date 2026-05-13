@@ -3,6 +3,7 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
+import { isVideoUrl } from '@/lib/media';
 import heroImg from '@images/shorts/hero_image.png?format=webp';
 
 type YouTubeShort = {
@@ -49,11 +50,17 @@ export default function Shorts({ footer, shorts_hero, videos = [] }: { footer: a
                 {/* Hero */}
                 <section ref={heroInView.ref}>
                     <div
-                        className={`flex h-165 flex-col items-start justify-end gap-10 rounded-b-[30px] px-10 py-15 transition-all duration-700 ease-out ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
-                        style={{
+                        className={`relative flex h-165 flex-col items-start justify-end gap-10 overflow-hidden rounded-b-[30px] px-10 py-15 transition-all duration-700 ease-out ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                        style={!isVideoUrl(hero.hero_image) ? {
                             background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
-                        }}
+                        } : undefined}
                     >
+                        {isVideoUrl(hero.hero_image) && (
+                            <>
+                                <video src={hero.hero_image} className="absolute inset-0 -z-20 size-full object-cover" autoPlay muted loop playsInline />
+                                <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)' }} />
+                            </>
+                        )}
                         <span
                             className="text-[48px] font-normal leading-[100%] text-white"
                             style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}

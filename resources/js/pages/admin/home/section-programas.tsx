@@ -1,15 +1,13 @@
 import { router } from '@inertiajs/react';
-import { GridStack } from 'gridstack';
-import 'gridstack/dist/gridstack.css';
-import { Pencil, Plus, RotateCcw, Trash2, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import { Plus, Trash2 } from 'lucide-react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
-
-type GridItemContent = Record<string, string>;
+import { ResetSectionButton } from '@/components/admin/reset-section-button';
+import { appendNested, dotToBracket } from '@/lib/form-data';
 
 type GridItem = {
     id: string;
@@ -18,7 +16,7 @@ type GridItem = {
     y: number;
     w: number;
     h: number;
-    content: GridItemContent;
+    content: Record<string, string | undefined>;
 };
 
 type Props = {
@@ -31,81 +29,19 @@ type Props = {
     isVisible: boolean;
 };
 
-const DEFAULT_LAYOUT: Pick<GridItem, 'id' | 'x' | 'y' | 'w' | 'h'>[] = [
-    { id: 'mundo-toyota', x: 0, y: 0, w: 2, h: 6 },
-    { id: 'card-1', x: 2, y: 0, w: 2, h: 6 },
-    { id: 'card-2', x: 4, y: 0, w: 2, h: 6 },
-    { id: 'promo-image', x: 0, y: 6, w: 2, h: 4 },
-    { id: 'bottom-image', x: 2, y: 6, w: 4, h: 4 },
-];
-
-function getItemLabel(item: GridItem): string {
-    switch (item.type) {
-        case 'mundo_toyota':
-            return item.content.title_line2 || 'Mundo Toyota';
-        case 'card':
-            return item.content.title || 'Tarjeta';
-        case 'image':
-            return 'Imagen';
-    }
-}
-
-function getItemBgColor(type: string): string {
-    switch (type) {
-        case 'mundo_toyota': return 'bg-red-900/40 border-red-500/50';
-        case 'card': return 'bg-blue-900/40 border-blue-500/50';
-        case 'image': return 'bg-emerald-900/40 border-emerald-500/50';
-        default: return 'bg-gray-800 border-gray-600';
-    }
-}
+const TYPE_LABEL: Record<GridItem['type'], string> = {
+    mundo_toyota: 'Mundo Toyota',
+    card: 'Tarjeta con título',
+    image: 'Imagen',
+};
 
 export function SectionProgramas({ data: initialData, isVisible: initialVisible }: Props) {
     const [data, setData] = useState(initialData);
     const [isVisible, setIsVisible] = useState(initialVisible);
     const [files, setFiles] = useState<Record<string, File>>({});
     const [processing, setProcessing] = useState(false);
-    const [editingItem, setEditingItem] = useState<string | null>(null);
 
-    const gridRef = useRef<HTMLDivElement>(null);
-    const gsRef = useRef<GridStack | null>(null);
-
-    // Initialize gridstack
-    useEffect(() => {
-        if (!gridRef.current) return;
-
-        const grid = GridStack.init({
-            column: 6,
-            cellHeight: 120,
-            margin: 8,
-            float: true,
-            animate: true,
-            columnOpts: { columnMax: 6 },
-        }, gridRef.current);
-
-        gsRef.current = grid;
-
-        grid.on('change', () => {
-            const nodes = grid.getGridItems().map((el) => {
-                const node = el.gridstackNode;
-                return node ? { id: node.id, x: Number(node.x), y: Number(node.y), w: Number(node.w), h: Number(node.h) } : null;
-            }).filter(Boolean) as { id: string; x: number; y: number; w: number; h: number }[];
-
-            setData((prev) => ({
-                ...prev,
-                grid_items: prev.grid_items.map((item) => {
-                    const node = nodes.find((n) => n.id === item.id);
-                    return node ? { ...item, x: node.x, y: node.y, w: node.w, h: node.h } : item;
-                }),
-            }));
-        });
-
-        return () => {
-            grid.destroy(false);
-            gsRef.current = null;
-        };
-    }, []);
-
-    const updateItemContent = (itemId: string, field: string, value: string) => {
+    const updateField = (itemId: string, field: string, value: string) => {
         setData((prev) => ({
             ...prev,
             grid_items: prev.grid_items.map((item) =>
@@ -114,84 +50,70 @@ export function SectionProgramas({ data: initialData, isVisible: initialVisible 
         }));
     };
 
-    const addGridItem = (type: 'card' | 'image') => {
+    const addItem = (type: 'card' | 'image') => {
         const id = `item-${Date.now()}`;
+        const last = data.grid_items[data.grid_items.length - 1];
         const newItem: GridItem = {
             id,
             type,
             x: 0,
-            y: 100,
+            y: (last?.y ?? 0) + (last?.h ?? 1),
             w: 2,
-            h: 1,
+            h: type === 'card' ? 6 : 4,
             content: type === 'card'
-                ? { title: '', description: '', image: '', href: '#' }
-                : { image: '' },
+                ? { title: '', description: '', image: '', href: '' }
+                : { image: '', href: '' },
         };
-
-        setData((prev) => ({
-            ...prev,
-            grid_items: [...prev.grid_items, newItem],
-        }));
-
-        // Add widget to gridstack after render
-        setTimeout(() => {
-            if (gsRef.current) {
-                const el = gridRef.current?.querySelector(`[gs-id="${id}"]`);
-                if (el) {
-                    gsRef.current.makeWidget(el as HTMLElement);
-                }
-            }
-        }, 50);
-
-        setEditingItem(id);
+        setData((prev) => ({ ...prev, grid_items: [...prev.grid_items, newItem] }));
     };
 
-    const removeGridItem = (itemId: string) => {
-        const el = gridRef.current?.querySelector(`[gs-id="${itemId}"]`);
-        if (el && gsRef.current) {
-            gsRef.current.removeWidget(el as HTMLElement, false);
-        }
+    const removeItem = (itemId: string) => {
         setData((prev) => ({
             ...prev,
             grid_items: prev.grid_items.filter((item) => item.id !== itemId),
         }));
-        if (editingItem === itemId) setEditingItem(null);
     };
-
-    const resetLayout = () => {
-        const grid = gsRef.current;
-        if (!grid) return;
-
-        grid.batchUpdate();
-        data.grid_items.forEach((item) => {
-            const def = DEFAULT_LAYOUT.find((d) => d.id === item.id);
-            if (!def) return;
-            const el = gridRef.current?.querySelector(`[gs-id="${item.id}"]`) as HTMLElement | null;
-            if (el) {
-                grid.update(el, { x: def.x, y: def.y, w: def.w, h: def.h });
-            }
-        });
-        grid.batchUpdate(false);
-
-        setData((prev) => ({
-            ...prev,
-            grid_items: prev.grid_items.map((item) => {
-                const def = DEFAULT_LAYOUT.find((d) => d.id === item.id);
-                return def ? { ...item, x: def.x, y: def.y, w: def.w, h: def.h } : item;
-            }),
-        }));
-    };
-
-    const editingData = editingItem ? data.grid_items.find((i) => i.id === editingItem) : null;
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
 
-        router.post('/admin/home/programas', { data, is_visible: isVisible, _method: 'PUT', ...files }, {
+        const fd = new FormData();
+        fd.append('_method', 'PUT');
+        fd.append('is_visible', isVisible ? '1' : '0');
+        appendNested(fd, 'data', data);
+        Object.entries(files).forEach(([key, file]) => {
+            fd.append(dotToBracket(key), file);
+        });
+
+        router.post('/admin/home/programas', fd, {
             onFinish: () => setProcessing(false),
             forceFormData: true,
         });
+    };
+
+    const ImagePicker = ({ itemIndex }: { itemIndex: number }) => {
+        const fk = `grid_items.${itemIndex}.content.image`;
+        const item = data.grid_items[itemIndex];
+        const preview = files[fk] ? URL.createObjectURL(files[fk]) : item.content.image;
+        return (
+            <div className="grid gap-2">
+                <Label className="text-xs">Imagen de fondo</Label>
+                {preview ? (
+                    <img src={preview} className={`h-24 w-full rounded object-cover ${files[fk] ? 'ring-2 ring-primary' : ''}`} alt="" />
+                ) : (
+                    <div className="flex h-24 w-full items-center justify-center rounded bg-muted text-xs text-muted-foreground">Sin imagen</div>
+                )}
+                <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) setFiles({ ...files, [fk]: file });
+                    }}
+                />
+            </div>
+        );
     };
 
     return (
@@ -216,191 +138,123 @@ export function SectionProgramas({ data: initialData, isVisible: initialVisible 
 
             <Separator />
 
-            {/* GRID BUILDER */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h4 className="text-base font-semibold text-foreground">Grilla visual</h4>
-                    <p className="text-sm text-muted-foreground">Arrastra y redimensiona los elementos. Haz clic en el lápiz para editar contenido.</p>
+                    <h4 className="text-base font-semibold text-foreground">Tarjetas del grid</h4>
+                    <p className="text-sm text-muted-foreground">Layout fijo: las "Mundo Toyota" y "Tarjeta con título" van arriba en una fila de 3; las "Imagen" abajo.</p>
                 </div>
                 <div className="flex gap-2">
-                    <Button type="button" variant="outline" size="sm" onClick={resetLayout}>
-                        <RotateCcw className="mr-1 size-4" />
-                        Default
-                    </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => addGridItem('card')}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => addItem('card')}>
                         <Plus className="mr-1 size-4" />
-                        Tarjeta
+                        Tarjeta con título
                     </Button>
-                    <Button type="button" variant="outline" size="sm" onClick={() => addGridItem('image')}>
+                    <Button type="button" variant="outline" size="sm" onClick={() => addItem('image')}>
                         <Plus className="mr-1 size-4" />
                         Imagen
                     </Button>
                 </div>
             </div>
 
-            <div className="rounded-lg border border-border bg-black/20 p-2">
-                <div ref={gridRef} className="grid-stack">
-                    {data.grid_items.map((item) => (
-                        <div
-                            key={item.id}
-                            className="grid-stack-item"
-                            gs-id={item.id}
-                            gs-x={String(item.x)}
-                            gs-y={String(item.y)}
-                            gs-w={String(item.w)}
-                            gs-h={String(item.h)}
-                            gs-min-w="1"
-                            gs-min-h="1"
-                        >
-                            <div
-                                className={`grid-stack-item-content group/item relative rounded-xl border ${getItemBgColor(item.type)}`}
-                                style={{ overflow: 'hidden' }}
-                            >
-                                {/* Background image */}
-                                {(item.content.image) && (
-                                    <img
-                                        src={item.content.image}
-                                        alt=""
-                                        className="pointer-events-none absolute inset-0 h-full w-full object-contain opacity-60"
-                                    />
-                                )}
-                                <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
+            <div className="grid gap-4">
+                {data.grid_items.map((item, i) => (
+                    <div key={item.id} className="grid gap-4 rounded-lg border p-4">
+                        <div className="flex items-center justify-between">
+                            <span className="inline-flex rounded bg-muted px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                                {TYPE_LABEL[item.type]}
+                            </span>
+                            {item.type !== 'mundo_toyota' && (
+                                <Button type="button" variant="ghost" size="icon" onClick={() => removeItem(item.id)} title="Eliminar">
+                                    <Trash2 className="size-4 text-destructive" />
+                                </Button>
+                            )}
+                        </div>
 
-                                {/* Content overlay */}
-                                <div className="relative z-10 flex h-full flex-col justify-end p-3">
-                                    <span className="mb-1 inline-block w-fit rounded bg-white/20 px-2 py-0.5 text-[10px] font-medium uppercase tracking-wider text-white">
-                                        {item.type === 'mundo_toyota' ? 'Mundo Toyota' : item.type === 'card' ? 'Tarjeta' : 'Imagen'}
-                                    </span>
-                                    <p className="text-sm font-semibold leading-tight text-white">
-                                        {getItemLabel(item)}
-                                    </p>
-                                </div>
-
-                                {/* Action buttons */}
-                                <div className="absolute top-2 right-2 z-20 flex gap-1 opacity-0 transition-opacity group-hover/item:opacity-100">
-                                    <button
-                                        type="button"
-                                        className="rounded-md bg-white/90 p-1.5 text-gray-700 shadow hover:bg-white"
-                                        onMouseDown={(e) => e.stopPropagation()}
-                                        onClick={() => setEditingItem(item.id)}
-                                    >
-                                        <Pencil className="size-3.5" />
-                                    </button>
-                                    {item.type !== 'mundo_toyota' && (
-                                        <button
-                                            type="button"
-                                            className="rounded-md bg-red-500 p-1.5 text-white shadow hover:bg-red-600"
-                                            onMouseDown={(e) => e.stopPropagation()}
-                                            onClick={() => removeGridItem(item.id)}
-                                        >
-                                            <Trash2 className="size-3.5" />
-                                        </button>
-                                    )}
+                        {item.type === 'mundo_toyota' && (
+                            <div className="grid gap-4 md:grid-cols-[200px_1fr]">
+                                <ImagePicker itemIndex={i} />
+                                <div className="grid gap-3">
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid gap-1.5">
+                                            <Label className="text-xs">Título línea 1</Label>
+                                            <Input value={item.content.title_line1 ?? ''} onChange={(e) => updateField(item.id, 'title_line1', e.target.value)} />
+                                        </div>
+                                        <div className="grid gap-1.5">
+                                            <Label className="text-xs">Título línea 2 (rojo)</Label>
+                                            <Input value={item.content.title_line2 ?? ''} onChange={(e) => updateField(item.id, 'title_line2', e.target.value)} />
+                                        </div>
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Descripción</Label>
+                                        <Input value={item.content.description ?? ''} onChange={(e) => updateField(item.id, 'description', e.target.value)} />
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Subtítulo</Label>
+                                        <Input value={item.content.subtitle ?? ''} onChange={(e) => updateField(item.id, 'subtitle', e.target.value)} />
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Texto del botón</Label>
+                                        <Input value={item.content.button_text ?? ''} onChange={(e) => updateField(item.id, 'button_text', e.target.value)} />
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Enlace del botón (fallback / desktop)</Label>
+                                        <Input value={item.content.button_href ?? ''} onChange={(e) => updateField(item.id, 'button_href', e.target.value)} placeholder="https://…" />
+                                        <p className="text-[10px] text-muted-foreground">Si querés que el botón abra la tienda según el dispositivo, completá los dos campos de abajo. Este enlace se usa en desktop o si solo querés un destino único.</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="grid gap-1.5">
+                                            <Label className="text-xs">Enlace Google Play (Android)</Label>
+                                            <Input value={item.content.button_href_android ?? ''} onChange={(e) => updateField(item.id, 'button_href_android', e.target.value)} placeholder="https://play.google.com/…" />
+                                        </div>
+                                        <div className="grid gap-1.5">
+                                            <Label className="text-xs">Enlace App Store (iOS)</Label>
+                                            <Input value={item.content.button_href_ios ?? ''} onChange={(e) => updateField(item.id, 'button_href_ios', e.target.value)} placeholder="https://apps.apple.com/…" />
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    ))}
-                </div>
+                        )}
+
+                        {item.type === 'card' && (
+                            <div className="grid gap-4 md:grid-cols-[200px_1fr]">
+                                <ImagePicker itemIndex={i} />
+                                <div className="grid gap-3">
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Título</Label>
+                                        <Input value={item.content.title ?? ''} onChange={(e) => updateField(item.id, 'title', e.target.value)} />
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Descripción</Label>
+                                        <Input value={item.content.description ?? ''} onChange={(e) => updateField(item.id, 'description', e.target.value)} />
+                                    </div>
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Enlace (opcional, hace clickeable toda la tarjeta)</Label>
+                                        <Input value={item.content.href ?? ''} onChange={(e) => updateField(item.id, 'href', e.target.value)} placeholder="/nuevos, https://…" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {item.type === 'image' && (
+                            <div className="grid gap-4 md:grid-cols-[200px_1fr]">
+                                <ImagePicker itemIndex={i} />
+                                <div className="grid gap-3 self-start">
+                                    <div className="grid gap-1.5">
+                                        <Label className="text-xs">Enlace (opcional, hace clickeable la imagen)</Label>
+                                        <Input value={item.content.href ?? ''} onChange={(e) => updateField(item.id, 'href', e.target.value)} placeholder="/nuevos, https://…" />
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
             </div>
 
-            {/* EDIT PANEL */}
-            {editingData && (
-                <div className="rounded-lg border border-primary/30 bg-card p-4">
-                    <div className="mb-4 flex items-center justify-between">
-                        <h4 className="text-base font-semibold text-foreground">
-                            Editando: {getItemLabel(editingData)}
-                        </h4>
-                        <Button type="button" variant="ghost" size="sm" onClick={() => setEditingItem(null)}>
-                            <X className="size-4" />
-                        </Button>
-                    </div>
-
-                    {editingData.type === 'mundo_toyota' && (
-                        <div className="grid gap-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label>Título línea 1</Label>
-                                    <Input value={editingData.content.title_line1 || ''} onChange={(e) => updateItemContent(editingData.id, 'title_line1', e.target.value)} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label>Título línea 2 (rojo)</Label>
-                                    <Input value={editingData.content.title_line2 || ''} onChange={(e) => updateItemContent(editingData.id, 'title_line2', e.target.value)} />
-                                </div>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Descripción</Label>
-                                <Input value={editingData.content.description || ''} onChange={(e) => updateItemContent(editingData.id, 'description', e.target.value)} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Subtítulo</Label>
-                                <Input value={editingData.content.subtitle || ''} onChange={(e) => updateItemContent(editingData.id, 'subtitle', e.target.value)} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label>Texto botón</Label>
-                                    <Input value={editingData.content.button_text || ''} onChange={(e) => updateItemContent(editingData.id, 'button_text', e.target.value)} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label>Enlace botón</Label>
-                                    <Input value={editingData.content.button_href || ''} onChange={(e) => updateItemContent(editingData.id, 'button_href', e.target.value)} />
-                                </div>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Imagen</Label>
-                                {editingData.content.image && <img src={editingData.content.image} className="h-24 rounded object-cover" alt="" />}
-                                <Input type="file" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setFiles({ ...files, [`grid_items.${data.grid_items.findIndex(i => i.id === editingData.id)}.content.image`]: file });
-                                }} />
-                            </div>
-                        </div>
-                    )}
-
-                    {editingData.type === 'card' && (
-                        <div className="grid gap-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="grid gap-2">
-                                    <Label>Título</Label>
-                                    <Input value={editingData.content.title || ''} onChange={(e) => updateItemContent(editingData.id, 'title', e.target.value)} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label>Enlace</Label>
-                                    <Input value={editingData.content.href || ''} onChange={(e) => updateItemContent(editingData.id, 'href', e.target.value)} />
-                                </div>
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Descripción</Label>
-                                <Input value={editingData.content.description || ''} onChange={(e) => updateItemContent(editingData.id, 'description', e.target.value)} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Imagen</Label>
-                                {editingData.content.image && <img src={editingData.content.image} className="h-24 rounded object-cover" alt="" />}
-                                <Input type="file" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setFiles({ ...files, [`grid_items.${data.grid_items.findIndex(i => i.id === editingData.id)}.content.image`]: file });
-                                }} />
-                            </div>
-                        </div>
-                    )}
-
-                    {editingData.type === 'image' && (
-                        <div className="grid gap-4">
-                            <div className="grid gap-2">
-                                <Label>Imagen</Label>
-                                {editingData.content.image && <img src={editingData.content.image} className="h-24 rounded object-cover" alt="" />}
-                                <Input type="file" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setFiles({ ...files, [`grid_items.${data.grid_items.findIndex(i => i.id === editingData.id)}.content.image`]: file });
-                                }} />
-                            </div>
-                        </div>
-                    )}
-                </div>
-            )}
-
-            <Button type="submit" disabled={processing} className="w-fit">
-                {processing ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
+            <div className="flex items-center gap-3">
+                <Button type="submit" disabled={processing} className="w-fit">
+                    {processing ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+                <ResetSectionButton section="programas" />
+            </div>
         </form>
     );
 }

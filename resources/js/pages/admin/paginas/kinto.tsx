@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import {
-    ImageField, SectionCard, SectionProp, TextareaField, TextField,
+    ImageField, MediaField, SectionCard, SectionProp, TextareaField, TextField,
     VisibilityField, resetSection, submitSection,
 } from './_section';
 import defaultHeroImg from '@images/kinto/hero_image.png?format=webp';
@@ -60,7 +60,7 @@ function HeroSection({ page, s }: { page: string; s: SectionProp }) {
             onReset={() => resetSection(page, 'kinto_hero')}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <ImageField label="Imagen hero" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setHeroFile} />
+            <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setHeroFile} />
             <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
             <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={4} />
             <TextField label="Texto botón" value={data.button_text ?? ''} onChange={(v) => set('button_text', v)} />
@@ -99,12 +99,19 @@ function PasosSection({ page, s }: { page: string; s: SectionProp }) {
                     <p className="font-medium text-sm">Paso {i + 1}</p>
                     <div className="grid gap-2">
                         <Label>Imagen</Label>
-                        {!pasoFiles[i] && (
-                            <div className="relative">
-                                <img src={paso.img || DEFAULT_PASO_IMGS[i]} className="h-32 w-full rounded-lg object-cover" alt="" />
-                                {!paso.img && <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>}
-                            </div>
-                        )}
+                        <div className="relative">
+                            {pasoFiles[i] ? (
+                                <>
+                                    <img src={URL.createObjectURL(pasoFiles[i] as File)} className="h-32 w-full rounded-lg object-cover ring-2 ring-primary" alt="" />
+                                    <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">Nueva imagen</span>
+                                </>
+                            ) : (
+                                <>
+                                    <img src={paso.img || DEFAULT_PASO_IMGS[i]} className="h-32 w-full rounded-lg object-cover" alt="" />
+                                    {!paso.img && <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>}
+                                </>
+                            )}
+                        </div>
                         <input type="file" accept="image/*" onChange={(e) => {
                             const f = [...pasoFiles]; f[i] = e.target.files?.[0] ?? null; setPasoFiles(f);
                         }} className="text-sm" />
@@ -148,12 +155,19 @@ function VehiculosSection({ page, s }: { page: string; s: SectionProp }) {
                     <p className="font-medium text-sm">Vehículo {i + 1}</p>
                     <div className="grid gap-2">
                         <Label>Imagen</Label>
-                        {!vehiculoFiles[i] && (
-                            <div className="relative">
-                                <img src={v.img || DEFAULT_CAR_IMGS[i]} className="h-32 w-full rounded-lg object-contain bg-gray-100" alt="" />
-                                {!v.img && <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>}
-                            </div>
-                        )}
+                        <div className="relative">
+                            {vehiculoFiles[i] ? (
+                                <>
+                                    <img src={URL.createObjectURL(vehiculoFiles[i] as File)} className="h-32 w-full rounded-lg object-contain bg-gray-100 ring-2 ring-primary" alt="" />
+                                    <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">Nueva imagen</span>
+                                </>
+                            ) : (
+                                <>
+                                    <img src={v.img || DEFAULT_CAR_IMGS[i]} className="h-32 w-full rounded-lg object-contain bg-gray-100" alt="" />
+                                    {!v.img && <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>}
+                                </>
+                            )}
+                        </div>
                         <input type="file" accept="image/*" onChange={(e) => {
                             const f = [...vehiculoFiles]; f[i] = e.target.files?.[0] ?? null; setVehiculoFiles(f);
                         }} className="text-sm" />

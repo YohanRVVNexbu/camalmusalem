@@ -393,7 +393,20 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                                 ))}
                             </div>
                         )}
-                        <Input type="file" accept="image/*" multiple onChange={(e) => setNewGallery(Array.from(e.target.files ?? []))} />
+                        <Input type="file" accept="image/*" multiple onChange={(e) => {
+                            setNewGallery([...newGallery, ...Array.from(e.target.files ?? [])]);
+                            e.target.value = '';
+                        }} />
+                        {newGallery.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {newGallery.map((f, i) => (
+                                    <div key={i} className="relative">
+                                        <img src={URL.createObjectURL(f)} className="h-24 w-32 rounded-lg object-cover ring-2 ring-primary" alt="" />
+                                        <button type="button" onClick={() => setNewGallery(newGallery.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs" title="Quitar">✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     {/* Featured gallery */}
@@ -413,7 +426,20 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                                 ))}
                             </div>
                         )}
-                        <Input type="file" accept="image/*" multiple onChange={(e) => setNewFeatured(Array.from(e.target.files ?? []))} />
+                        <Input type="file" accept="image/*" multiple onChange={(e) => {
+                            setNewFeatured([...newFeatured, ...Array.from(e.target.files ?? [])]);
+                            e.target.value = '';
+                        }} />
+                        {newFeatured.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {newFeatured.map((f, i) => (
+                                    <div key={i} className="relative">
+                                        <img src={URL.createObjectURL(f)} className="h-24 w-32 rounded-lg object-cover ring-2 ring-primary" alt="" />
+                                        <button type="button" onClick={() => setNewFeatured(newFeatured.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs" title="Quitar">✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
 
                     <Separator />

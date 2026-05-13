@@ -5,6 +5,7 @@ import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 import { useInView } from '@/hooks/use-in-view';
+import { isVideoUrl } from '@/lib/media';
 import heroImg from '@images/programas-toyota/hero_section.png?format=webp';
 import card2Img from '@images/programas-toyota/card_2_image.png?format=webp';
 import grid1 from '@images/programas-toyota/grid_1.png?format=webp';
@@ -41,11 +42,17 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                 {/* Hero */}
                 <section ref={heroInView.ref}>
                     <div
-                        className={`flex h-100 flex-col items-start justify-end gap-10 rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
-                        style={{
+                        className={`relative flex h-100 flex-col items-start justify-end gap-10 overflow-hidden rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                        style={!isVideoUrl(hero.hero_image) ? {
                             background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
-                        }}
+                        } : undefined}
                     >
+                        {isVideoUrl(hero.hero_image) && (
+                            <>
+                                <video src={hero.hero_image} className="absolute inset-0 -z-20 size-full object-cover" autoPlay muted loop playsInline />
+                                <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)' }} />
+                            </>
+                        )}
                         <span
                             style={{
                                 fontFamily: '"Toyota Type"',

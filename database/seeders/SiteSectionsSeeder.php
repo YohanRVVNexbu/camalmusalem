@@ -11,6 +11,7 @@ class SiteSectionsSeeder extends Seeder
     public function run(): void
     {
         $this->copyAssets();
+        $this->copyDefaults();
 
         $url = fn (string $path) => Storage::disk('public')->url($path);
 
@@ -20,8 +21,8 @@ class SiteSectionsSeeder extends Seeder
                 'subtitle' => 'Concesionario Toyota',
                 'title' => "Tu próximo auto,\nte espera en Musalem",
                 'description' => "Vehículos nuevos, seminuevos certificados y servicio técnico de excelencia.\nMás de 25 años siendo líderes en la Región de Coquimbo.",
-                'primary_button' => ['text' => 'Ver catálogo', 'href' => '#vehiculos'],
-                'secondary_button' => ['text' => 'Cotizar', 'href' => '#cotizar'],
+                'primary_button' => ['text' => 'Ver catálogo', 'href' => '/nuevos'],
+                'secondary_button' => ['text' => 'Cotizar', 'href' => '/contacto'],
             ],
             'is_visible' => true,
             'order' => 1,
@@ -35,7 +36,7 @@ class SiteSectionsSeeder extends Seeder
                         'title' => 'Nuevos',
                         'description' => 'Explora la gama Toyota disponible en Musalem',
                         'button_label' => 'Ir a nuevos',
-                        'href' => '#vehiculos',
+                        'href' => '/nuevos',
                         'image' => $url('home/features/imagen_nuevos.png'),
                         'video' => $url('home/features/nuevos.mp4'),
                     ],
@@ -43,7 +44,7 @@ class SiteSectionsSeeder extends Seeder
                         'title' => 'Semi nuevos',
                         'description' => 'Stock certificado por Musalem',
                         'button_label' => 'Ir a semi nuevos',
-                        'href' => '#seminuevos',
+                        'href' => '/seminuevos',
                         'image' => $url('home/features/imagen_seminuevos.png'),
                         'video' => $url('home/features/usados.mp4'),
                     ],
@@ -51,7 +52,7 @@ class SiteSectionsSeeder extends Seeder
                         'title' => 'Post venta',
                         'description' => 'Servicios, repuestos y Merch oficial',
                         'button_label' => 'Ir a post venta',
-                        'href' => '#postventa',
+                        'href' => '/post-venta/agendar-mantencion',
                         'image' => $url('home/features/image_postventa.png'),
                         'video' => $url('home/features/postventa.mp4'),
                     ],
@@ -104,7 +105,7 @@ class SiteSectionsSeeder extends Seeder
                 'title' => 'Seminuevos',
                 'description' => 'Seminuevos Certificados y listos para su entrega.',
                 'button_text' => 'Ver todos',
-                'button_href' => '#seminuevos',
+                'button_href' => '/seminuevos',
                 'vehicles' => [
                     [
                         'image' => $url('home/seminuevos/imagen_seminuevos.png'),
@@ -424,6 +425,67 @@ class SiteSectionsSeeder extends Seeder
             'is_visible' => true,
             'order' => 7,
         ]);
+
+        // Snapshot current `data` as `default_data` for any home section that
+        // doesn't have one yet, rewriting media URLs from /storage/home/ to
+        // /storage/defaults/home/ so the originals live in a protected folder
+        // that the admin upload flow never deletes.
+        SiteSection::whereNull('default_data')->each(function (SiteSection $s) {
+            $s->update(['default_data' => $this->rewriteToDefaults($s->data)]);
+        });
+    }
+
+    /**
+     * Recursively rewrite any `/storage/home/...` URL inside the given value
+     * so it points to `/storage/defaults/home/...`.
+     */
+    private function rewriteToDefaults(mixed $value): mixed
+    {
+        if (is_array($value)) {
+            return array_map(fn ($v) => $this->rewriteToDefaults($v), $value);
+        }
+
+        if (is_string($value)) {
+            return preg_replace('#(/storage/)home/#', '$1defaults/home/', $value);
+        }
+
+        return $value;
+    }
+
+    private function copyDefaults(): void
+    {
+        $imageMap = [
+            'home/features' => ['imagen_nuevos.png', 'imagen_seminuevos.png', 'image_postventa.png'],
+            'home/about' => ['BZ4X.png', '4RUNNER.png', 'HILUX.png', 'video.png'],
+            'home/seminuevos' => ['imagen_seminuevos.png'],
+            'home/programas' => ['image_grid1.png', 'image_grid2.png', 'image_grid3.png', 'image_grid4.png', 'image_grid5.png'],
+            'home/shorts' => ['imagen_youtube1.png', 'imagen_youtube2.png', 'imagen_youtube3.png', 'imagen_youtube4.png', 'logo_short.png'],
+            'home/footer' => ['logo_negro.png'],
+        ];
+
+        foreach ($imageMap as $dest => $files) {
+            foreach ($files as $file) {
+                $source = resource_path("images/{$file}");
+                if (file_exists($source) && ! Storage::disk('public')->exists("defaults/{$dest}/{$file}")) {
+                    Storage::disk('public')->put("defaults/{$dest}/{$file}", file_get_contents($source));
+                }
+            }
+        }
+
+        $videoMap = [
+            'home/hero' => ['hero_video.mp4'],
+            'home/features' => ['nuevos.mp4', 'usados.mp4', 'postventa.mp4'],
+            'home/about' => ['BZ4X.mp4', '4RUNNER.mp4'],
+        ];
+
+        foreach ($videoMap as $dest => $files) {
+            foreach ($files as $file) {
+                $source = resource_path("videos/{$file}");
+                if (file_exists($source) && ! Storage::disk('public')->exists("defaults/{$dest}/{$file}")) {
+                    Storage::disk('public')->put("defaults/{$dest}/{$file}", file_get_contents($source));
+                }
+            }
+        }
     }
 
     private function copyAssets(): void

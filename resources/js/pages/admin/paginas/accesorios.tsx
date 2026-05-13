@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
-import { ImageField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
+import { MediaField, ImageField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
 import defaultHeroImg from '@images/navbar/accesorios.png?format=webp';
 
 export default function AccesoriosPage({ sections }: { sections: Record<string, SectionProp> }) {
@@ -33,7 +33,7 @@ export default function AccesoriosPage({ sections }: { sections: Record<string, 
                     onReset={() => resetSection(page, 'accesorios_hero')}>
                     <VisibilityField checked={visible} onChange={setVisible} />
                     <Separator />
-                    <ImageField label="Imagen hero" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
+                    <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
                     <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
                     <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={3} />
                 </SectionCard>

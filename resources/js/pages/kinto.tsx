@@ -5,6 +5,7 @@ import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { useEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
+import { formatCLP } from '@/lib/format';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
@@ -23,8 +24,6 @@ const calendarStyles = `
     .rdp-day_button:hover:not(.rdp-selected) { background: rgba(0,0,0,0.08); }
 `;
 import heroImgDefault from '@images/kinto/hero_image.png?format=webp';
-import car1Img from '@images/kinto/car_1.png?format=webp';
-import car2Img from '@images/kinto/car_2.png?format=webp';
 import formImg from '@images/kinto/image_form.jpg?format=webp';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
 import formStep1Img from '@images/mantencion/image_step1.png?format=webp';
@@ -40,10 +39,30 @@ const DEFAULT_PASOS = [
     { img: card3Img, titulo: 'Paso 3:', subtitulo: 'Un asesor de Musalem te contactará para ayudarte a revisar la disponibilidad y continuar la gestión desde la sucursal correspondiente.' },
 ];
 
-const DEFAULT_VEHICULOS = [
-    { nombre: 'Corolla Cross', precio: 'Desde $18.300 la hora', img: car1Img },
-    { nombre: 'Rav4', precio: 'Desde $18.300 la hora', img: car2Img },
-];
+type Rental = {
+    id: number;
+    name: string | null;
+    image: string | null;
+    description: string | null;
+    price_hour: string | null;
+    price_day: string | null;
+    price_week: string | null;
+    price_month: string | null;
+    branch_ids: number[];
+    vehicle_slug: string | null;
+};
+
+type BranchLite = { id: number; name: string; city: string };
+
+// Returns the "best" display price for a rental card, preferring the most
+// granular unit available (hour → day → week → month).
+function summarizePrice(r: Rental): string {
+    if (r.price_hour) return `Desde ${formatCLP(r.price_hour)} la hora`;
+    if (r.price_day) return `Desde ${formatCLP(r.price_day)} el día`;
+    if (r.price_week) return `Desde ${formatCLP(r.price_week)} la semana`;
+    if (r.price_month) return `Desde ${formatCLP(r.price_month)} al mes`;
+    return 'Consultar precio';
+}
 
 function KintoIcon() {
     return (
@@ -53,17 +72,14 @@ function KintoIcon() {
     );
 }
 
-const vehiculos = [
-    { nombre: 'Corolla Cross', precio: 'Desde $18.300 la hora', img: car1Img },
-    { nombre: 'Rav4', precio: 'Desde $18.300 la hora', img: car2Img },
-];
-
-function SelectField({ label, placeholder, options, value, onChange }: {
+function SelectField({ label, placeholder, options, value, onChange, disabled, hint }: {
     label: string;
     placeholder: string;
     options: { value: string; label: string }[];
     value: string;
     onChange: (v: string) => void;
+    disabled?: boolean;
+    hint?: string;
 }) {
     return (
         <div className="flex flex-col gap-2.5 items-start self-stretch">
@@ -72,7 +88,8 @@ function SelectField({ label, placeholder, options, value, onChange }: {
                 <select
                     value={value}
                     onChange={e => onChange(e.target.value)}
-                    className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-10 text-sm leading-none appearance-none cursor-pointer focus:outline-none"
+                    disabled={disabled}
+                    className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-10 text-sm leading-none appearance-none cursor-pointer focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
                     style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif', color: value ? '#000' : 'rgba(0,0,0,0.60)' }}
                 >
                     <option value="" disabled>{placeholder}</option>
@@ -82,20 +99,38 @@ function SelectField({ label, placeholder, options, value, onChange }: {
                     <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
             </div>
+            {hint && (
+                <span className="text-xs leading-none text-black/60" style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>
+                    {hint}
+                </span>
+            )}
         </div>
     );
 }
 
-export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos }: { footer: any; kinto_hero?: any; kinto_pasos?: any; kinto_vehiculos?: any }) {
+export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos, rentals = [], branches = [] }: {
+    footer: any;
+    kinto_hero?: any;
+    kinto_pasos?: any;
+    kinto_vehiculos?: any;
+    rentals?: Rental[];
+    branches?: BranchLite[];
+}) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const heroData = kinto_hero ?? {};
     const heroImg = heroData.hero_image || heroImgDefault;
     const pasos = kinto_pasos?.pasos ?? DEFAULT_PASOS;
-    const vehiculos = kinto_vehiculos?.vehiculos ?? DEFAULT_VEHICULOS;
     const heroInView = useInView(0.1);
     const comoFuncionaInView = useInView(0.1);
     const vehiculosInView = useInView(0.1);
-    const [sucursal, setSucursal] = useState<'la-serena' | 'ovalle'>('la-serena');
+    const formSectionRef = useRef<HTMLDivElement>(null);
+    const [selectedBranchId, setSelectedBranchId] = useState<number | null>(
+        branches[0]?.id ?? null,
+    );
+
+    const filteredRentals = rentals.filter((r) =>
+        selectedBranchId == null || r.branch_ids.includes(selectedBranchId),
+    );
     const [showForm, setShowForm] = useState(false);
     const [formStep, setFormStep] = useState(1);
     const [durationType, setDurationType] = useState<'horas' | 'dias'>('horas');
@@ -134,6 +169,32 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
         document.addEventListener('mousedown', handleClick);
         return () => document.removeEventListener('mousedown', handleClick);
     }, [showCalendar]);
+
+    // Handle deep-link from /nuevos/{slug}?rental=N — auto-open the form with
+    // the rental + first matching branch preselected, and scroll to it.
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        const rentalParam = params.get('rental');
+        if (!rentalParam) return;
+
+        const rental = rentals.find((r) => String(r.id) === rentalParam);
+        if (!rental) return;
+
+        const branchForRental = selectedBranchId && rental.branch_ids.includes(selectedBranchId)
+            ? selectedBranchId
+            : rental.branch_ids[0] ?? null;
+
+        setShowForm(true);
+        setFormStep(1);
+        setFormSucursal(branchForRental ? String(branchForRental) : '');
+        setFormVehiculo(String(rental.id));
+
+        requestAnimationFrame(() => {
+            formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
     useEffect(() => {
         const html = document.documentElement;
@@ -208,12 +269,14 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                             {kinto_pasos?.title || '¿Cómo funciona KINTO en Musalem?'}
                         </h2>
                         <div className="flex w-full flex-col gap-5 lg:flex-row">
-                            {pasos.map((paso, i) => (
+                            {pasos.map((paso: any, i: number) => {
+                                const pasoImg = paso.img || [card1Img, card2Img, card3Img][i] || card1Img;
+                                return (
                                 <div
                                     key={i}
                                     className="flex h-75 flex-1 flex-col items-center justify-center gap-3 rounded-[30px] px-5 py-10 lg:h-102 lg:gap-5 lg:rounded-[40.8px] lg:px-10 lg:py-15"
                                     style={{
-                                        background: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.80) 100%), url(${paso.img}) lightgray 50% / cover no-repeat`,
+                                        background: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.80) 100%), url(${pasoImg}) lightgray 50% / cover no-repeat`,
                                     }}
                                 >
                                     <span
@@ -229,7 +292,8 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                         {paso.subtitulo}
                                     </p>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </section>
@@ -246,89 +310,124 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                             >
                                 {kinto_vehiculos?.title || 'Vehículos disponibles'}
                             </h2>
-                            <div className="flex w-full items-center gap-1.5 rounded-[60px] bg-white p-1.5 lg:w-auto">
-                                {(['la-serena', 'ovalle'] as const).map((key) => (
-                                    <button
-                                        key={key}
-                                        onClick={() => setSucursal(key)}
-                                        className={`h-9.5 flex-1 cursor-pointer rounded-[60px] border border-transparent px-3 py-1 text-sm leading-none transition-colors lg:h-11 lg:flex-none lg:px-5 lg:text-base ${
-                                            sucursal === key
-                                                ? 'bg-black text-white'
-                                                : 'bg-[#EAEAF1] text-black'
-                                        }`}
-                                        style={{ fontFamily: '"Toyota Type"' }}
-                                    >
-                                        {key === 'la-serena' ? 'Musalem La Serena' : 'Musalem Ovalle'}
-                                    </button>
-                                ))}
-                            </div>
+                            {branches.length > 0 && (
+                                <div className="flex w-full items-center gap-1.5 rounded-[60px] bg-white p-1.5 lg:w-auto">
+                                    {branches.map((b) => (
+                                        <button
+                                            key={b.id}
+                                            onClick={() => setSelectedBranchId(b.id)}
+                                            className={`h-9.5 flex-1 cursor-pointer rounded-[60px] border border-transparent px-3 py-1 text-sm leading-none transition-colors lg:h-11 lg:flex-none lg:px-5 lg:text-base ${
+                                                selectedBranchId === b.id
+                                                    ? 'bg-black text-white'
+                                                    : 'bg-[#EAEAF1] text-black'
+                                            }`}
+                                            style={{ fontFamily: '"Toyota Type"' }}
+                                        >
+                                            {b.name}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Cards de vehículos */}
-                        <div className="flex flex-col gap-5 lg:flex-row">
-                            {vehiculos.map((vehiculo) => (
-                                <div
-                                    key={vehiculo.nombre}
-                                    className="flex flex-1 flex-col items-center justify-between gap-7.5 overflow-hidden rounded-[30px] bg-white px-5 py-10 lg:h-162.5 lg:gap-0 lg:px-0 lg:py-15"
-                                >
-                                    {/* Nombre */}
-                                    <div className="flex items-end gap-2.5">
-                                        <KintoIcon />
-                                        <span
-                                            className="text-2xl font-semibold uppercase leading-none text-black lg:text-[32px]"
-                                            style={{ fontFamily: '"Toyota Type"' }}
-                                        >
-                                            {vehiculo.nombre}
+                        {filteredRentals.length === 0 ? (
+                            <div className="rounded-[30px] bg-white/5 p-10 text-center">
+                                <p className="text-base text-white/70" style={{ fontFamily: '"Toyota Type"' }}>
+                                    No hay vehículos disponibles para arriendo en esta sucursal por ahora.
+                                </p>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col gap-5 lg:flex-row lg:flex-wrap">
+                                {filteredRentals.map((rental) => (
+                                    <div
+                                        key={rental.id}
+                                        className="flex flex-1 flex-col items-center justify-between gap-7.5 overflow-hidden rounded-[30px] bg-white px-5 py-10 lg:min-w-100 lg:h-162.5 lg:gap-0 lg:px-0 lg:py-15"
+                                    >
+                                        {/* Nombre */}
+                                        <div className="flex items-end gap-2.5 px-5 text-center">
+                                            <KintoIcon />
+                                            <span
+                                                className="text-2xl font-semibold uppercase leading-none text-black lg:text-[32px]"
+                                                style={{ fontFamily: '"Toyota Type"' }}
+                                            >
+                                                {rental.name || 'Vehículo Toyota'}
+                                            </span>
+                                        </div>
+
+                                        {/* Imagen */}
+                                        <div className="flex h-40 w-full items-center justify-center lg:h-66">
+                                            {rental.image ? (
+                                                <img src={rental.image} alt={rental.name ?? ''} className="h-full object-contain" />
+                                            ) : (
+                                                <div className="h-full w-full rounded-xl bg-gray-100 lg:w-144.5" />
+                                            )}
+                                        </div>
+
+                                        {/* Precio */}
+                                        <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                            {summarizePrice(rental)}
                                         </span>
-                                    </div>
 
-                                    {/* Imagen */}
-                                    <div className="flex h-40 w-full items-center justify-center lg:h-66">
-                                        {vehiculo.img ? (
-                                            <img src={vehiculo.img} alt={vehiculo.nombre} className="h-full object-contain" />
-                                        ) : (
-                                            <div className="h-full w-full rounded-xl bg-gray-100 lg:w-144.5" />
-                                        )}
-                                    </div>
+                                        {/* Botones */}
+                                        <div className="flex w-full flex-col items-stretch gap-2.5 px-5 lg:w-auto lg:flex-row lg:items-center lg:px-0">
+                                            {/* Ver detalles del vehículo (si está enlazado) */}
+                                            {rental.vehicle_slug && (
+                                                <a
+                                                    href={`/nuevos/${rental.vehicle_slug}?rental=${rental.id}`}
+                                                    className="flex h-12 cursor-pointer items-center justify-between rounded-[60px] border border-transparent bg-black p-1 transition-opacity hover:opacity-80 lg:justify-start"
+                                                >
+                                                    <span className="pb-0.5 pl-2.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                                        Ver detalles vehículo
+                                                    </span>
+                                                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white lg:ml-2.5">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
+                                                            <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                                        </svg>
+                                                    </span>
+                                                </a>
+                                            )}
+                                            {/* Solicitar información */}
+                                            <button
+                                                onClick={() => {
+                                                    // Prefer the currently-filtered branch if the rental is there;
+                                                    // otherwise pick the first branch the rental is available in.
+                                                    const branchForRental =
+                                                        selectedBranchId && rental.branch_ids.includes(selectedBranchId)
+                                                            ? selectedBranchId
+                                                            : rental.branch_ids[0] ?? null;
 
-                                    {/* Precio */}
-                                    <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                        {vehiculo.precio}
-                                    </span>
+                                                    setShowForm(true);
+                                                    setFormStep(1);
+                                                    setFormSucursal(branchForRental ? String(branchForRental) : '');
+                                                    setFormVehiculo(String(rental.id));
 
-                                    {/* Botones */}
-                                    <div className="flex w-full flex-col items-stretch gap-2.5 lg:w-auto lg:flex-row lg:items-center">
-                                        {/* Ver detalles */}
-                                        <button className="flex h-12 cursor-pointer items-center justify-between rounded-[60px] border border-transparent bg-black p-1 transition-opacity hover:opacity-80 lg:justify-start">
-                                            <span className="pb-0.5 pl-2.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                                                Ver detalles vehículo
-                                            </span>
-                                            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white lg:ml-2.5">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
-                                                    <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            </span>
-                                        </button>
-                                        {/* Solicitar información */}
-                                        <button className="flex h-12 cursor-pointer items-center justify-between rounded-[60px] border border-black p-1 pl-1.5 transition-opacity hover:opacity-80 lg:justify-start">
-                                            <span className="pb-0.5 pl-2.5 text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                                Solicitar información
-                                            </span>
-                                            <span className="flex size-10 shrink-0 items-center justify-center rounded-[80px] bg-black lg:ml-2.5" style={{ backdropFilter: 'blur(20px)' }}>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="19" height="15" viewBox="0 0 19 15" fill="none">
-                                                    <path d="M0.699816 7.28646L18.2554 7.28646M18.2554 7.28646L11.672 13.8698M18.2554 7.28646L11.672 0.703125" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                                                </svg>
-                                            </span>
-                                        </button>
+                                                    // Defer scroll until after the form is rendered.
+                                                    requestAnimationFrame(() => {
+                                                        formSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                                                    });
+                                                }}
+                                                className="flex h-12 cursor-pointer items-center justify-between rounded-[60px] border border-black p-1 pl-1.5 transition-opacity hover:opacity-80 lg:justify-start"
+                                            >
+                                                <span className="pb-0.5 pl-2.5 text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                    Solicitar información
+                                                </span>
+                                                <span className="flex size-10 shrink-0 items-center justify-center rounded-[80px] bg-black lg:ml-2.5" style={{ backdropFilter: 'blur(20px)' }}>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="19" height="15" viewBox="0 0 19 15" fill="none">
+                                                        <path d="M0.699816 7.28646L18.2554 7.28646M18.2554 7.28646L11.672 13.8698M18.2554 7.28646L11.672 0.703125" stroke="white" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                </span>
+                                            </button>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
-                        </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </section>
 
                 {/* Solicita tu arriendo */}
-                <section className="bg-black px-5 py-10 lg:px-15 lg:py-20">
+                <section ref={formSectionRef} className="bg-black px-5 py-10 lg:px-15 lg:py-20 scroll-mt-20">
                     <div className="flex flex-col items-center gap-10 rounded-[30px] bg-[#EAEAF1] p-5 lg:gap-20 lg:p-15">
                         {!showForm ? (
                             /* ── Vista inicial ── */
@@ -475,11 +574,18 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                     label="Sucursal"
                                                     placeholder="Seleccionar sucursal"
                                                     value={formSucursal}
-                                                    onChange={setFormSucursal}
-                                                    options={[
-                                                        { value: 'la-serena', label: 'La Serena — Av. Francisco de Aguirre #070' },
-                                                        { value: 'ovalle', label: 'Ovalle — Aristía #358' },
-                                                    ]}
+                                                    onChange={(v) => {
+                                                        setFormSucursal(v);
+                                                        // Clear vehicle if it's not available in the newly chosen branch
+                                                        const stillValid = rentals.some(
+                                                            (r) => String(r.id) === formVehiculo && r.branch_ids.includes(Number(v)),
+                                                        );
+                                                        if (!stillValid) setFormVehiculo('');
+                                                    }}
+                                                    options={branches.map((b) => ({
+                                                        value: String(b.id),
+                                                        label: `${b.name} — ${b.city}`,
+                                                    }))}
                                                 />
 
                                                 {/* Fecha estimada */}
@@ -549,17 +655,34 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                     </div>
                                                 </div>
 
-                                                {/* Vehículo de interés */}
-                                                <SelectField
-                                                    label="Vehículo de interés"
-                                                    placeholder="Seleccionar vehículo de interés"
-                                                    value={formVehiculo}
-                                                    onChange={setFormVehiculo}
-                                                    options={[
-                                                        { value: 'corolla-cross', label: 'Corolla Cross' },
-                                                        { value: 'rav4', label: 'Rav4' },
-                                                    ]}
-                                                />
+                                                {/* Vehículo de interés (filtrado por sucursal) */}
+                                                {(() => {
+                                                    const available = rentals.filter(
+                                                        (r) => !formSucursal || r.branch_ids.includes(Number(formSucursal)),
+                                                    );
+                                                    const noBranch = !formSucursal;
+                                                    const noVehicles = !noBranch && available.length === 0;
+                                                    return (
+                                                        <SelectField
+                                                            label="Vehículo de interés"
+                                                            placeholder={
+                                                                noBranch
+                                                                    ? 'Primero selecciona una sucursal'
+                                                                    : noVehicles
+                                                                        ? 'No hay vehículos disponibles en esta sucursal'
+                                                                        : 'Seleccionar vehículo de interés'
+                                                            }
+                                                            value={formVehiculo}
+                                                            onChange={setFormVehiculo}
+                                                            disabled={noBranch || noVehicles}
+                                                            hint={noBranch ? undefined : noVehicles ? 'Probá con otra sucursal.' : undefined}
+                                                            options={available.map((r) => ({
+                                                                value: String(r.id),
+                                                                label: r.name ?? 'Vehículo',
+                                                            }))}
+                                                        />
+                                                    );
+                                                })()}
                                             </div>
 
                                             <button
@@ -703,7 +826,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                 {[
                                                     {
                                                         label: 'Sucursal',
-                                                        value: formSucursal === 'la-serena' ? 'Musalem La Serena' : formSucursal === 'ovalle' ? 'Musalem Ovalle' : '—',
+                                                        value: branches.find((b) => String(b.id) === formSucursal)?.name ?? '—',
                                                     },
                                                     {
                                                         label: 'Fecha estimada',
@@ -719,7 +842,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                     },
                                                     {
                                                         label: 'Vehículo de interés',
-                                                        value: formVehiculo === 'corolla-cross' ? 'Corolla Cross' : formVehiculo === 'rav4' ? 'Rav4' : '—',
+                                                        value: rentals.find((r) => String(r.id) === formVehiculo)?.name ?? '—',
                                                     },
                                                     {
                                                         label: 'Datos de contacto',

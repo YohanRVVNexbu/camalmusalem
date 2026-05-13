@@ -139,6 +139,9 @@ class VehicleVersionController extends Controller
             $vehicleVersion->update([
                 'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-versions/'.$vehicleVersion->id),
             ]);
+        } elseif ($request->boolean('hero_image_remove')) {
+            $this->settings->deleteOldFile($vehicleVersion->hero_image);
+            $vehicleVersion->update(['hero_image' => null]);
         }
 
         return back()->with('success', 'Versión actualizada correctamente.');

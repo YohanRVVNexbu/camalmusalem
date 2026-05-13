@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
-import { ImageField, SectionCard, SectionProp, TextField, VisibilityField, resetSection, submitSection } from './_section';
+import { MediaField, ImageField, SectionCard, SectionProp, TextField, VisibilityField, resetSection, submitSection } from './_section';
 import defaultHeroImg from '@images/shorts/hero_image.png?format=webp';
 
 export default function ShortsPage({ sections }: { sections: Record<string, SectionProp> }) {
@@ -33,7 +33,7 @@ export default function ShortsPage({ sections }: { sections: Record<string, Sect
                     onReset={() => resetSection(page, 'shorts_hero')}>
                     <VisibilityField checked={visible} onChange={setVisible} />
                     <Separator />
-                    <ImageField label="Imagen hero" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
+                    <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
                     <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
                     <TextField label="Subtítulo" value={data.subtitle ?? ''} onChange={(v) => set('subtitle', v)} />
                 </SectionCard>

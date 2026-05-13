@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
+import { isVideoUrl } from '@/lib/media';
 import { useEffect } from 'react';
 
 const ordenarOpciones = ['Menor precio', 'Mayor precio', 'Más reciente'];
@@ -45,13 +46,16 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                 <section className="bg-white pb-10 lg:pb-20">
                     <div
                         className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
-                        style={{
+                        style={!isVideoUrl(hero.hero_image) ? {
                             backgroundImage: `url(${hero.hero_image || heroImg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
-                        }}
+                        } : undefined}
                     >
+                        {isVideoUrl(hero.hero_image) && (
+                            <video src={hero.hero_image!} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
+                        )}
                         <div
                             className="absolute inset-0"
                             style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.60) 100%)' }}

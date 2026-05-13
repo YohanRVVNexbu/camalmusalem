@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\SiteSection;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class SiteSettingsService
 {
@@ -28,7 +29,9 @@ class SiteSettingsService
 
     public function uploadFile(UploadedFile $file, string $directory = 'home'): string
     {
-        $path = $file->store($directory, 'public');
+        $extension = $file->getClientOriginalExtension() ?: $file->guessExtension();
+        $name = Str::random(40).($extension ? '.'.$extension : '');
+        $path = $file->storeAs($directory, $name, 'public');
 
         return '/storage/'.$path;
     }
@@ -39,9 +42,16 @@ class SiteSettingsService
             return;
         }
 
-        // Handle both relative paths and legacy absolute URLs
+        // Protect seeder defaults: any file under /storage/defaults/ is the
+        // canonical "factory reset" asset and must never be deleted, even when
+        // a user replaces it from the admin.
         $parsed = parse_url($url, PHP_URL_PATH);
         $path = str_replace('/storage/', '', $parsed ?? $url);
+
+        if (str_starts_with($path, 'defaults/')) {
+            return;
+        }
+
         Storage::disk('public')->delete($path);
     }
 }

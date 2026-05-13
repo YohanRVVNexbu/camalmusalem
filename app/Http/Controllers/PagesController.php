@@ -117,11 +117,38 @@ class PagesController extends Controller
 
     public function kinto()
     {
+        $rentals = \App\Models\Rental::with(['vehicleModel.brand', 'branches'])
+            ->where('is_active', true)
+            ->orderBy('display_order')
+            ->orderBy('id')
+            ->get()
+            ->map(fn (\App\Models\Rental $r) => [
+                'id' => $r->id,
+                'name' => $r->display_name,
+                'image' => $r->display_image,
+                'description' => $r->display_description,
+                'price_hour' => $r->price_hour,
+                'price_day' => $r->price_day,
+                'price_week' => $r->price_week,
+                'price_month' => $r->price_month,
+                'branch_ids' => $r->branches->pluck('id')->all(),
+                'vehicle_slug' => $r->vehicleModel?->slug,
+            ])
+            ->all();
+
+        $branches = \App\Models\Branch::where('is_active', true)
+            ->orderBy('display_order')
+            ->get(['id', 'name', 'city'])
+            ->map(fn ($b) => ['id' => $b->id, 'name' => $b->name, 'city' => $b->city])
+            ->all();
+
         return Inertia::render('kinto', [
             'footer'           => $this->section('footer'),
             'kinto_hero'       => $this->section('kinto_hero'),
             'kinto_pasos'      => $this->section('kinto_pasos'),
             'kinto_vehiculos'  => $this->section('kinto_vehiculos'),
+            'rentals'          => $rentals,
+            'branches'         => $branches,
         ]);
     }
 

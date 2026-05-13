@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
-import { ImageField, SectionCard, SectionProp, TextField, VisibilityField, resetSection, submitSection } from './_section';
+import { MediaField, ImageField, SectionCard, SectionProp, TextField, VisibilityField, resetSection, submitSection } from './_section';
 import defaultHeroImg from '@images/noticias/hero_image.png?format=webp';
 
 export default function NoticiasPage({ sections }: { sections: Record<string, SectionProp> }) {
@@ -33,7 +33,7 @@ export default function NoticiasPage({ sections }: { sections: Record<string, Se
                     onReset={() => resetSection(page, 'noticias_hero')}>
                     <VisibilityField checked={visible} onChange={setVisible} />
                     <Separator />
-                    <ImageField label="Imagen hero" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
+                    <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
                     <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
                 </SectionCard>
             </div>

@@ -102,6 +102,9 @@ class VehicleModelController extends Controller
         if ($request->hasFile('hero_image')) {
             $this->settings->deleteOldFile($vehicleModel->hero_image);
             $data['hero_image'] = $this->settings->uploadFile($request->file('hero_image'), 'vehicle-models/'.$vehicleModel->id);
+        } elseif ($request->boolean('hero_image_remove')) {
+            $this->settings->deleteOldFile($vehicleModel->hero_image);
+            $data['hero_image'] = null;
         }
 
         $detailContent = $this->resolveDetailContent($request, $vehicleModel);

@@ -138,7 +138,7 @@ class NuevosController extends Controller
             ->all();
     }
 
-    public function show(string $id, YouTubeService $youtubeService)
+    public function show(\Illuminate\Http\Request $request, string $id, YouTubeService $youtubeService)
     {
         $model = VehicleModel::with([
             'brand',
@@ -159,11 +159,39 @@ class NuevosController extends Controller
         $footer = SiteSection::where('section', 'footer')->first();
         $shorts = SiteSection::where('section', 'shorts')->first();
 
+        // Optional rental context: when the visitor comes from the KINTO page
+        // via "Ver detalles vehículo", we surface rental-specific data so the
+        // show page can swap CTAs and pricing.
+        $rentalContext = null;
+        if ($rentalId = $request->integer('rental')) {
+            $rental = \App\Models\Rental::with('branches')
+                ->where('id', $rentalId)
+                ->where('vehicle_model_id', $model->id)
+                ->where('is_active', true)
+                ->first();
+
+            if ($rental) {
+                $rentalContext = [
+                    'id' => $rental->id,
+                    'name' => $rental->display_name,
+                    'description' => $rental->display_description,
+                    'price_hour' => $rental->price_hour,
+                    'price_day' => $rental->price_day,
+                    'price_week' => $rental->price_week,
+                    'price_month' => $rental->price_month,
+                    'branches' => $rental->branches->map(fn ($b) => [
+                        'id' => $b->id, 'name' => $b->name, 'city' => $b->city,
+                    ])->all(),
+                ];
+            }
+        }
+
         return Inertia::render('nuevos/show', [
             'vehicle' => $this->presenter->presentModel($model),
             'footer' => $footer?->data ?? [],
             'shorts' => $shorts?->data ?? [],
             'youtubeShorts' => $youtubeService->getShorts(),
+            'rentalContext' => $rentalContext,
         ]);
     }
 

@@ -118,7 +118,9 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
                                       key={index}
                                       className="relative flex w-75 shrink-0 cursor-pointer flex-col items-end justify-end overflow-hidden rounded-[30px] pt-42.5 pr-[110.875px] pl-[17.5px] md:h-150.5 md:w-auto md:min-w-0 md:basis-[calc(25%-15px)] md:p-0"
                                       style={{
-                                          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`,
+                                          backgroundImage: image
+                                              ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`
+                                              : 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2))',
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                           backgroundColor: '#333',
@@ -316,7 +318,9 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
                                       key={index}
                                       className="relative shrink-0 cursor-pointer overflow-hidden rounded-[30px] w-75 h-125 md:h-150.5 md:min-w-0 md:basis-[calc(25%-15px)] md:w-auto"
                                       style={{
-                                          backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${image})`,
+                                          backgroundImage: image
+                                              ? `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${image})`
+                                              : 'linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)',
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                           backgroundColor: '#333',

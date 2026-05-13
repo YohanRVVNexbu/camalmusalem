@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -141,6 +141,7 @@ export default function VehicleVersionForm({ version, models, features, enums, s
         };
     });
     const [heroFile, setHeroFile] = useState<File | null>(null);
+    const [removeHero, setRemoveHero] = useState(false);
     const [processing, setProcessing] = useState(false);
     const [section, setSection] = useState<SectionKey>('basico');
 
@@ -203,6 +204,7 @@ export default function VehicleVersionForm({ version, models, features, enums, s
         });
 
         if (heroFile) fd.append('hero_image', heroFile);
+        if (removeHero && !heroFile) fd.append('hero_image_remove', '1');
         if (isEdit) fd.append('_method', 'PUT');
 
         router.post(
@@ -386,10 +388,26 @@ export default function VehicleVersionForm({ version, models, features, enums, s
 
                             <div className="grid gap-1.5">
                                 <Label>Imagen hero de la versión</Label>
-                                {data.hero_image && !heroFile && (
-                                    <img src={data.hero_image} className="h-32 w-full max-w-md rounded-lg object-cover" alt="" />
-                                )}
-                                <Input type="file" accept="image/*" onChange={(e) => setHeroFile(e.target.files?.[0] ?? null)} />
+                                {heroFile ? (
+                                    <div className="relative w-fit">
+                                        <img src={URL.createObjectURL(heroFile)} className="h-32 w-auto rounded-lg object-cover" alt="" />
+                                        <button type="button" onClick={() => setHeroFile(null)} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white" title="Quitar selección">
+                                            <X className="size-3.5" />
+                                        </button>
+                                    </div>
+                                ) : data.hero_image && !removeHero ? (
+                                    <div className="relative w-fit">
+                                        <img src={data.hero_image} className="h-32 w-auto rounded-lg object-cover" alt="" />
+                                        <button type="button" onClick={() => setRemoveHero(true)} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white" title="Eliminar imagen">
+                                            <X className="size-3.5" />
+                                        </button>
+                                    </div>
+                                ) : removeHero ? (
+                                    <p className="text-sm text-destructive">Imagen marcada para eliminar al guardar.{' '}
+                                        <button type="button" className="underline" onClick={() => setRemoveHero(false)}>Cancelar</button>
+                                    </p>
+                                ) : null}
+                                <Input type="file" accept="image/*" onChange={(e) => { setHeroFile(e.target.files?.[0] ?? null); setRemoveHero(false); }} />
                             </div>
                         </div>
                     )}

@@ -118,7 +118,20 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
                                 ))}
                             </div>
                         )}
-                        <Input type="file" accept="image/*" multiple onChange={(e) => setNewImages(Array.from(e.target.files ?? []))} />
+                        <Input type="file" accept="image/*" multiple onChange={(e) => {
+                            setNewImages([...newImages, ...Array.from(e.target.files ?? [])]);
+                            e.target.value = '';
+                        }} />
+                        {newImages.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                                {newImages.map((f, i) => (
+                                    <div key={i} className="relative">
+                                        <img src={URL.createObjectURL(f)} className="h-24 w-32 rounded-lg object-cover ring-2 ring-primary" alt="" />
+                                        <button type="button" onClick={() => setNewImages(newImages.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs" title="Quitar">✕</button>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
                     <div className="flex gap-3">
                         <Button type="submit" disabled={processing}>{processing ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear repuesto'}</Button>

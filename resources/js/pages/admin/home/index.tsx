@@ -26,7 +26,7 @@ const SECTION_LABELS: Record<string, string> = {
     footer: 'Footer',
 };
 
-const SECTION_COMPONENTS: Record<string, React.ComponentType<{ data: any; isVisible: boolean }>> = {
+const SECTION_COMPONENTS: Record<string, React.ComponentType<{ data: any; isVisible: boolean; extra?: any }>> = {
     hero: SectionHero,
     features: SectionFeatures,
     about: SectionAbout,
@@ -44,11 +44,14 @@ type SectionData = {
     order: number;
 };
 
+type VehicleModelLite = { id: number; name: string; slug: string; brand_name: string | null };
+
 type Props = {
     sections: Record<string, SectionData>;
+    vehicle_models: VehicleModelLite[];
 };
 
-export default function HomeContent({ sections }: Props) {
+export default function HomeContent({ sections, vehicle_models }: Props) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
 
     return (
@@ -94,6 +97,7 @@ export default function HomeContent({ sections }: Props) {
                                         <Component
                                             data={section.data}
                                             isVisible={section.is_visible}
+                                            extra={key === 'about' ? { vehicle_models } : undefined}
                                         />
                                     </CardContent>
                                 </CollapsibleContent>

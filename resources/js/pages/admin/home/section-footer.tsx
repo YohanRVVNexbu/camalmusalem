@@ -5,6 +5,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { ResetSectionButton } from '@/components/admin/reset-section-button';
+import { appendNested, dotToBracket } from '@/lib/form-data';
 
 type Location = { title: string; items: string[] };
 
@@ -54,7 +56,15 @@ export function SectionFooter({ data: initialData, isVisible: initialVisible }: 
         e.preventDefault();
         setProcessing(true);
 
-        router.post('/admin/home/footer', { data, is_visible: isVisible, _method: 'PUT', ...files }, {
+        const fd = new FormData();
+        fd.append('_method', 'PUT');
+        fd.append('is_visible', isVisible ? '1' : '0');
+        appendNested(fd, 'data', data);
+        Object.entries(files).forEach(([key, file]) => {
+            fd.append(dotToBracket(key), file);
+        });
+
+        router.post('/admin/home/footer', fd, {
             onFinish: () => setProcessing(false),
             forceFormData: true,
         });
@@ -71,7 +81,11 @@ export function SectionFooter({ data: initialData, isVisible: initialVisible }: 
 
             <div className="grid gap-2">
                 <Label>Logo</Label>
-                {data.logo && <img src={data.logo} className="h-12 rounded object-contain" alt="" />}
+                {files.logo ? (
+                    <img src={URL.createObjectURL(files.logo)} className="h-12 rounded object-contain ring-2 ring-primary" alt="" />
+                ) : data.logo ? (
+                    <img src={data.logo} className="h-12 rounded object-contain" alt="" />
+                ) : null}
                 <Input type="file" accept="image/*" onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) setFiles({ ...files, logo: file });
@@ -129,9 +143,12 @@ export function SectionFooter({ data: initialData, isVisible: initialVisible }: 
                 <Input value={data.copyright} onChange={(e) => setData({ ...data, copyright: e.target.value })} />
             </div>
 
-            <Button type="submit" disabled={processing} className="w-fit">
-                {processing ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
+            <div className="flex items-center gap-3">
+                <Button type="submit" disabled={processing} className="w-fit">
+                    {processing ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+                <ResetSectionButton section="footer" />
+            </div>
         </form>
     );
 }

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
-import { ImageField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
+import { ImageField, MediaField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
 
 type VehicleLite = {
     id: number;
@@ -97,8 +97,8 @@ export default function NuevosPage({ sections, vehicle_models }: Props) {
                     <Separator />
 
                     {/* Banner */}
-                    <ImageField
-                        label="Imagen banner"
+                    <MediaField
+                        label="Banner (imagen o video)"
                         currentUrl={data.banner_image ?? ''}
                         defaultUrl=""
                         onChange={setBannerFile}

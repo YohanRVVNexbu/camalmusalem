@@ -54,6 +54,9 @@ class BrandController extends Controller
         if ($request->hasFile('logo')) {
             $this->settings->deleteOldFile($brand->logo_path);
             $data['logo_path'] = $this->settings->uploadFile($request->file('logo'), 'brands/'.$brand->id);
+        } elseif ($request->boolean('logo_remove')) {
+            $this->settings->deleteOldFile($brand->logo_path);
+            $data['logo_path'] = null;
         }
 
         $brand->update($data);

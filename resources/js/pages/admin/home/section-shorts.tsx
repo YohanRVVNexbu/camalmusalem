@@ -6,6 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { ResetSectionButton } from '@/components/admin/reset-section-button';
+import { appendNested, dotToBracket } from '@/lib/form-data';
 
 type Props = {
     data: {
@@ -30,7 +32,15 @@ export function SectionShorts({ data: initialData, isVisible: initialVisible }: 
         e.preventDefault();
         setProcessing(true);
 
-        router.post('/admin/home/shorts', { data, is_visible: isVisible, _method: 'PUT', ...files }, {
+        const fd = new FormData();
+        fd.append('_method', 'PUT');
+        fd.append('is_visible', isVisible ? '1' : '0');
+        appendNested(fd, 'data', data);
+        Object.entries(files).forEach(([key, file]) => {
+            fd.append(dotToBracket(key), file);
+        });
+
+        router.post('/admin/home/shorts', fd, {
             onFinish: () => setProcessing(false),
             forceFormData: true,
         });
@@ -68,7 +78,11 @@ export function SectionShorts({ data: initialData, isVisible: initialVisible }: 
 
             <div className="grid gap-2">
                 <Label>Logo Shorts</Label>
-                {data.logo && <img src={data.logo} className="h-16 rounded object-contain" alt="" />}
+                {files.logo ? (
+                    <img src={URL.createObjectURL(files.logo)} className="h-16 rounded object-contain ring-2 ring-primary" alt="" />
+                ) : data.logo ? (
+                    <img src={data.logo} className="h-16 rounded object-contain" alt="" />
+                ) : null}
                 <Input type="file" accept="image/*" onChange={(e) => {
                     const file = e.target.files?.[0];
                     if (file) setFiles({ ...files, logo: file });
@@ -81,7 +95,11 @@ export function SectionShorts({ data: initialData, isVisible: initialVisible }: 
                 {data.images.map((img, i) => (
                     <div key={i} className="grid gap-2">
                         <Label>Imagen {i + 1}</Label>
-                        {img && <img src={img} className="h-32 w-full rounded object-cover" alt="" />}
+                        {files[`images.${i}`] ? (
+                            <img src={URL.createObjectURL(files[`images.${i}`])} className="h-32 w-full rounded object-cover ring-2 ring-primary" alt="" />
+                        ) : img ? (
+                            <img src={img} className="h-32 w-full rounded object-cover" alt="" />
+                        ) : null}
                         <Input type="file" accept="image/*" onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) setFiles({ ...files, [`images.${i}`]: file });
@@ -90,9 +108,12 @@ export function SectionShorts({ data: initialData, isVisible: initialVisible }: 
                 ))}
             </div>
 
-            <Button type="submit" disabled={processing} className="w-fit">
-                {processing ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
+            <div className="flex items-center gap-3">
+                <Button type="submit" disabled={processing} className="w-fit">
+                    {processing ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+                <ResetSectionButton section="shorts" />
+            </div>
         </form>
     );
 }

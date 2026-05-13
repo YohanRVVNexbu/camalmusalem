@@ -10,11 +10,12 @@ type Vehicle = {
     video?: string | null;
     background_image?: string | null;
     duration?: number | null;
+    vehicle_model_id?: number | null;
+    vehicle_slug?: string | null;
 };
 
 type AboutData = {
     cta_text: string;
-    cta_href: string;
     vehicles: Vehicle[];
 };
 
@@ -137,9 +138,11 @@ export function About({ data }: { data: AboutData }) {
                     className="absolute inset-0 size-full object-cover">
                     <source src={activeVehicle.video!} type="video/mp4" />
                 </video>
-            ) : (
-                <img src={activeVehicle.background_image ?? ''} alt={activeVehicle.name}
+            ) : activeVehicle.background_image ? (
+                <img src={activeVehicle.background_image} alt={activeVehicle.name}
                     className="absolute inset-0 size-full object-cover" />
+            ) : (
+                <div className="absolute inset-0 size-full bg-neutral-800" />
             )}
             <div className="absolute inset-0 bg-linear-to-b from-black/0 via-black/20 to-black/80" />
         </>
@@ -170,13 +173,15 @@ export function About({ data }: { data: AboutData }) {
 
                     {/* CTA + Pause */}
                     <div className="flex w-full items-center justify-between">
-                        <a href={data.cta_href}
-                            className="flex h-11 items-center gap-2.5 rounded-full bg-white py-0.5 pr-0.5 pl-4 text-base leading-none text-black transition hover:bg-white/90">
-                            {data.cta_text}
-                            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
-                                <ArrowIcon className="text-white" />
-                            </span>
-                        </a>
+                        {activeVehicle.vehicle_slug ? (
+                            <a href={`/nuevos/${activeVehicle.vehicle_slug}`}
+                                className="flex h-11 items-center gap-2.5 rounded-full bg-white py-0.5 pr-0.5 pl-4 text-base leading-none text-black transition hover:bg-white/90">
+                                {data.cta_text}
+                                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
+                                    <ArrowIcon className="text-white" />
+                                </span>
+                            </a>
+                        ) : <span />}
                         <PlayPauseButton />
                     </div>
 
@@ -234,13 +239,15 @@ export function About({ data }: { data: AboutData }) {
                                 ))}
                             </h2>
                         </div>
-                        <a href={data.cta_href}
-                            className="flex h-11 w-fit items-center gap-2.5 rounded-full bg-white py-0.5 pr-0.5 pl-4 text-base leading-none text-black transition hover:bg-white/90">
-                            {data.cta_text}
-                            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
-                                <ArrowIcon className="text-white" />
-                            </span>
-                        </a>
+                        {activeVehicle.vehicle_slug && (
+                            <a href={`/nuevos/${activeVehicle.vehicle_slug}`}
+                                className="flex h-11 w-fit items-center gap-2.5 rounded-full bg-white py-0.5 pr-0.5 pl-4 text-base leading-none text-black transition hover:bg-white/90">
+                                {data.cta_text}
+                                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
+                                    <ArrowIcon className="text-white" />
+                                </span>
+                            </a>
+                        )}
                     </div>
 
                     <div className={`flex flex-col items-end gap-5 transition-all duration-1000 delay-300 ease-out ${visible ? 'translate-x-0 opacity-100' : 'translate-x-10 opacity-0'}`}>

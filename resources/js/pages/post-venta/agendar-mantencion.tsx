@@ -4,6 +4,7 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
+import { isVideoUrl } from '@/lib/media';
 import useEmblaCarousel from 'embla-carousel-react';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
@@ -184,13 +185,16 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                 <section className="bg-white pb-10 lg:pb-20">
                     <div
                         className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
-                        style={{
+                        style={!isVideoUrl(hero.hero_image) ? {
                             backgroundImage: `url(${hero.hero_image || heroImg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
-                        }}
+                        } : undefined}
                     >
+                        {isVideoUrl(hero.hero_image) && (
+                            <video src={hero.hero_image!} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
+                        )}
                         <div
                             className="absolute inset-0"
                             style={{

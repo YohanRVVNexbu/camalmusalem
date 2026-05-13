@@ -117,27 +117,41 @@ class PageContentController extends Controller
 
         $siteSection = SiteSection::where('section', $section)->firstOrFail();
 
-        if ($siteSection->default_data) {
-            $siteSection->update(['data' => $siteSection->default_data]);
+        if (! $siteSection->default_data) {
+            return back()->with('error', 'No hay defaults configurados para esta sección.');
         }
+
+        $siteSection->update(['data' => $siteSection->default_data]);
 
         return back()->with('success', 'Sección restaurada a los valores por defecto.');
     }
 
     private function processFiles(array $files, array $data, string $section, array $oldData): array
     {
-        foreach ($files as $key => $file) {
+        foreach ($this->flattenFiles($files) as $key => $file) {
             if (in_array($key, ['data', 'is_visible'])) {
                 continue;
             }
-            if ($file instanceof UploadedFile) {
-                $oldUrl = data_get($oldData, $key);
-                $this->settingsService->deleteOldFile($oldUrl);
-                $url = $this->settingsService->uploadFile($file, "paginas/{$section}");
-                data_set($data, $key, $url);
-            }
+            $oldUrl = data_get($oldData, $key);
+            $this->settingsService->deleteOldFile($oldUrl);
+            $url = $this->settingsService->uploadFile($file, "paginas/{$section}");
+            data_set($data, $key, $url);
         }
 
         return $data;
+    }
+
+    private function flattenFiles(array $files, string $prefix = ''): array
+    {
+        $result = [];
+        foreach ($files as $key => $value) {
+            $path = $prefix === '' ? (string) $key : "{$prefix}.{$key}";
+            if ($value instanceof UploadedFile) {
+                $result[$path] = $value;
+            } elseif (is_array($value)) {
+                $result = array_merge($result, $this->flattenFiles($value, $path));
+            }
+        }
+        return $result;
     }
 }

@@ -5,6 +5,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import { ResetSectionButton } from '@/components/admin/reset-section-button';
+import { appendNested, dotToBracket } from '@/lib/form-data';
 
 type Card = {
     title: string;
@@ -36,9 +38,15 @@ export function SectionFeatures({ data: initialData, isVisible: initialVisible }
         e.preventDefault();
         setProcessing(true);
 
-        const formData: any = { data, is_visible: isVisible, _method: 'PUT', ...files };
+        const fd = new FormData();
+        fd.append('_method', 'PUT');
+        fd.append('is_visible', isVisible ? '1' : '0');
+        appendNested(fd, 'data', data);
+        Object.entries(files).forEach(([key, file]) => {
+            fd.append(dotToBracket(key), file);
+        });
 
-        router.post('/admin/home/features', formData, {
+        router.post('/admin/home/features', fd, {
             onFinish: () => setProcessing(false),
             forceFormData: true,
         });
@@ -83,7 +91,11 @@ export function SectionFeatures({ data: initialData, isVisible: initialVisible }
                         <div className="grid grid-cols-2 gap-4">
                             <div className="grid gap-2">
                                 <Label>Imagen</Label>
-                                {card.image && <img src={card.image} className="h-24 rounded object-cover" alt="" />}
+                                {files[`cards.${i}.image`] ? (
+                                    <img src={URL.createObjectURL(files[`cards.${i}.image`])} className="h-24 rounded object-cover ring-2 ring-primary" alt="" />
+                                ) : card.image ? (
+                                    <img src={card.image} className="h-24 rounded object-cover" alt="" />
+                                ) : null}
                                 <Input type="file" accept="image/*" onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) setFiles({ ...files, [`cards.${i}.image`]: file });
@@ -91,7 +103,11 @@ export function SectionFeatures({ data: initialData, isVisible: initialVisible }
                             </div>
                             <div className="grid gap-2">
                                 <Label>Video (hover)</Label>
-                                {card.video && <video src={card.video} className="h-24 rounded object-cover" muted controls />}
+                                {files[`cards.${i}.video`] ? (
+                                    <video src={URL.createObjectURL(files[`cards.${i}.video`])} className="h-24 rounded object-cover ring-2 ring-primary" muted controls />
+                                ) : card.video ? (
+                                    <video src={card.video} className="h-24 rounded object-cover" muted controls />
+                                ) : null}
                                 <Input type="file" accept="video/mp4,video/webm" onChange={(e) => {
                                     const file = e.target.files?.[0];
                                     if (file) setFiles({ ...files, [`cards.${i}.video`]: file });
@@ -102,9 +118,12 @@ export function SectionFeatures({ data: initialData, isVisible: initialVisible }
                 </div>
             ))}
 
-            <Button type="submit" disabled={processing} className="w-fit">
-                {processing ? 'Guardando...' : 'Guardar cambios'}
-            </Button>
+            <div className="flex items-center gap-3">
+                <Button type="submit" disabled={processing} className="w-fit">
+                    {processing ? 'Guardando...' : 'Guardar cambios'}
+                </Button>
+                <ResetSectionButton section="features" />
+            </div>
         </form>
     );
 }

@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
-import { ImageField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
+import { MediaField, ImageField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
 import defaultBannerImg from '@images/seminuevos/hero-image.png?format=webp';
 
 export default function SeminuevosPage({ sections }: { sections: Record<string, SectionProp> }) {
@@ -33,7 +33,7 @@ export default function SeminuevosPage({ sections }: { sections: Record<string, 
                     onReset={() => resetSection(page, 'seminuevos_hero')}>
                     <VisibilityField checked={visible} onChange={setVisible} />
                     <Separator />
-                    <ImageField label="Imagen banner" currentUrl={data.banner_image ?? ''} defaultUrl={defaultBannerImg} onChange={setFile} />
+                    <MediaField label="Banner (imagen o video)" currentUrl={data.banner_image ?? ''} defaultUrl={defaultBannerImg} onChange={setFile} />
                     <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
                     <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={3} />
                 </SectionCard>

@@ -101,7 +101,70 @@ export function VisibilityField({
     );
 }
 
-// ── Image field with current preview ──────────────────────────────────────────
+// ── Detect if URL points to a video by extension ──────────────────────────────
+export function isVideoUrl(url: string | null | undefined): boolean {
+    if (!url) return false;
+    return /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(url);
+}
+
+// ── Media field (image OR video) with preview ─────────────────────────────────
+export function MediaField({
+    label,
+    currentUrl,
+    defaultUrl,
+    onChange,
+    hint,
+}: {
+    label: string;
+    currentUrl: string;
+    defaultUrl?: string;
+    onChange: (file: File | null) => void;
+    hint?: string;
+}) {
+    const [pickedFile, setPickedFile] = useState<File | null>(null);
+
+    const previewUrl = pickedFile ? URL.createObjectURL(pickedFile) : (currentUrl || defaultUrl);
+    const isVideo = pickedFile
+        ? pickedFile.type.startsWith('video/')
+        : isVideoUrl(currentUrl || defaultUrl);
+
+    return (
+        <div className="grid gap-2">
+            <Label>{label}</Label>
+            {previewUrl && (
+                <div className="relative">
+                    {isVideo ? (
+                        <video src={previewUrl} className="h-40 w-full rounded-lg object-cover" muted controls playsInline />
+                    ) : (
+                        <img src={previewUrl} className="h-40 w-full rounded-lg object-cover" alt="" />
+                    )}
+                    {pickedFile && (
+                        <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">
+                            Nuevo {isVideo ? 'video' : 'archivo'} seleccionado
+                        </span>
+                    )}
+                    {!pickedFile && !currentUrl && defaultUrl && (
+                        <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
+                            Default
+                        </span>
+                    )}
+                </div>
+            )}
+            <Input
+                type="file"
+                accept="image/*,video/*"
+                onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    setPickedFile(f);
+                    onChange(f);
+                }}
+            />
+            <p className="text-xs text-muted-foreground">{hint ?? 'Acepta imágenes (.jpg, .png, .webp, etc.) o videos (.mp4, .webm).'}</p>
+        </div>
+    );
+}
+
+// ── Image-only field (preserved for cases where only image makes sense) ──────
 export function ImageField({
     label,
     currentUrl,
@@ -113,21 +176,35 @@ export function ImageField({
     defaultUrl?: string;
     onChange: (file: File | null) => void;
 }) {
-    const preview = currentUrl || defaultUrl;
+    const [pickedFile, setPickedFile] = useState<File | null>(null);
+    const previewUrl = pickedFile ? URL.createObjectURL(pickedFile) : (currentUrl || defaultUrl);
     return (
         <div className="grid gap-2">
             <Label>{label}</Label>
-            {preview && (
+            {previewUrl && (
                 <div className="relative">
-                    <img src={preview} className="h-40 w-full rounded-lg object-cover" alt="" />
-                    {!currentUrl && defaultUrl && (
+                    <img src={previewUrl} className="h-40 w-full rounded-lg object-cover" alt="" />
+                    {pickedFile && (
+                        <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">
+                            Nueva imagen seleccionada
+                        </span>
+                    )}
+                    {!pickedFile && !currentUrl && defaultUrl && (
                         <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">
                             Imagen actual (default)
                         </span>
                     )}
                 </div>
             )}
-            <Input type="file" accept="image/*" onChange={(e) => onChange(e.target.files?.[0] ?? null)} />
+            <Input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                    const f = e.target.files?.[0] ?? null;
+                    setPickedFile(f);
+                    onChange(f);
+                }}
+            />
         </div>
     );
 }

@@ -3,10 +3,12 @@ import AdminLayout from '@/layouts/admin-layout';
 
 const SECTIONS = [
     { title: 'Páginas', description: 'Contenido de todas las páginas del sitio', href: '/admin/paginas', icon: '📄' },
-    { title: 'Vehículos nuevos', description: 'Catálogo, versiones, especificaciones', href: '/admin/vehicles', icon: '🚗' },
+    { title: 'Vehículos nuevos', description: 'Catálogo, versiones, especificaciones', href: '/admin/vehicle-models', icon: '🚗' },
     { title: 'Seminuevos', description: 'Stock de vehículos usados', href: '/admin/seminuevos', icon: '🔄' },
+    { title: 'Arriendos KINTO', description: 'Vehículos para arriendo por hora/día', href: '/admin/rentals', icon: '🔑' },
     { title: 'Repuestos', description: 'Catálogo de repuestos y piezas', href: '/admin/repuestos', icon: '🔧' },
-    { title: 'Accesorios y Merch', description: 'Tienda de accesorios y ropa', href: '/admin/accesorios', icon: '👕' },
+    { title: 'Accesorios', description: 'Tienda de accesorios', href: '/admin/accesorios', icon: '👕' },
+    { title: 'Merch', description: 'Tienda de merch oficial', href: '/admin/merch', icon: '📦' },
     { title: 'Noticias', description: 'Blog y novedades Toyota', href: '/admin/noticias', icon: '📰' },
     { title: 'Usuarios', description: 'Administradores del sistema', href: '/admin/users', icon: '👤' },
 ];

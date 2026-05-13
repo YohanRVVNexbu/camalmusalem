@@ -19,6 +19,17 @@ class HomeContentController extends Controller
     {
         return Inertia::render('admin/home/index', [
             'sections' => $this->settingsService->getAllSectionsForAdmin(),
+            'vehicle_models' => \App\Models\VehicleModel::with('brand')
+                ->where('is_active', true)
+                ->orderBy('name')
+                ->get()
+                ->map(fn ($m) => [
+                    'id' => $m->id,
+                    'name' => $m->name,
+                    'slug' => $m->slug,
+                    'brand_name' => $m->brand?->name,
+                ])
+                ->all(),
         ]);
     }
 
@@ -54,21 +65,50 @@ class HomeContentController extends Controller
         return back()->with('success', 'Sección actualizada correctamente.');
     }
 
+    public function reset(string $section)
+    {
+        $siteSection = SiteSection::where('section', $section)->firstOrFail();
+
+        if (! $siteSection->default_data) {
+            return back()->with('error', 'No hay defaults configurados para esta sección.');
+        }
+
+        $siteSection->update(['data' => $siteSection->default_data]);
+
+        return back()->with('success', 'Sección restaurada a los valores por defecto.');
+    }
+
     private function processFiles(array $files, array $data, string $section, array $oldData): array
     {
-        foreach ($files as $key => $file) {
+        foreach ($this->flattenFiles($files) as $key => $file) {
             if ($key === 'data' || $key === 'is_visible') {
                 continue;
             }
 
-            if ($file instanceof UploadedFile) {
-                $oldUrl = data_get($oldData, $key);
-                $this->settingsService->deleteOldFile($oldUrl);
-                $url = $this->settingsService->uploadFile($file, "home/{$section}");
-                data_set($data, $key, $url);
-            }
+            $oldUrl = data_get($oldData, $key);
+            $this->settingsService->deleteOldFile($oldUrl);
+            $url = $this->settingsService->uploadFile($file, "home/{$section}");
+            data_set($data, $key, $url);
         }
 
         return $data;
+    }
+
+    /**
+     * Recursively flatten nested file arrays (from bracket-notation form
+     * fields like cards[0][image]) into dot-notation keys (cards.0.image).
+     */
+    private function flattenFiles(array $files, string $prefix = ''): array
+    {
+        $result = [];
+        foreach ($files as $key => $value) {
+            $path = $prefix === '' ? (string) $key : "{$prefix}.{$key}";
+            if ($value instanceof UploadedFile) {
+                $result[$path] = $value;
+            } elseif (is_array($value)) {
+                $result = array_merge($result, $this->flattenFiles($value, $path));
+            }
+        }
+        return $result;
     }
 }

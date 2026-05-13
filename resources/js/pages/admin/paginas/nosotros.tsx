@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import {
-    ImageField, SectionCard, SectionProp, TextareaField, TextField,
+    ImageField, MediaField, SectionCard, SectionProp, TextareaField, TextField,
     VisibilityField, resetSection, submitSection,
 } from './_section';
 import defaultHeroImg from '@images/nosotros/hero_image.jpg?format=webp';
@@ -62,7 +62,7 @@ function SimpleHeroSection({ page, s }: { page: string; s: SectionProp }) {
             onReset={() => resetSection(page, 'nosotros_hero')}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <ImageField label="Imagen hero" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
+            <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
             <TextField label="Subtítulo (encima del título)" value={data.subtitle ?? ''} onChange={(v) => set('subtitle', v)} />
             <TextField label="Título principal" value={data.title ?? ''} onChange={(v) => set('title', v)} />
         </SectionCard>
@@ -153,12 +153,19 @@ function EquipoSection({ page, s }: { page: string; s: SectionProp }) {
                         </div>
                         <div className="grid gap-2">
                             <Label>Foto</Label>
-                            {!memberFiles[i] && (
-                                <div className="relative inline-block">
-                                    <img src={m.img || DEFAULT_MEMBER_IMGS[i % DEFAULT_MEMBER_IMGS.length]} className="h-28 w-28 rounded-full object-cover" alt="" />
-                                    {!m.img && <span className="absolute bottom-0 left-0 right-0 rounded-b-full bg-black/60 py-0.5 text-center text-[10px] text-white">Default</span>}
-                                </div>
-                            )}
+                            <div className="relative inline-block">
+                                {memberFiles[i] ? (
+                                    <>
+                                        <img src={URL.createObjectURL(memberFiles[i] as File)} className="h-28 w-28 rounded-full object-cover ring-2 ring-primary" alt="" />
+                                        <span className="absolute bottom-0 left-0 right-0 rounded-b-full bg-primary/80 py-0.5 text-center text-[10px] text-white">Nueva</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <img src={m.img || DEFAULT_MEMBER_IMGS[i % DEFAULT_MEMBER_IMGS.length]} className="h-28 w-28 rounded-full object-cover" alt="" />
+                                        {!m.img && <span className="absolute bottom-0 left-0 right-0 rounded-b-full bg-black/60 py-0.5 text-center text-[10px] text-white">Default</span>}
+                                    </>
+                                )}
+                            </div>
                             <input type="file" accept="image/*" onChange={(e) => {
                                 const f = [...memberFiles]; f[i] = e.target.files?.[0] ?? null; setMemberFiles(f);
                             }} className="text-sm" />
@@ -219,9 +226,14 @@ function ReconocimientosSection({ page, s }: { page: string; s: SectionProp }) {
                         </div>
                         <div className="grid gap-2">
                             <Label>Imagen</Label>
-                            {item.img && !itemFiles[i] && (
+                            {itemFiles[i] ? (
+                                <div className="relative w-fit">
+                                    <img src={URL.createObjectURL(itemFiles[i] as File)} className="h-24 w-40 rounded-lg object-cover ring-2 ring-primary" alt="" />
+                                    <span className="absolute bottom-1 left-1 rounded bg-primary/80 px-1.5 py-0.5 text-[10px] text-white">Nueva</span>
+                                </div>
+                            ) : item.img ? (
                                 <img src={item.img} className="h-24 w-40 rounded-lg object-cover" alt="" />
-                            )}
+                            ) : null}
                             <input type="file" accept="image/*" onChange={(e) => {
                                 const f = [...itemFiles]; f[i] = e.target.files?.[0] ?? null; setItemFiles(f);
                             }} className="text-sm" />

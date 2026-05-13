@@ -4,7 +4,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import {
-    ImageField, SectionCard, SectionProp, TextareaField, TextField,
+    ImageField, MediaField, SectionCard, SectionProp, TextareaField, TextField,
     VisibilityField, resetSection, submitSection,
 } from './_section';
 import defaultHeroImg from '@images/programas-toyota/hero_section.png?format=webp';
@@ -56,7 +56,7 @@ function ProgramasHeroSection({ page, s }: { page: string; s: SectionProp }) {
             onReset={() => resetSection(page, 'programas_hero')}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <ImageField label="Imagen hero" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
+            <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
             <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
         </SectionCard>
     );
@@ -93,12 +93,19 @@ function ProgramasGridSection({ page, s }: { page: string; s: SectionProp }) {
                         <p className="font-medium text-sm">Programa {i + 1}</p>
                         <div className="grid gap-2">
                             <Label>Imagen</Label>
-                            {!itemFiles[i] && (
-                                <div className="relative">
-                                    <img src={item.img || DEFAULT_GRID_IMGS[i]} className="h-32 w-full rounded-lg object-cover" alt="" />
-                                    {!item.img && <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>}
-                                </div>
-                            )}
+                            <div className="relative">
+                                {itemFiles[i] ? (
+                                    <>
+                                        <img src={URL.createObjectURL(itemFiles[i] as File)} className="h-32 w-full rounded-lg object-cover" alt="" />
+                                        <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">Nueva imagen</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <img src={item.img || DEFAULT_GRID_IMGS[i]} className="h-32 w-full rounded-lg object-cover" alt="" />
+                                        {!item.img && <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>}
+                                    </>
+                                )}
+                            </div>
                             <input type="file" accept="image/*" onChange={(e) => {
                                 const f = [...itemFiles]; f[i] = e.target.files?.[0] ?? null; setItemFiles(f);
                             }} className="text-sm" />

@@ -3,6 +3,7 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
+import { formatCLP } from '@/lib/format';
 import { ShortsCarousel } from '@/components/landing/shorts';
 import { Modal360, frames360 } from '@/components/nuevos/modal-360';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -233,15 +234,15 @@ function HighlightsCarousel({ slides }: { slides: HighlightSlide[] }) {
     const [isMobileDragging, setIsMobileDragging] = useState(false);
     const mobileDragStartX = useRef(0);
 
-    if (totalSlides === 0) return null;
-
     useEffect(() => {
+        if (totalSlides === 0) return;
         const wrapper = wrapperRef.current;
         if (!wrapper) return;
 
         const handleScroll = () => {
             const rect = wrapper.getBoundingClientRect();
             const scrollableHeight = wrapper.offsetHeight - window.innerHeight;
+            if (scrollableHeight <= 0) return;
             const scrolled = -rect.top;
             const progress = Math.max(0, Math.min(1, scrolled / scrollableHeight));
             const index = Math.min(totalSlides - 1, Math.floor(progress * totalSlides));
@@ -252,6 +253,8 @@ function HighlightsCarousel({ slides }: { slides: HighlightSlide[] }) {
         handleScroll();
         return () => window.removeEventListener('scroll', handleScroll);
     }, [totalSlides]);
+
+    if (totalSlides === 0) return null;
 
     const handleMobilePointerDown = (e: React.PointerEvent) => {
         mobileDragStartX.current = e.clientX;
@@ -374,6 +377,7 @@ function VersionsSection({
     versionCardTab,
     setVersionCardTab,
     cotizarHref,
+    cotizarLabel = 'Cotizar',
 }: {
     versions: typeof vehicleData.versions;
     selectedVersion: number;
@@ -381,6 +385,7 @@ function VersionsSection({
     versionCardTab: VersionTab;
     setVersionCardTab: (tab: VersionTab) => void;
     cotizarHref: string;
+    cotizarLabel?: string;
 }) {
     const sectionRef = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
@@ -595,7 +600,7 @@ function VersionsSection({
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex h-10 w-full items-center justify-between rounded-[60px] border border-transparent bg-black p-1 transition hover:bg-black/85"
                                         >
-                                            <span className="pl-2.5 text-sm font-semibold leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Cotizar</span>
+                                            <span className="pl-2.5 text-sm font-semibold leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{cotizarLabel}</span>
                                             <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-white">
                                                 <svg xmlns="http://www.w3.org/2000/svg" width="10" height="8" viewBox="0 0 12 9" fill="none">
                                                     <path d="M1.39844 4.34961H11.3984M11.3984 4.34961L7.64844 0.599609M11.3984 4.34961L7.64844 8.09961" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -724,7 +729,7 @@ function VersionsSection({
 
                                     <div className="flex w-full flex-col gap-2.5">
                                         <Link href={cotizarHref} onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
-                                            Cotizar
+                                            {cotizarLabel}
                                         </Link>
                                         <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] border border-black text-sm leading-none text-black transition hover:bg-black/5">
                                             Comparar modelo
@@ -740,7 +745,18 @@ function VersionsSection({
     );
 }
 
-export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtubeShorts }: { vehicle: typeof vehicleData; footer: any; shorts: any; youtubeShorts: any[] }) {
+type RentalContext = {
+    id: number;
+    name: string | null;
+    description: string | null;
+    price_hour: string | null;
+    price_day: string | null;
+    price_week: string | null;
+    price_month: string | null;
+    branches: { id: number; name: string; city: string }[];
+};
+
+export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtubeShorts, rentalContext }: { vehicle: typeof vehicleData; footer: any; shorts: any; youtubeShorts: any[]; rentalContext?: RentalContext | null }) {
     const [selectedVersion, setSelectedVersion] = useState(0);
     const [versionCardTab, setVersionCardTab] = useState<VersionTab>('precio');
     const [modal360Open, setModal360Open] = useState(false);
@@ -775,11 +791,36 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
     const dynamicTextBlocks: { key: string; title: string; text: string }[] =
         detail.viewer_360?.text_blocks ?? [];
 
-    const heroDescription: string = detail.hero?.description || vehicle.description || 'Descubre las características únicas de este vehículo Toyota.';
-    const heroTagline: string = detail.hero?.tagline || 'Desde';
-    const topSpecs: { label: string; value: string }[] = detail.hero?.top_specs ?? [];
+    const heroDescription: string = rentalContext?.description || detail.hero?.description || vehicle.description || 'Descubre las características únicas de este vehículo Toyota.';
     const showElectricBadge: boolean = !!(vehicle.versions ?? []).find((v: any) => v.electric);
     const heroBgImage: string = vehicle.hero_image || heroDetail;
+
+    // Rental context overrides ─────────────────────────────────────────────
+    // When the visitor lands here via the KINTO flow, we swap the "Desde"
+    // sticker, the catalog price, the top-specs grid and the "Cotizar" CTAs
+    // to surface rental-relevant info instead.
+    const heroTagline: string = rentalContext
+        ? 'Arriendo desde'
+        : (detail.hero?.tagline || 'Desde');
+
+    const displayPrice: string = rentalContext
+        ? (rentalContext.price_hour
+            ? `${formatCLP(rentalContext.price_hour)} la hora`
+            : rentalContext.price_day
+                ? `${formatCLP(rentalContext.price_day)} el día`
+                : rentalContext.price_week
+                    ? `${formatCLP(rentalContext.price_week)} la semana`
+                    : rentalContext.price_month
+                        ? `${formatCLP(rentalContext.price_month)} al mes`
+                        : 'Consultar')
+        : vehicle.price;
+
+    const cotizarHref: string = rentalContext
+        ? `/kinto?rental=${rentalContext.id}`
+        : `/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`;
+    const cotizarLabel: string = rentalContext ? 'Solicitar arriendo' : 'Cotizar';
+
+    const topSpecs: { label: string; value: string }[] = detail.hero?.top_specs ?? [];
 
     const hero = useInView(0.1);
     const section360 = useInView(0.1);
@@ -812,13 +853,14 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
     return (
         <>
             <Head title={vehicle.name} />
-            <div className="min-h-screen overflow-x-hidden bg-[#EAEAF1]">
+            <div className="min-h-screen overflow-x-clip bg-[#EAEAF1]">
                 <Navbar
                     variant="white"
                     detailBar={{
-                        backHref: '/nuevos',
+                        backHref: rentalContext ? '/kinto' : '/nuevos',
                         vehicleName: vehicle.fullName,
-                        ctaHref: `/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`,
+                        ctaHref: cotizarHref,
+                        ctaLabel: rentalContext ? 'Arrendar' : 'Cotizar',
                     }}
                 />
                 {/* Hero section */}
@@ -869,7 +911,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                             {/* Price */}
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm leading-none text-white/80">{heroTagline}</span>
-                                <span className="text-[28px] font-semibold leading-none text-white">{vehicle.price}</span>
+                                <span className="text-[28px] font-semibold leading-none text-white">{displayPrice}</span>
                             </div>
 
                             {/* Specs 2×2 grid */}
@@ -933,7 +975,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                             {/* Price */}
                             <div className="mt-4 flex flex-col gap-1">
                                 <span className="text-base leading-none text-white">{heroTagline}</span>
-                                <span className="text-[32px] font-semibold leading-none text-white">{vehicle.price}</span>
+                                <span className="text-[32px] font-semibold leading-none text-white">{displayPrice}</span>
                             </div>
                         </div>
 
@@ -986,7 +1028,8 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     setSelectedVersion={setSelectedVersion}
                     versionCardTab={versionCardTab}
                     setVersionCardTab={setVersionCardTab}
-                    cotizarHref={`/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`}
+                    cotizarHref={cotizarHref}
+                    cotizarLabel={cotizarLabel}
                 />
 
                 {/* 360 Section */}

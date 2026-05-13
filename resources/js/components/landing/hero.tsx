@@ -15,12 +15,18 @@ export function Hero({ data }: { data: HeroData }) {
 
     const fadeIn = visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0';
 
+    const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(data.background_video || '');
+
     return (
         <section ref={ref} className="relative flex h-dvh flex-col items-center justify-end self-stretch px-5 pb-10 lg:px-15 lg:pb-20">
-            {/* Background video */}
-            <video autoPlay muted loop playsInline className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center">
-                <source src={data.background_video} type="video/mp4" />
-            </video>
+            {/* Background media (video or image) */}
+            {isVideo ? (
+                <video autoPlay muted loop playsInline className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center">
+                    <source src={data.background_video} />
+                </video>
+            ) : data.background_video ? (
+                <img src={data.background_video} alt="" className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center" />
+            ) : null}
 
             {/* Gradient overlay */}
             <div

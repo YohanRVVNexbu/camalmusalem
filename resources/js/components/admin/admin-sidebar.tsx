@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronDown, ChevronsUpDown, ClipboardList, FileText, KeySquare, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MapPin, MessageSquare, Newspaper, Package, Receipt, RefreshCw, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
+import { Car, ChevronDown, ChevronsUpDown, ClipboardList, FileText, Key, KeySquare, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MapPin, MessageSquare, Newspaper, Package, Receipt, RefreshCw, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -33,6 +33,7 @@ const dashboardItem: NavItem = { title: 'Dashboard', href: '/admin', icon: Layou
 const catalogoItems: NavItem[] = [
     { title: 'Vehículos nuevos', href: '/admin/vehicle-models',  icon: Car },
     { title: 'Seminuevos',       href: '/admin/seminuevos',      icon: RefreshCw },
+    { title: 'Arriendos KINTO',  href: '/admin/rentals',         icon: Key },
     { title: 'Repuestos',        href: '/admin/repuestos',       icon: Wrench },
     { title: 'Accesorios',       href: '/admin/accesorios',      icon: Shirt },
     { title: 'Merch',            href: '/admin/merch',           icon: Package },
