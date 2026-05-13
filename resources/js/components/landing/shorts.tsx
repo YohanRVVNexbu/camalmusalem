@@ -42,16 +42,7 @@ type YouTubeShort = {
 };
 
 export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: ShortsData; videos: YouTubeShort[]; variant?: 'dark' | 'light' }) {
-    const [activeVideo, setActiveVideo] = useState<YouTubeShort | null>(null);
-
-    useEffect(() => {
-        if (activeVideo) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => { document.body.style.overflow = ''; };
-    }, [activeVideo]);
+    const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: 'start',
@@ -72,6 +63,7 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
     const onSelect = useCallback(() => {
         if (!emblaApi) return;
         setSelectedIndex(emblaApi.selectedScrollSnap());
+        setActiveVideoId(null);
     }, [emblaApi]);
 
     useEffect(() => {
@@ -87,134 +79,108 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
     const hasVideos = videos && videos.length > 0;
 
     return (
-        <>
-            <div className="flex flex-col gap-10">
-                <div className="overflow-hidden" ref={emblaRef}>
-                    <div className="flex gap-5">
-                        {hasVideos
-                            ? videos.map((video) => (
+        <div className="flex flex-col gap-10">
+            <div className="overflow-hidden" ref={emblaRef}>
+                <div className="flex gap-5">
+                    {hasVideos
+                        ? videos.map((video) => {
+                              const isActive = activeVideoId === video.id;
+                              return (
                                   <button
                                       key={video.id}
-                                      onClick={() => setActiveVideo(video)}
+                                      onClick={() => setActiveVideoId(isActive ? null : video.id)}
                                       className="relative flex w-75 shrink-0 cursor-pointer flex-col items-end justify-end overflow-hidden rounded-[30px] pt-42.5 pr-[110.875px] pl-[17.5px] md:h-150.5 md:w-auto md:min-w-0 md:basis-[calc(25%-15px)] md:p-0"
                                       style={{
-                                          backgroundImage: `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${video.thumbnail})`,
+                                          backgroundImage: isActive
+                                              ? 'none'
+                                              : `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${video.thumbnail})`,
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
-                                          backgroundColor: '#333',
+                                          backgroundColor: '#000',
                                           gap: '257.75px',
                                       }}
                                   >
-                                      {/* Mobile: logo bottom-right */}
-                                      <img src={data.logo} alt="YouTube Shorts" className="w-14 md:hidden" />
-                                      {/* Desktop: logo centered */}
-                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
-                                          <img src={data.logo} alt="YouTube Shorts" className="w-17" />
-                                      </div>
+                                      {isActive ? (
+                                          <iframe
+                                              src={`https://www.youtube.com/embed/${video.id}?autoplay=1&loop=1&playlist=${video.id}`}
+                                              className="absolute inset-0 h-full w-full"
+                                              allow="autoplay; encrypted-media"
+                                              allowFullScreen
+                                          />
+                                      ) : (
+                                          <>
+                                              <img src={data.logo} alt="YouTube Shorts" className="w-14 md:hidden" />
+                                              <div className="absolute inset-0 hidden items-center justify-center md:flex">
+                                                  <img src={data.logo} alt="YouTube Shorts" className="w-17" />
+                                              </div>
+                                          </>
+                                      )}
                                   </button>
-                              ))
-                            : data.images.map((image, index) => (
-                                  <div
-                                      key={index}
-                                      className="relative flex w-75 shrink-0 cursor-pointer flex-col items-end justify-end overflow-hidden rounded-[30px] pt-42.5 pr-[110.875px] pl-[17.5px] md:h-150.5 md:w-auto md:min-w-0 md:basis-[calc(25%-15px)] md:p-0"
-                                      style={{
-                                          backgroundImage: image
-                                              ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`
-                                              : 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2))',
-                                          backgroundSize: 'cover',
-                                          backgroundPosition: 'center',
-                                          backgroundColor: '#333',
-                                          gap: '257.75px',
-                                      }}
-                                  >
-                                      {/* Mobile: logo bottom-right */}
-                                      <img src={data.logo} alt="YouTube Shorts" className="w-14 md:hidden" />
-                                      {/* Desktop: logo centered */}
-                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
-                                          <img src={data.logo} alt="YouTube Shorts" className="w-17" />
-                                      </div>
+                              );
+                          })
+                        : data.images.map((image, index) => (
+                              <div
+                                  key={index}
+                                  className="relative flex w-75 shrink-0 cursor-pointer flex-col items-end justify-end overflow-hidden rounded-[30px] pt-42.5 pr-[110.875px] pl-[17.5px] md:h-150.5 md:w-auto md:min-w-0 md:basis-[calc(25%-15px)] md:p-0"
+                                  style={{
+                                      backgroundImage: image
+                                          ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${image})`
+                                          : 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2))',
+                                      backgroundSize: 'cover',
+                                      backgroundPosition: 'center',
+                                      backgroundColor: '#333',
+                                      gap: '257.75px',
+                                  }}
+                              >
+                                  {/* Mobile: logo bottom-right */}
+                                  <img src={data.logo} alt="YouTube Shorts" className="w-14 md:hidden" />
+                                  {/* Desktop: logo centered */}
+                                  <div className="absolute inset-0 hidden items-center justify-center md:flex">
+                                      <img src={data.logo} alt="YouTube Shorts" className="w-17" />
                                   </div>
-                              ))}
-                    </div>
-                </div>
-
-                {/* Pagination */}
-                <div className="flex items-center justify-between">
-                    <button
-                        onClick={scrollPrev}
-                        className={`flex size-10 items-center justify-center rounded-full backdrop-blur-[10px] transition ${
-                            variant === 'light' ? 'bg-black/10 hover:bg-black/20' : 'bg-white/20 hover:bg-white/30'
-                        }`}
-                    >
-                        <ChevronIcon className={`rotate-180 ${variant === 'light' ? 'text-black' : 'text-white'}`} />
-                    </button>
-                    <div className="flex items-center gap-5">
-                        {scrollSnaps.map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => scrollTo(index)}
-                                className={`h-2.5 rounded-[20px] transition-all ${
-                                    index === selectedIndex
-                                        ? `w-15 ${variant === 'light' ? 'bg-black' : 'bg-white'}`
-                                        : `w-2.5 ${variant === 'light' ? 'bg-black/30' : 'bg-white/40'}`
-                                }`}
-                            />
-                        ))}
-                    </div>
-                    <button
-                        onClick={scrollNext}
-                        className={`flex size-10 items-center justify-center rounded-full backdrop-blur-[10px] transition ${
-                            variant === 'light' ? 'bg-black/10 hover:bg-black/20' : 'bg-white/20 hover:bg-white/30'
-                        }`}
-                    >
-                        <ChevronIcon className={variant === 'light' ? 'text-black' : 'text-white'} />
-                    </button>
+                              </div>
+                          ))}
                 </div>
             </div>
 
-            {/* Modal */}
-            {activeVideo && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-                    onClick={() => setActiveVideo(null)}
+            {/* Pagination */}
+            <div className="flex items-center justify-between">
+                <button
+                    onClick={scrollPrev}
+                    className={`flex size-10 items-center justify-center rounded-full backdrop-blur-[10px] transition ${
+                        variant === 'light' ? 'bg-black/10 hover:bg-black/20' : 'bg-white/20 hover:bg-white/30'
+                    }`}
                 >
-                    <div
-                        className="relative"
-                        onClick={(e) => e.stopPropagation()}
-                    >
+                    <ChevronIcon className={`rotate-180 ${variant === 'light' ? 'text-black' : 'text-white'}`} />
+                </button>
+                <div className="flex items-center gap-5">
+                    {scrollSnaps.map((_, index) => (
                         <button
-                            onClick={() => setActiveVideo(null)}
-                            className="absolute -top-12 right-0 flex size-10 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18" />
-                                <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                        </button>
-                        <iframe
-                            src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1&loop=1`}
-                            className="h-[80vh] w-[45vh] rounded-2xl"
-                            allow="autoplay; encrypted-media"
-                            allowFullScreen
+                            key={index}
+                            onClick={() => scrollTo(index)}
+                            className={`h-2.5 rounded-[20px] transition-all ${
+                                index === selectedIndex
+                                    ? `w-15 ${variant === 'light' ? 'bg-black' : 'bg-white'}`
+                                    : `w-2.5 ${variant === 'light' ? 'bg-black/30' : 'bg-white/40'}`
+                            }`}
                         />
-                    </div>
+                    ))}
                 </div>
-            )}
-        </>
+                <button
+                    onClick={scrollNext}
+                    className={`flex size-10 items-center justify-center rounded-full backdrop-blur-[10px] transition ${
+                        variant === 'light' ? 'bg-black/10 hover:bg-black/20' : 'bg-white/20 hover:bg-white/30'
+                    }`}
+                >
+                    <ChevronIcon className={variant === 'light' ? 'text-black' : 'text-white'} />
+                </button>
+            </div>
+        </div>
     );
 }
 
 export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShort[] }) {
-    const [activeVideo, setActiveVideo] = useState<YouTubeShort | null>(null);
-
-    useEffect(() => {
-        if (activeVideo) {
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
-        }
-        return () => { document.body.style.overflow = ''; };
-    }, [activeVideo]);
+    const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: 'start',
@@ -235,6 +201,7 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
     const onSelect = useCallback(() => {
         if (!emblaApi) return;
         setSelectedIndex(emblaApi.selectedScrollSnap());
+        setActiveVideoId(null);
     }, [emblaApi]);
 
     useEffect(() => {
@@ -291,28 +258,44 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
                 <div className="overflow-hidden" ref={emblaRef}>
                     <div className="flex gap-5">
                         {hasVideos
-                            ? videos.map((video) => (
-                                  <button
-                                      key={video.id}
-                                      onClick={() => setActiveVideo(video)}
-                                      className="relative shrink-0 cursor-pointer overflow-hidden rounded-[30px] w-75 h-125 md:h-150.5 md:min-w-0 md:basis-[calc(25%-15px)] md:w-auto"
-                                      style={{
-                                          backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${video.thumbnail})`,
-                                          backgroundSize: 'cover',
-                                          backgroundPosition: 'center',
-                                          backgroundColor: '#333',
-                                      }}
-                                  >
-                                      {/* Mobile: logo bottom-right */}
-                                      <div className="absolute inset-0 flex flex-col items-end justify-end p-[17.5px] md:hidden">
-                                          <img src={data.logo} alt="YouTube Shorts" className="w-14" />
-                                      </div>
-                                      {/* Desktop: logo centered */}
-                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
-                                          <img src={data.logo} alt="YouTube Shorts" className="w-17" />
-                                      </div>
-                                  </button>
-                              ))
+                            ? videos.map((video) => {
+                                  const isActive = activeVideoId === video.id;
+                                  return (
+                                      <button
+                                          key={video.id}
+                                          onClick={() => setActiveVideoId(isActive ? null : video.id)}
+                                          className="relative shrink-0 cursor-pointer overflow-hidden rounded-[30px] w-75 h-125 md:h-150.5 md:min-w-0 md:basis-[calc(25%-15px)] md:w-auto"
+                                          style={{
+                                              backgroundImage: isActive
+                                                  ? 'none'
+                                                  : `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${video.thumbnail})`,
+                                              backgroundSize: 'cover',
+                                              backgroundPosition: 'center',
+                                              backgroundColor: '#000',
+                                          }}
+                                      >
+                                          {isActive ? (
+                                              <iframe
+                                                  src={`https://www.youtube.com/embed/${video.id}?autoplay=1&loop=1&playlist=${video.id}`}
+                                                  className="absolute inset-0 h-full w-full"
+                                                  allow="autoplay; encrypted-media"
+                                                  allowFullScreen
+                                              />
+                                          ) : (
+                                              <>
+                                                  {/* Mobile: logo bottom-right */}
+                                                  <div className="absolute inset-0 flex flex-col items-end justify-end p-[17.5px] md:hidden">
+                                                      <img src={data.logo} alt="YouTube Shorts" className="w-14" />
+                                                  </div>
+                                                  {/* Desktop: logo centered */}
+                                                  <div className="absolute inset-0 hidden items-center justify-center md:flex">
+                                                      <img src={data.logo} alt="YouTube Shorts" className="w-17" />
+                                                  </div>
+                                              </>
+                                          )}
+                                      </button>
+                                  );
+                              })
                             : data.images.map((image, index) => (
                                   <div
                                       key={index}
@@ -368,35 +351,6 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
                     </button>
                 </div>
             </div>
-
-            {/* Modal */}
-            {activeVideo && (
-                <div
-                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
-                    onClick={() => setActiveVideo(null)}
-                >
-                    <div
-                        className="relative"
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <button
-                            onClick={() => setActiveVideo(null)}
-                            className="absolute -top-12 right-0 flex size-10 items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
-                        >
-                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <line x1="18" y1="6" x2="6" y2="18" />
-                                <line x1="6" y1="6" x2="18" y2="18" />
-                            </svg>
-                        </button>
-                        <iframe
-                            src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1&loop=1`}
-                            className="h-[80vh] w-[45vh] rounded-2xl"
-                            allow="autoplay; encrypted-media"
-                            allowFullScreen
-                        />
-                    </div>
-                </div>
-            )}
         </section>
     );
 }

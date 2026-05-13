@@ -1,12 +1,20 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { Plus, X as XIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { ResetSectionButton } from '@/components/admin/reset-section-button';
 import { appendNested, dotToBracket } from '@/lib/form-data';
+import { SOCIAL_NETWORKS, SOCIAL_NETWORKS_BY_KEY } from '@/lib/social-networks';
 
 type Location = { title: string; items: string[] };
 
@@ -30,6 +38,15 @@ export function SectionFooter({ data: initialData, isVisible: initialVisible }: 
 
     const updateSocial = (key: string, value: string) => {
         setData({ ...data, social_links: { ...data.social_links, [key]: value } });
+    };
+
+    const addSocial = (key: string) => {
+        setData({ ...data, social_links: { ...data.social_links, [key]: '' } });
+    };
+
+    const removeSocial = (key: string) => {
+        const { [key]: _removed, ...rest } = data.social_links;
+        setData({ ...data, social_links: rest });
     };
 
     const updateNavLink = (index: number, field: string, value: string) => {
@@ -93,15 +110,72 @@ export function SectionFooter({ data: initialData, isVisible: initialVisible }: 
             </div>
 
             <Separator />
-            <h4 className="text-base font-semibold text-foreground">Redes sociales</h4>
-            <div className="grid grid-cols-2 gap-4">
-                {Object.entries(data.social_links).map(([key, url]) => (
-                    <div key={key} className="grid gap-2">
-                        <Label className="capitalize">{key}</Label>
-                        <Input value={url} onChange={(e) => updateSocial(key, e.target.value)} />
-                    </div>
-                ))}
+            <div className="flex items-center justify-between">
+                <h4 className="text-base font-semibold text-foreground">Redes sociales</h4>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            disabled={SOCIAL_NETWORKS.every((n) => n.key in data.social_links)}
+                        >
+                            <Plus className="mr-1 size-4" /> Agregar red
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {SOCIAL_NETWORKS.filter((n) => !(n.key in data.social_links)).map((n) => {
+                            const Icon = n.Icon;
+                            return (
+                                <DropdownMenuItem key={n.key} onClick={() => addSocial(n.key)}>
+                                    <span className="mr-2 inline-flex size-4 items-center justify-center">
+                                        <Icon />
+                                    </span>
+                                    {n.label}
+                                </DropdownMenuItem>
+                            );
+                        })}
+                    </DropdownMenuContent>
+                </DropdownMenu>
             </div>
+            {Object.keys(data.social_links).length === 0 ? (
+                <p className="text-sm text-muted-foreground">Aún no has agregado redes sociales.</p>
+            ) : (
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    {Object.entries(data.social_links).map(([key, url]) => {
+                        const network = SOCIAL_NETWORKS_BY_KEY[key];
+                        const Icon = network?.Icon;
+                        const label = network?.label ?? key;
+                        return (
+                            <div key={key} className="grid gap-2">
+                                <div className="flex items-center justify-between">
+                                    <Label className="flex items-center gap-2">
+                                        {Icon ? (
+                                            <span className="inline-flex size-4 items-center justify-center">
+                                                <Icon />
+                                            </span>
+                                        ) : null}
+                                        {label}
+                                    </Label>
+                                    <button
+                                        type="button"
+                                        onClick={() => removeSocial(key)}
+                                        className="text-muted-foreground transition hover:text-destructive"
+                                        aria-label={`Quitar ${label}`}
+                                    >
+                                        <XIcon className="size-4" />
+                                    </button>
+                                </div>
+                                <Input
+                                    value={url}
+                                    placeholder="https://..."
+                                    onChange={(e) => updateSocial(key, e.target.value)}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
 
             <Separator />
             <h4 className="text-base font-semibold text-foreground">Enlaces de navegación</h4>
