@@ -10,6 +10,7 @@ class Branch extends Model
 {
     protected $fillable = [
         'name', 'slug', 'address', 'city', 'maps_url',
+        'latitude', 'longitude',
         'phone', 'phone_sucursal', 'phone_repuestos',
         'phones_servicio_tecnico', 'image_path',
         'is_active', 'display_order',
@@ -18,6 +19,8 @@ class Branch extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'phones_servicio_tecnico' => 'array',
+        'latitude' => 'float',
+        'longitude' => 'float',
     ];
 
     public function seminuevos(): HasMany

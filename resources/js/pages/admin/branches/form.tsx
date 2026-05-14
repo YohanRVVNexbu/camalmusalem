@@ -6,6 +6,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AdminLayout from '@/layouts/admin-layout';
+import { BranchMapPicker } from '@/components/admin/branch-map-picker';
 import fallback1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import fallback2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
@@ -17,6 +18,8 @@ type Branch = {
     address: string | null;
     city: string | null;
     maps_url: string | null;
+    latitude: number | null;
+    longitude: number | null;
     phone: string | null;
     phone_sucursal: string | null;
     phone_repuestos: string | null;
@@ -31,14 +34,26 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
     const isEdit = !!branch?.id;
 
     const [data, setData] = useState<Branch>(branch ?? {
-        name: '', address: null, city: null, maps_url: null, phone: null,
-        phone_sucursal: null, phone_repuestos: null, phones_servicio_tecnico: [],
-        image_path: null, is_active: true, display_order: 0,
+        name: '', address: null, city: null, maps_url: null,
+        latitude: null, longitude: null,
+        phone: null, phone_sucursal: null, phone_repuestos: null,
+        phones_servicio_tecnico: [], image_path: null,
+        is_active: true, display_order: 0,
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
 
     const set = (field: keyof Branch, val: any) => setData({ ...data, [field]: val });
+
+    const handleMapPick = (lat: number, lng: number) => {
+        setData({
+            ...data,
+            latitude: lat,
+            longitude: lng,
+            // El maps_url se sincroniza automáticamente con el punto del mapa.
+            maps_url: `https://www.google.com/maps?q=${lat},${lng}`,
+        });
+    };
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -99,9 +114,27 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
                     </div>
 
                     <div className="grid gap-2">
-                        <Label>URL de Google Maps</Label>
-                        <Input value={data.maps_url ?? ''} onChange={(e) => set('maps_url', e.target.value || null)} placeholder="https://www.google.com/maps/..." />
-                        <p className="text-xs text-muted-foreground">Pega el link de Google Maps para que al hacer click en la sucursal se abra en una pestaña nueva.</p>
+                        <Label>Ubicación en el mapa</Label>
+                        <BranchMapPicker
+                            latitude={data.latitude}
+                            longitude={data.longitude}
+                            onChange={handleMapPick}
+                            searchHint={[data.address, data.city].filter(Boolean).join(', ')}
+                        />
+                        {data.latitude != null && data.longitude != null && (
+                            <p className="text-xs text-muted-foreground">
+                                Coordenadas: <strong>{data.latitude.toFixed(6)}, {data.longitude.toFixed(6)}</strong>
+                                {' · '}
+                                <a
+                                    href={data.maps_url ?? `https://www.google.com/maps?q=${data.latitude},${data.longitude}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="underline hover:no-underline"
+                                >
+                                    Abrir en Google Maps
+                                </a>
+                            </p>
+                        )}
                     </div>
 
                     <div className="grid grid-cols-2 gap-4">

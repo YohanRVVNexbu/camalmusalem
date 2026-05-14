@@ -143,8 +143,15 @@ class PagesController extends Controller
 
         $branches = \App\Models\Branch::where('is_active', true)
             ->orderBy('display_order')
-            ->get(['id', 'name', 'city'])
-            ->map(fn ($b) => ['id' => $b->id, 'name' => $b->name, 'city' => $b->city])
+            ->get(['id', 'name', 'city', 'address', 'latitude', 'longitude'])
+            ->map(fn ($b) => [
+                'id' => $b->id,
+                'name' => $b->name,
+                'city' => $b->city,
+                'address' => $b->address,
+                'latitude' => $b->latitude,
+                'longitude' => $b->longitude,
+            ])
             ->all();
 
         return Inertia::render('kinto', [

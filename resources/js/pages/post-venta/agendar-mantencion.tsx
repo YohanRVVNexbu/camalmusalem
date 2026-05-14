@@ -1,6 +1,7 @@
 import { Head, router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { BranchesSection } from '@/components/landing/branches-section';
+import { BranchMap, type BranchMapData } from '@/components/landing/branch-map';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
@@ -32,9 +33,12 @@ import card1Img from '@images/mantencion/card_1.png?format=webp';
 import card2Img from '@images/mantencion/card_2.jpg?format=webp';
 import card3Img from '@images/mantencion/card_3.png?format=webp';
 import thirdSectionImg from '@images/mantencion/image_third_section.jpg?format=webp';
-import step1Img from '@images/mantencion/image_step1.png?format=webp';
 import step2Img from '@images/mantencion/image_step2.png?format=webp';
 import step4Img from '@images/mantencion/image_step4.png?format=webp';
+
+type BranchLite = BranchMapData & { id: number; name: string; city: string | null; address: string | null };
+type ServiceLite = { id: number; name: string; slug: string };
+type VehicleModelLite = { id: number; name: string };
 
 const carouselCards: (
     | { type: 'image'; image: string }
@@ -63,7 +67,19 @@ const carouselCards: (
     },
 ];
 
-export default function AgendarMantencion({ footer, mantencion_hero }: { footer: any | null; mantencion_hero?: any | null }) {
+export default function AgendarMantencion({
+    footer,
+    mantencion_hero,
+    branches = [],
+    services = [],
+    vehicle_models = [],
+}: {
+    footer: any | null;
+    mantencion_hero?: any | null;
+    branches?: BranchLite[];
+    services?: ServiceLite[];
+    vehicle_models?: VehicleModelLite[];
+}) {
     const hero = mantencion_hero ?? {};
     const isMobile = useIsMobile();
     const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
@@ -378,25 +394,41 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
 
                                 {/* Content */}
                                 <div className="flex w-full flex-col items-stretch gap-7.5 lg:flex-row lg:items-center lg:gap-15">
-                                    {/* Imagen sucursales */}
+                                    {/* Mapa de sucursales (paso 0) o imagen estática para otros pasos */}
                                     <div
-                                        className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[30px] lg:h-140 lg:w-140 lg:aspect-auto"
+                                        className="relative w-full shrink-0 lg:h-140 lg:w-140"
                                         style={{ boxShadow: '2px 2px 2px 2px rgba(0,0,0,0.02)' }}
                                     >
-                                        <img
-                                            src={formStep <= 0 ? step1Img : formStep <= 2 ? step2Img : step4Img}
-                                            alt=""
-                                            className="absolute inset-0 size-full object-cover transition-opacity duration-500"
-                                            key={formStep <= 0 ? 'step1' : formStep <= 2 ? 'step2' : 'step4'}
-                                        />
-                                        <div
-                                            className="absolute right-2.5 bottom-2.5 left-2.5 flex flex-col gap-2.5 overflow-hidden rounded-2xl bg-[rgba(0,0,0,0.60)] p-5 lg:right-auto lg:bottom-7.5 lg:left-7.5 lg:w-92.25"
-                                            style={{ backdropFilter: 'blur(30px)' }}
-                                        >
-                                            <span className="text-xl leading-none font-semibold text-white uppercase">Sucursales</span>
-                                            <span className="text-sm leading-none font-normal text-white">Av. Francisco de Aguirre #070, La Serena</span>
-                                            <span className="text-sm leading-none font-normal text-white">Ariztía #358, Ovalle</span>
-                                        </div>
+                                        {formStep === 0 ? (
+                                            <div className="flex w-full flex-col gap-2.5">
+                                                <BranchMap
+                                                    branch={branches.find((b) => String(b.id) === taller) ?? branches[0] ?? null}
+                                                    className="aspect-square w-full lg:aspect-auto lg:h-115"
+                                                />
+                                                <div
+                                                    className="flex flex-col gap-2.5 overflow-hidden rounded-2xl p-5"
+                                                    style={{ background: 'rgba(0,0,0,0.60)', backdropFilter: 'blur(30px)' }}
+                                                >
+                                                    <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                                        Sucursales
+                                                    </span>
+                                                    {branches.map((b) => (
+                                                        <span key={b.id} className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                                            {[b.address, b.city].filter(Boolean).join(', ') || b.name}
+                                                        </span>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ) : (
+                                            <div className="relative aspect-square w-full overflow-hidden rounded-[30px] lg:h-140 lg:aspect-auto">
+                                                <img
+                                                    src={formStep <= 2 ? step2Img : step4Img}
+                                                    alt=""
+                                                    className="absolute inset-0 size-full object-cover transition-opacity duration-500"
+                                                    key={formStep <= 2 ? 'step2' : 'step4'}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Formulario paso actual */}
@@ -416,12 +448,9 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                                                 className="h-10 w-full appearance-none rounded-[60px] border border-transparent bg-white px-5 py-2.5 text-sm leading-none font-normal text-black outline-none"
                                                             >
                                                                 <option value="" disabled>Seleccione Servicio</option>
-                                                                <option value="mantencion">Mantención preventiva</option>
-                                                                <option value="diagnostico">Diagnóstico electrónico</option>
-                                                                <option value="frenos">Revisión de frenos</option>
-                                                                <option value="alineacion">Alineación y balanceo</option>
-                                                                <option value="electrico">Servicio eléctrico/híbrido</option>
-                                                                <option value="desabolladura">Desabolladura y pintura</option>
+                                                                {services.map((s) => (
+                                                                    <option key={s.id} value={s.slug}>{s.name}</option>
+                                                                ))}
                                                             </select>
                                                             <svg className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1L5 5L1 9" stroke="black" strokeWidth="1.2"/></svg>
                                                         </div>
@@ -435,8 +464,11 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                                                 className="h-10 w-full appearance-none rounded-[60px] border border-transparent bg-white px-5 py-2.5 text-sm leading-none font-normal text-black outline-none"
                                                             >
                                                                 <option value="" disabled>Seleccionar taller</option>
-                                                                <option value="la-serena">La Serena - Av. Francisco de Aguirre #070</option>
-                                                                <option value="ovalle">Ovalle - Ariztía #358</option>
+                                                                {branches.map((b) => (
+                                                                    <option key={b.id} value={String(b.id)}>
+                                                                        {[b.city, b.address].filter(Boolean).join(' - ') || b.name}
+                                                                    </option>
+                                                                ))}
                                                             </select>
                                                             <svg className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1L5 5L1 9" stroke="black" strokeWidth="1.2"/></svg>
                                                         </div>
@@ -510,13 +542,9 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                                                                 className="h-10 w-full appearance-none rounded-[60px] border border-transparent bg-white px-5 py-2.5 text-sm leading-none font-normal text-black outline-none"
                                                             >
                                                                 <option value="" disabled>Seleccione modelo del vehículo</option>
-                                                                <option value="Corolla">Corolla</option>
-                                                                <option value="Hilux">Hilux</option>
-                                                                <option value="RAV4">RAV4</option>
-                                                                <option value="bZ4X">bZ4X</option>
-                                                                <option value="Yaris">Yaris</option>
-                                                                <option value="Camry">Camry</option>
-                                                                <option value="Land Cruiser">Land Cruiser</option>
+                                                                {vehicle_models.map((m) => (
+                                                                    <option key={m.id} value={m.name}>{m.name}</option>
+                                                                ))}
                                                             </select>
                                                             <svg className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2" xmlns="http://www.w3.org/2000/svg" width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1L5 5L1 9" stroke="black" strokeWidth="1.2"/></svg>
                                                         </div>

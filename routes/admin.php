@@ -23,6 +23,7 @@ use App\Http\Controllers\Admin\NoticiaController;
 use App\Http\Controllers\Admin\PageContentController;
 use App\Http\Controllers\Admin\RepuestoController;
 use App\Http\Controllers\Admin\SeminuevoController;
+use App\Http\Controllers\Admin\MantencionFormController;
 use App\Http\Controllers\Admin\UserController;
 use Illuminate\Support\Facades\Route;
 
@@ -56,6 +57,17 @@ Route::middleware('admin')->group(function () {
     Route::resource('branches', BranchController::class)
         ->except(['show'])
         ->names('admin.branches');
+
+    // Mantenedor del Formulario de Mantención (servicios + modelos de vehículo)
+    Route::prefix('formulario-mantencion')->name('admin.mantencion-form.')->group(function () {
+        Route::get('/', [MantencionFormController::class, 'index'])->name('index');
+        Route::post('services', [MantencionFormController::class, 'storeService'])->name('services.store');
+        Route::put('services/{service}', [MantencionFormController::class, 'updateService'])->name('services.update');
+        Route::delete('services/{service}', [MantencionFormController::class, 'destroyService'])->name('services.destroy');
+        Route::post('vehicle-models', [MantencionFormController::class, 'storeVehicleModel'])->name('models.store');
+        Route::put('vehicle-models/{model}', [MantencionFormController::class, 'updateVehicleModel'])->name('models.update');
+        Route::delete('vehicle-models/{model}', [MantencionFormController::class, 'destroyVehicleModel'])->name('models.destroy');
+    });
 
     // Catálogo técnico — Equipamiento (features)
     Route::resource('features', FeatureController::class)

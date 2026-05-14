@@ -41,10 +41,11 @@ const catalogoItems: NavItem[] = [
 ];
 
 const mantenedoresItems: NavItem[] = [
-    { title: 'Marcas',           href: '/admin/brands',   icon: Tag },
-    { title: 'Sucursales',       href: '/admin/branches', icon: MapPin },
-    { title: 'Equipamiento',     href: '/admin/features', icon: ListChecks },
-    { title: 'Listas editables', href: '/admin/lookups',  icon: ListTree },
+    { title: 'Marcas',                 href: '/admin/brands',                 icon: Tag },
+    { title: 'Sucursales',             href: '/admin/branches',               icon: MapPin },
+    { title: 'Formulario Mantención',  href: '/admin/formulario-mantencion',  icon: Wrench },
+    { title: 'Equipamiento',           href: '/admin/features',               icon: ListChecks },
+    { title: 'Listas editables',       href: '/admin/lookups',                icon: ListTree },
 ];
 
 const solicitudesItems: NavItem[] = [

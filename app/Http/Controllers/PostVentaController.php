@@ -22,9 +22,31 @@ class PostVentaController extends Controller
 
     public function agendarMantencion()
     {
+        $branches = \App\Models\Branch::where('is_active', true)
+            ->orderBy('display_order')
+            ->get(['id', 'name', 'city', 'address', 'latitude', 'longitude'])
+            ->map(fn ($b) => [
+                'id' => $b->id, 'name' => $b->name, 'city' => $b->city,
+                'address' => $b->address, 'latitude' => $b->latitude, 'longitude' => $b->longitude,
+            ])
+            ->all();
+
+        $services = \App\Models\Service::where('is_active', true)
+            ->orderBy('display_order')->orderBy('name')
+            ->get(['id', 'name', 'slug'])
+            ->all();
+
+        $vehicleModels = \App\Models\MantencionVehicleModel::where('is_active', true)
+            ->orderBy('display_order')->orderBy('name')
+            ->get(['id', 'name'])
+            ->all();
+
         return Inertia::render('post-venta/agendar-mantencion', [
             'footer'          => $this->section('footer'),
             'mantencion_hero' => $this->section('mantencion_hero'),
+            'branches'        => $branches,
+            'services'        => $services,
+            'vehicle_models'  => $vehicleModels,
         ]);
     }
 

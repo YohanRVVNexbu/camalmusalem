@@ -52,6 +52,7 @@ class HandleInertiaRequests extends Middleware
                 ->orderBy('display_order')
                 ->get([
                     'id', 'name', 'address', 'city', 'maps_url',
+                    'latitude', 'longitude',
                     'phone_sucursal', 'phone_repuestos', 'phones_servicio_tecnico',
                     'image_path',
                 ]),

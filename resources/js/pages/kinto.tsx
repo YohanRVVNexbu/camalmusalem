@@ -12,6 +12,7 @@ import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
 import 'react-day-picker/style.css';
+import { BranchMap } from '@/components/landing/branch-map';
 
 const calendarStyles = `
     .rdp-root { --rdp-accent-color: #000; --rdp-accent-background: #000; --rdp-day_button-height: 40px; --rdp-day_button-width: 40px; font-family: inherit; color: #000; }
@@ -25,10 +26,10 @@ const calendarStyles = `
     .rdp-button_next, .rdp-button_previous { border: 1px solid rgba(0,0,0,0.2); border-radius: 50%; width: 32px; height: 32px; }
     .rdp-day_button:hover:not(.rdp-selected) { background: rgba(0,0,0,0.08); }
 `;
+
 import heroImgDefault from '@images/kinto/hero_image.png?format=webp';
 import formImg from '@images/kinto/image_form.jpg?format=webp';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
-import formStep1Img from '@images/mantencion/image_step1.png?format=webp';
 import formStep2Img from '@images/mantencion/form_2_image.png?format=webp';
 import formStep3Img from '@images/mantencion/form_image_3.png?format=webp';
 import card1Img from '@images/kinto/card_1.jpg?format=webp';
@@ -54,7 +55,14 @@ type Rental = {
     vehicle_slug: string | null;
 };
 
-type BranchLite = { id: number; name: string; city: string };
+type BranchLite = {
+    id: number;
+    name: string;
+    city: string;
+    address?: string | null;
+    latitude?: number | null;
+    longitude?: number | null;
+};
 
 // Returns the "best" display price for a rental card, preferring the most
 // granular unit available (hour → day → week → month).
@@ -539,28 +547,23 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                 {formStep === 1 && (
                                     <div className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:gap-15">
 
-                                        {/* Imagen izquierda con overlay sucursales */}
-                                        <div className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[30px] bg-white shadow-sm lg:h-140 lg:w-140">
-                                            <img
-                                                src={formStep1Img}
-                                                alt="Sucursales"
-                                                className="absolute inset-0 w-full h-full object-cover"
+                                        {/* Mapa OpenStreetMap + card de direcciones abajo */}
+                                        <div className="flex w-full shrink-0 flex-col gap-2.5 lg:w-140">
+                                            <BranchMap
+                                                branch={branches.find((b) => String(b.id) === formSucursal) ?? branches[0] ?? null}
                                             />
                                             <div
-                                                className="absolute right-2.5 bottom-2.5 left-2.5 flex flex-col gap-2.5 overflow-hidden rounded-2xl p-5 lg:right-auto lg:bottom-7.5 lg:left-7.5 lg:w-92.25"
+                                                className="flex flex-col gap-2.5 overflow-hidden rounded-2xl p-5"
                                                 style={{ background: 'rgba(0,0,0,0.60)', backdropFilter: 'blur(30px)' }}
                                             >
-                                                <div className="flex flex-col gap-4 items-start w-full">
-                                                    <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                                                        Sucursales
+                                                <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                                    Sucursales
+                                                </span>
+                                                {branches.map((b) => (
+                                                    <span key={b.id} className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                                        {[b.address, b.city].filter(Boolean).join(', ') || b.name}
                                                     </span>
-                                                    <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                                                        Av. Francisco de Aguirre #070, La Serena
-                                                    </span>
-                                                    <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                                                        Aristía #358, Ovalle
-                                                    </span>
-                                                </div>
+                                                ))}
                                             </div>
                                         </div>
 
