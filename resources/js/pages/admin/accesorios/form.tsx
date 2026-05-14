@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { formatCLP } from '@/lib/format';
 import AdminLayout from '@/layouts/admin-layout';
 
 type Accesorio = { id?: number; name: string; description: string | null; price: string | null; category: string; images: string[]; is_visible: boolean; order: number; };
@@ -63,7 +64,13 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
                         </div>
                         <div className="grid gap-2">
                             <Label>Precio</Label>
-                            <Input value={data.price ?? ''} onChange={(e) => setData({ ...data, price: e.target.value })} placeholder="$ 15.000" />
+                            <Input
+                                value={formatCLP(data.price)}
+                                onChange={(e) => setData({ ...data, price: e.target.value.replace(/[^0-9]/g, '') || null })}
+                                placeholder="$ 15.000"
+                                inputMode="numeric"
+                            />
+                            <p className="text-xs text-muted-foreground">Ingresa sólo el número; el formato $ y los puntos se aplican automáticamente.</p>
                         </div>
                         <div className="grid gap-2">
                             <Label>Orden</Label>

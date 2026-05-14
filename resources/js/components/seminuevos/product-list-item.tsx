@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { formatCLP } from '@/lib/format';
 import { FuelElectricIcon } from '@/components/icons/fuel-electric-icon';
 import { FuelGasIcon } from '@/components/icons/fuel-gas-icon';
 import { FuelHybridIcon } from '@/components/icons/fuel-hybrid-icon';
@@ -101,11 +102,11 @@ export function ProductListItem({
                     <div className="flex flex-col items-end">
                         {originalPrice && (
                             <span className="text-sm font-normal uppercase leading-none text-[#EB0A1E] line-through">
-                                {originalPrice}
+                                {formatCLP(originalPrice)}
                             </span>
                         )}
                         <span className="text-2xl font-semibold uppercase leading-none text-black">
-                            {price}
+                            {formatCLP(price)}
                         </span>
                     </div>
                     <Link

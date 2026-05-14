@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { formatCLP } from '@/lib/format';
 import AdminLayout from '@/layouts/admin-layout';
 
 type SpecRow = { label: string; value: string };
@@ -290,11 +291,22 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                         </div>
                         <div className="grid gap-2">
                             <Label>Precio *</Label>
-                            <Input value={data.price} onChange={(e) => set('price', e.target.value)} placeholder="$ 15.000.000" required />
+                            <Input
+                                value={formatCLP(data.price)}
+                                onChange={(e) => set('price', e.target.value.replace(/[^0-9]/g, ''))}
+                                placeholder="$ 15.000.000"
+                                inputMode="numeric"
+                                required
+                            />
                         </div>
                         <div className="grid gap-2">
                             <Label>Pie mínimo</Label>
-                            <Input value={data.down_payment ?? ''} onChange={(e) => set('down_payment', e.target.value)} placeholder="$ 5.000.000" />
+                            <Input
+                                value={formatCLP(data.down_payment)}
+                                onChange={(e) => set('down_payment', e.target.value.replace(/[^0-9]/g, '') || null)}
+                                placeholder="$ 5.000.000"
+                                inputMode="numeric"
+                            />
                         </div>
                         <div className="grid gap-2">
                             <Label>Combustible</Label>

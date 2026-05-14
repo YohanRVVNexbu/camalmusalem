@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { formatCLP } from '@/lib/format';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
@@ -228,7 +229,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                         <div className="flex flex-col gap-1.5">
                             <span className="text-base leading-none text-black/60">Precio:</span>
                             <div className="rounded-[10px] bg-white p-4">
-                                <span className="text-2xl font-semibold uppercase leading-none text-black">{seminuevo.price}</span>
+                                <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
                             </div>
                         </div>
 
@@ -236,7 +237,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                         {seminuevo.down_payment && (
                             <div className="flex items-center gap-1.5 rounded-[10px] bg-white px-5 py-2.5">
                                 <span className="text-base leading-none text-black/60">Pie mínimo</span>
-                                <span className="text-base font-semibold uppercase leading-none text-black">{seminuevo.down_payment}</span>
+                                <span className="text-base font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
                             </div>
                         )}
 
@@ -513,7 +514,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-lg leading-none text-black/60">Precio:</span>
                                 <div className="rounded-[10px] bg-[#EAEAF1] p-4">
-                                    <span className="text-[28px] font-semibold uppercase leading-none text-black">{seminuevo.price}</span>
+                                    <span className="text-[28px] font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
                                 </div>
                             </div>
 
@@ -521,7 +522,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                             {seminuevo.down_payment && (
                                 <div className="flex items-center gap-1.5 rounded-[10px] bg-[#EAEAF1] px-5 py-2.5">
                                     <span className="text-lg leading-none text-black/60">Pie mínimo</span>
-                                    <span className="text-lg font-semibold uppercase leading-none text-black">{seminuevo.down_payment}</span>
+                                    <span className="text-lg font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
                                 </div>
                             )}
 

@@ -13,3 +13,12 @@ export function formatCLP(value: string | number | null | undefined): string {
     const grouped = digits.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     return `$${grouped}`;
 }
+
+/**
+ * Strip everything but digits. Use in admin forms before sending to the
+ * backend so the DB always stores a canonical numeric string ("18300").
+ */
+export function cleanCLP(value: string | number | null | undefined): string {
+    if (value == null) return '';
+    return String(value).replace(/[^0-9]/g, '');
+}

@@ -100,7 +100,7 @@ class RepuestoController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name'            => ['required', 'string', 'max:255'],
             'sku'             => ['nullable', 'string', 'max:100'],
             'description'     => ['nullable', 'string'],
@@ -111,5 +111,11 @@ class RepuestoController extends Controller
             'is_visible'      => ['boolean'],
             'order'           => ['integer'],
         ]);
+
+        if (isset($data['price'])) {
+            $data['price'] = preg_replace('/[^0-9]/', '', (string) $data['price']) ?: null;
+        }
+
+        return $data;
     }
 }

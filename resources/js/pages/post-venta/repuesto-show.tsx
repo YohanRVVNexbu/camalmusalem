@@ -5,6 +5,7 @@ import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { formatCLP } from '@/lib/format';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
 
 type Repuesto = {
@@ -113,7 +114,7 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                         <div className="flex flex-col gap-1.5">
                             <span className="text-base leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                             <div className="rounded-[10px] bg-[#EAEAF1] p-4">
-                                <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{repuesto.price ?? '—'}</span>
+                                <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{repuesto.price ? formatCLP(repuesto.price) : '—'}</span>
                             </div>
                         </div>
 
@@ -246,7 +247,7 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-base leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                                 <div className="rounded-[10px] bg-white p-4">
-                                    <span className="text-[28px] font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{repuesto.price ?? '—'}</span>
+                                    <span className="text-[28px] font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{repuesto.price ? formatCLP(repuesto.price) : '—'}</span>
                                 </div>
                             </div>
 

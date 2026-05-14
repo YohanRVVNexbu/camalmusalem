@@ -100,7 +100,7 @@ class AccesorioController extends Controller
 
     private function validated(Request $request): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'name'        => ['required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'price'       => ['nullable', 'string', 'max:100'],
@@ -108,5 +108,13 @@ class AccesorioController extends Controller
             'is_visible'  => ['boolean'],
             'order'       => ['integer'],
         ]);
+
+        // Normaliza el precio a sólo dígitos para que la BD guarde valor
+        // canónico — el frontend formatea con formatCLP() al mostrar.
+        if (isset($data['price'])) {
+            $data['price'] = preg_replace('/[^0-9]/', '', (string) $data['price']) ?: null;
+        }
+
+        return $data;
     }
 }

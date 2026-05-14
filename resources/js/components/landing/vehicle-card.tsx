@@ -1,4 +1,5 @@
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { formatCLP } from '@/lib/format';
 
 type VehicleCardProps = {
     image: string;
@@ -68,7 +69,7 @@ export function VehicleCard({
 
                 <div className="flex items-center justify-between px-2.5">
                     <span className="text-2xl leading-none font-semibold uppercase text-black">
-                        {price}
+                        {formatCLP(price)}
                     </span>
                     <a
                         href={href}

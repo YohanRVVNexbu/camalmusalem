@@ -5,6 +5,7 @@ import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
+import { formatCLP } from '@/lib/format';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
 import heroImg from '@images/repuestos/hero_image.png?format=webp';
@@ -232,7 +233,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                                 className="text-xl font-semibold uppercase leading-none text-black lg:text-2xl"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
-                                                {item.price ?? '—'}
+                                                {item.price ? formatCLP(item.price) : '—'}
                                             </span>
                                             <Link href={`/post-venta/repuestos/${item.id}`} className="flex h-10 shrink-0 items-center gap-2.5 rounded-[60px] bg-black p-1 pl-3.5 transition-opacity hover:opacity-80">
                                                 <span className="pb-0.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>

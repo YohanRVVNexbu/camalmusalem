@@ -38,7 +38,10 @@
       "Bash(curl -s http://camalmusalem.test/admin/formulario-mantencion -b /tmp/cookies.txt -L)",
       "Bash(node -e ' *)",
       "Bash(curl -s http://127.0.0.1:13714/health)",
-      "Bash(awk 'BEGIN{FS=\"\"} {for\\(i=5950;i<=6000;i++\\) printf \"%s\", $i}' /Users/nexbuescl/Sites/camalmusalem/public/build/assets/index-DMAVGSEZ.js)"
+      "Bash(awk 'BEGIN{FS=\"\"} {for\\(i=5950;i<=6000;i++\\) printf \"%s\", $i}' /Users/nexbuescl/Sites/camalmusalem/public/build/assets/index-DMAVGSEZ.js)",
+      "Bash(grep -rln \"formatCLP\\\\|price\\\\|precio\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/seminuevos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/nuevos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/repuestos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/accesorios.tsx)",
+      "Bash(grep -nE \"price|msrp|precio|\\\\\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/seminuevos.tsx)",
+      "Bash(grep -n \"import\\\\|setData.*price\\\\|placeholder=\\\\\"\\\\\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/admin/repuestos/form.tsx)"
     ],
     "additionalDirectories": [
       "/tmp"

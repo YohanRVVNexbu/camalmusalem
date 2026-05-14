@@ -530,7 +530,7 @@ function VersionsSection({
                                             )}
                                             <span className="text-xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{ver.name}</span>
                                         </div>
-                                        <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{ver.price}</span>
+                                        <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{formatCLP(ver.price)}</span>
                                         <span className="text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>{ver.bonus}</span>
                                     </div>
 
@@ -666,7 +666,7 @@ function VersionsSection({
                                             )}
                                             <span className="text-xl font-semibold uppercase leading-none text-black">{ver.name}</span>
                                         </div>
-                                        <span className="text-2xl font-semibold uppercase leading-none text-black">{ver.price}</span>
+                                        <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(ver.price)}</span>
                                         <span className="text-sm leading-none text-black/60">{ver.bonus}</span>
                                     </div>
 

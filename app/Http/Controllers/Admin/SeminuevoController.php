@@ -222,6 +222,18 @@ class SeminuevoController extends Controller
             $data['specs'] = is_array($decoded) ? $decoded : null;
         }
 
+        // Normaliza precios a sólo dígitos para que la BD siempre guarde el
+        // valor canónico — el front formatea con formatCLP() al mostrar.
+        $data['price'] = $this->onlyDigits($data['price'] ?? '');
+        if (isset($data['down_payment'])) {
+            $data['down_payment'] = $this->onlyDigits($data['down_payment']) ?: null;
+        }
+
         return $data;
+    }
+
+    private function onlyDigits(?string $value): string
+    {
+        return preg_replace('/[^0-9]/', '', (string) $value);
     }
 }

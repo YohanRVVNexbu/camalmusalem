@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { formatCLP } from '@/lib/format';
 import AdminLayout from '@/layouts/admin-layout';
 
 type Repuesto = {
@@ -82,7 +83,13 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
                         </div>
                         <div className="grid gap-2">
                             <Label>Precio</Label>
-                            <Input value={data.price ?? ''} onChange={(e) => setData({ ...data, price: e.target.value })} placeholder="$ 18.000" />
+                            <Input
+                                value={formatCLP(data.price)}
+                                onChange={(e) => setData({ ...data, price: e.target.value.replace(/[^0-9]/g, '') || null })}
+                                placeholder="$ 18.000"
+                                inputMode="numeric"
+                            />
+                            <p className="text-xs text-muted-foreground">Ingresa sólo el número; el formato $ y los puntos se aplican automáticamente.</p>
                         </div>
                         <div className="grid gap-2">
                             <Label>Orden</Label>

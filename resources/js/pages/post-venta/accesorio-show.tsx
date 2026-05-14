@@ -5,6 +5,7 @@ import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { formatCLP } from '@/lib/format';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
 
 type Accesorio = {
@@ -115,7 +116,7 @@ export default function AccesorioShow({ accesorio, footer }: { accesorio: Acceso
                         <div className="flex flex-col gap-1.5">
                             <span className="text-base leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                             <div className="rounded-[10px] bg-[#EAEAF1] p-4">
-                                <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{accesorio.price ?? '—'}</span>
+                                <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{accesorio.price ? formatCLP(accesorio.price) : '—'}</span>
                             </div>
                         </div>
 
@@ -239,7 +240,7 @@ export default function AccesorioShow({ accesorio, footer }: { accesorio: Acceso
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-lg leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                                 <div className="rounded-[10px] p-4" style={{ background: 'rgba(0,0,0,0.06)' }}>
-                                    <span className="text-[28px] font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{accesorio.price ?? '—'}</span>
+                                    <span className="text-[28px] font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{accesorio.price ? formatCLP(accesorio.price) : '—'}</span>
                                 </div>
                             </div>
 

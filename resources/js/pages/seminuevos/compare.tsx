@@ -1,4 +1,5 @@
 import { Head, Link } from '@inertiajs/react';
+import { formatCLP } from '@/lib/format';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { vehicles, type Vehicle } from '@/data/vehicles';
@@ -569,7 +570,7 @@ function CompareCard({ vehicle, onRemove }: { vehicle: Vehicle; onRemove: () => 
                         <span className="text-sm leading-none text-black/40 line-through">{vehicle.originalPrice}</span>
                     )}
                     <div className="rounded-[10px] bg-[#EAEAF1] p-3">
-                        <span className="text-xl font-semibold uppercase leading-none text-black">{vehicle.price}</span>
+                        <span className="text-xl font-semibold uppercase leading-none text-black">{formatCLP(vehicle.price)}</span>
                     </div>
                 </div>
 
