@@ -21,6 +21,12 @@
             <span class="summary-value">{{ $contacto->telefono }}</span>
         </div>
         @endif
+        @if ($contacto->rut)
+        <div class="summary-row">
+            <span class="summary-label">RUT</span>
+            <span class="summary-value">{{ $contacto->rut }}</span>
+        </div>
+        @endif
     </div>
 
     <h2>Tu mensaje</h2>

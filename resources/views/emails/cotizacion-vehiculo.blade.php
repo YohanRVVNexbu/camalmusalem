@@ -29,5 +29,5 @@
     @endif
 
     <div class="divider"></div>
-    <p>Datos de contacto registrados: {{ $cotizacion->email }} · {{ $cotizacion->telefono }}</p>
+    <p>Datos de contacto registrados: {{ $cotizacion->email }} · {{ $cotizacion->telefono }}@if ($cotizacion->rut) · RUT {{ $cotizacion->rut }}@endif</p>
 @endsection

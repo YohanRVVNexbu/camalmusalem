@@ -13,6 +13,7 @@ type Cotizacion = {
     nombre: string;
     email: string;
     telefono: string;
+    rut: string | null;
     comentarios: string | null;
     leido: boolean;
     created_at: string;
@@ -64,6 +65,12 @@ export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizacio
                                             <span className="text-sm text-muted-foreground">{c.email}</span>
                                             <span className="text-muted-foreground text-sm">·</span>
                                             <span className="text-sm text-muted-foreground">{c.telefono}</span>
+                                            {c.rut && (
+                                                <>
+                                                    <span className="text-muted-foreground text-sm">·</span>
+                                                    <span className="text-sm text-muted-foreground">RUT {c.rut}</span>
+                                                </>
+                                            )}
                                             <Badge variant="outline" className="ml-1">{c.tipo === 'nuevo' ? 'Nuevo' : 'Seminuevo'}</Badge>
                                             <span className="text-muted-foreground text-sm ml-auto">
                                                 {new Date(c.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}

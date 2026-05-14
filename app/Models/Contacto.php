@@ -11,6 +11,7 @@ class Contacto extends Model
         'asunto',
         'email',
         'telefono',
+        'rut',
         'mensaje',
         'leido',
     ];

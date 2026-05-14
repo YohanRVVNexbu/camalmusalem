@@ -10,6 +10,7 @@ type Contacto = {
     asunto: string;
     email: string;
     telefono: string | null;
+    rut: string | null;
     mensaje: string;
     leido: boolean;
     created_at: string;
@@ -69,6 +70,12 @@ export default function ContactosIndex({ contactos }: { contactos: Contacto[] })
                                                 <>
                                                     <span className="text-muted-foreground text-sm">·</span>
                                                     <span className="text-sm text-muted-foreground">{c.telefono}</span>
+                                                </>
+                                            )}
+                                            {c.rut && (
+                                                <>
+                                                    <span className="text-muted-foreground text-sm">·</span>
+                                                    <span className="text-sm text-muted-foreground">RUT {c.rut}</span>
                                                 </>
                                             )}
                                             <span className="text-muted-foreground text-sm ml-auto">

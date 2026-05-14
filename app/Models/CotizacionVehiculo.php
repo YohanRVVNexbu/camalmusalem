@@ -16,6 +16,7 @@ class CotizacionVehiculo extends Model
         'nombre',
         'email',
         'telefono',
+        'rut',
         'comentarios',
         'leido',
     ];

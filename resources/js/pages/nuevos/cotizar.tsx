@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useState } from 'react';
+import { formatRut } from '@/lib/rut';
 
 type PricingRow = { label: string; value: string };
 
@@ -27,6 +28,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [email, setEmail] = useState('');
+    const [rut, setRut] = useState('');
     const [comentarios, setComentarios] = useState('');
     const [acepta, setAcepta] = useState(false);
     const [enviado, setEnviado] = useState(false);
@@ -50,6 +52,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
             nombre,
             email,
             telefono,
+            rut,
             comentarios,
             _website: website,
         }, {
@@ -158,6 +161,24 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                                         required
                                                     />
                                                 </div>
+                                            </div>
+
+                                            {/* RUT */}
+                                            <div className="flex w-full flex-col items-start gap-2.5">
+                                                <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                    RUT
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    inputMode="text"
+                                                    value={rut}
+                                                    onChange={(e) => setRut(formatRut(e.target.value))}
+                                                    placeholder="12.345.678-9"
+                                                    maxLength={12}
+                                                    className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black outline-none placeholder:text-black/60 focus:border-black/20"
+                                                    style={{ fontFamily: '"Toyota Type"' }}
+                                                    required
+                                                />
                                             </div>
                                         </div>
 

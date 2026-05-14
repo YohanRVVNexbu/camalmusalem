@@ -6,6 +6,7 @@ use App\Mail\CotizacionVehiculoMail;
 use App\Models\CotizacionVehiculo;
 use App\Models\Seminuevo;
 use App\Models\VehicleModel;
+use App\Rules\Rut;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -32,6 +33,7 @@ class CotizacionVehiculoController extends Controller
             'nombre'      => ['required', 'string', 'max:255'],
             'email'       => ['required', 'email', 'max:255'],
             'telefono'    => ['required', 'string', 'max:50'],
+            'rut'         => ['required', 'string', 'max:20', new Rut],
             'comentarios' => ['nullable', 'string'],
         ]);
 
@@ -55,6 +57,7 @@ class CotizacionVehiculoController extends Controller
             'nombre'         => $request->nombre,
             'email'          => $request->email,
             'telefono'       => $request->telefono,
+            'rut'            => $request->rut,
             'comentarios'    => $request->comentarios,
         ]);
 

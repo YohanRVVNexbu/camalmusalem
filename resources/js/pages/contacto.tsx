@@ -5,6 +5,7 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { pickResponsiveImage } from '@/lib/media';
+import { formatRut } from '@/lib/rut';
 import { toast } from 'sonner';
 import formImgDefault from '@images/contacto/form_image.png?format=webp';
 
@@ -19,6 +20,7 @@ export default function Contacto({ footer, contacto_info }: { footer: any | null
         asunto: '',
         email: '',
         telefono: '',
+        rut: '',
         mensaje: '',
         privacidad: false,
         _website: '', // honeypot — debe quedar vacío
@@ -210,6 +212,25 @@ export default function Contacto({ footer, contacto_info }: { footer: any | null
                                                     style={{ fontFamily: '"Toyota Type"' }}
                                                 />
                                             </div>
+                                        </div>
+
+                                        {/* RUT */}
+                                        <div className="flex w-full flex-col gap-2.5 items-start self-stretch">
+                                            <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                RUT
+                                            </label>
+                                            <input
+                                                type="text"
+                                                inputMode="text"
+                                                placeholder="12.345.678-9"
+                                                value={data.rut}
+                                                onChange={(e) => setData('rut', formatRut(e.target.value))}
+                                                maxLength={12}
+                                                required
+                                                className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black placeholder-black/60 outline-none"
+                                                style={{ fontFamily: '"Toyota Type"' }}
+                                            />
+                                            {errors.rut && <span className="text-xs text-red-500">{errors.rut}</span>}
                                         </div>
                                     </div>
 

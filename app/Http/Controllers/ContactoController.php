@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\ContactoMail;
 use App\Models\Contacto;
+use App\Rules\Rut;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -31,10 +32,11 @@ class ContactoController extends Controller
             'asunto'   => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:50'],
+            'rut'      => ['required', 'string', 'max:20', new Rut],
             'mensaje'  => ['required', 'string'],
         ]);
 
-        $contacto = Contacto::create($request->only('nombre', 'asunto', 'email', 'telefono', 'mensaje'));
+        $contacto = Contacto::create($request->only('nombre', 'asunto', 'email', 'telefono', 'rut', 'mensaje'));
 
         try {
             Mail::to($contacto->email)->send(new ContactoMail($contacto));
