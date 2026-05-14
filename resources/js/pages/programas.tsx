@@ -16,8 +16,6 @@ import grid4 from '@images/programas-toyota/grid_4.jpg?format=webp';
 import grid5 from '@images/programas-toyota/grid_5.png?format=webp';
 import grid6 from '@images/programas-toyota/grid_6.png?format=webp';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
 export default function ProgramasPage({ footer, programas, programas_hero, programas_grid }: { footer: any | null; programas: any | null; programas_hero?: any | null; programas_grid?: any | null }) {
     const hero = programas_hero ?? {};
@@ -202,7 +200,7 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                 </section>
 
                 <ContactCtaBanner />
-                <BranchesSection image1={visitanos1} image2={visitanos2} />
+                <BranchesSection />
 
             </main>
 

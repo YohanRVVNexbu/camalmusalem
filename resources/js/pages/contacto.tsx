@@ -6,8 +6,6 @@ import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { pickResponsiveImage } from '@/lib/media';
 import { toast } from 'sonner';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 import formImgDefault from '@images/contacto/form_image.png?format=webp';
 
 export default function Contacto({ footer, contacto_info }: { footer: any | null; contacto_info?: any | null }) {
@@ -264,8 +262,6 @@ export default function Contacto({ footer, contacto_info }: { footer: any | null
                 )}
 
                 <BranchesSection
-                    image1={visitanos1}
-                    image2={visitanos2}
                     title="Contacto Sucursales"
                     backgroundStyle="linear-gradient(180deg, #ffffff 0%, #000000 90%)"
                     textColor="text-black"

@@ -16,8 +16,6 @@ import destacado4 from '@images/nuevos/detalle/destacado_4.png?format=webp';
 import bz4xVideo from '@images/nuevos/detalle/bz4x_video.mp4';
 import galeria1 from '@images/nuevos/detalle/galeria_1.png?format=webp';
 import galeria2 from '@images/nuevos/detalle/galeria_2.png?format=webp';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 import heroDetail from '@images/nuevos/detalle/hero_detail.png?format=webp';
 import logoCard1 from '@images/nuevos/logo_card_1.png?format=webp';
 
@@ -1240,8 +1238,6 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                 {/* Branches section */}
                 <div ref={branches.ref} className={`transition-all duration-700 ease-out ${branches.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                     <BranchesSection
-                        image1={visitanos1}
-                        image2={visitanos2}
                         background="bg-[#EAEAF1]"
                         textColor="text-black"
                     />

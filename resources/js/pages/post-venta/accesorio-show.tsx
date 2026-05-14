@@ -6,8 +6,6 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
 type Accesorio = {
     id: number;
@@ -297,7 +295,7 @@ export default function AccesorioShow({ accesorio, footer }: { accesorio: Acceso
                 </div>
 
                 <ContactCtaBanner />
-                <BranchesSection image1={visitanos1} image2={visitanos2} />
+                <BranchesSection />
 
                 <div className="bg-black">
                     {footer && <Footer data={footer} />}

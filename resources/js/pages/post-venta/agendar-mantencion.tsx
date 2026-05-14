@@ -28,8 +28,6 @@ const calendarStyles = `
 import { useCallback, useEffect, useRef, useState } from 'react';
 import heroImg from '@images/mantencion/hero-imagen.png?format=webp';
 import ejemploVideo from '@images/seminuevos/ejemplo-video.png?format=webp';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 import card1Img from '@images/mantencion/card_1.png?format=webp';
 import card2Img from '@images/mantencion/card_2.jpg?format=webp';
 import card3Img from '@images/mantencion/card_3.png?format=webp';
@@ -690,7 +688,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                 <ContactCtaBanner />
 
                 {/* Branches section */}
-                <BranchesSection image1={visitanos1} image2={visitanos2} />
+                <BranchesSection />
 
                 {footer && (
                     <div className="bg-black">

@@ -11,8 +11,6 @@ import heroImg from '@images/repuestos/hero_image.png?format=webp';
 import section2Img from '@images/repuestos/image_section2.jpg?format=webp';
 import section3Img from '@images/repuestos/image_section3.jpg?format=webp';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
 
 type SolicitudStep = 'default' | 'form' | 'success';
@@ -556,7 +554,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
 
 
                 <ContactCtaBanner />
-                <BranchesSection image1={visitanos1} image2={visitanos2} />
+                <BranchesSection />
 
             </main>
 

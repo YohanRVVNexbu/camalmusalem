@@ -1,4 +1,6 @@
 import { usePage } from '@inertiajs/react';
+import fallback1 from '@images/seminuevos/visitanos_1.png?format=webp';
+import fallback2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
 export type BranchData = {
     id?: number;
@@ -8,15 +10,10 @@ export type BranchData = {
     phone_sucursal: string | null;
     phone_repuestos: string | null;
     phones_servicio_tecnico: string[] | null;
+    image_path?: string | null;
 };
 
 interface BranchesSectionProps {
-    branches?: BranchData[];
-    images?: string[];
-    /** @deprecated usa `images` */
-    image1?: string;
-    /** @deprecated usa `images` */
-    image2?: string;
     title?: string;
     background?: string;
     backgroundStyle?: string;
@@ -28,10 +25,11 @@ const cardStyle = {
     backdropFilter: 'blur(30px)',
 };
 
-export function BranchesSection({ branches, images, image1, image2, title, background, backgroundStyle, textColor }: BranchesSectionProps) {
+const FALLBACK_IMAGES = [fallback1, fallback2];
+
+export function BranchesSection({ title, background, backgroundStyle, textColor }: BranchesSectionProps) {
     const shared = usePage().props as { branchesShared?: BranchData[] };
-    const effectiveBranches = branches ?? shared.branchesShared ?? [];
-    const effectiveImages = images ?? (image1 || image2 ? [image1, image2].filter((v): v is string => !!v) : []);
+    const effectiveBranches = shared.branchesShared ?? [];
 
     const bg = backgroundStyle ? '' : (background ?? 'bg-black');
     const color = textColor ?? 'text-white';
@@ -50,7 +48,7 @@ export function BranchesSection({ branches, images, image1, image2, title, backg
             </h2>
             <div className="flex w-full flex-col gap-5 lg:flex-row">
                 {effectiveBranches.map((branch, i) => {
-                    const img = effectiveImages[i];
+                    const img = branch.image_path || FALLBACK_IMAGES[i % FALLBACK_IMAGES.length];
                     const hasMaps = !!branch.maps_url;
                     const phones = branch.phones_servicio_tecnico ?? [];
 

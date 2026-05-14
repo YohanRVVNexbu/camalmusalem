@@ -53,6 +53,7 @@ class HandleInertiaRequests extends Middleware
                 ->get([
                     'id', 'name', 'address', 'city', 'maps_url',
                     'phone_sucursal', 'phone_repuestos', 'phones_servicio_tecnico',
+                    'image_path',
                 ]),
             'contactCtaBanner' => fn () => $this->contactCtaBanner(),
         ];

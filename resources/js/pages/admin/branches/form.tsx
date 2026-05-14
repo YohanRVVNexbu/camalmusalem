@@ -6,6 +6,10 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AdminLayout from '@/layouts/admin-layout';
+import fallback1 from '@images/seminuevos/visitanos_1.png?format=webp';
+import fallback2 from '@images/seminuevos/visitanos_2.png?format=webp';
+
+const FALLBACK_IMAGES = [fallback1, fallback2];
 
 type Branch = {
     id?: number;
@@ -17,19 +21,21 @@ type Branch = {
     phone_sucursal: string | null;
     phone_repuestos: string | null;
     phones_servicio_tecnico: string[] | null;
+    image_path: string | null;
     is_active: boolean;
     display_order: number;
 };
 
-export default function BranchForm({ branch }: { branch: Branch | null }) {
+export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: Branch | null; fallbackPosition?: number }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!branch?.id;
 
     const [data, setData] = useState<Branch>(branch ?? {
         name: '', address: null, city: null, maps_url: null, phone: null,
         phone_sucursal: null, phone_repuestos: null, phones_servicio_tecnico: [],
-        is_active: true, display_order: 0,
+        image_path: null, is_active: true, display_order: 0,
     });
+    const [imageFile, setImageFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
 
     const set = (field: keyof Branch, val: any) => setData({ ...data, [field]: val });
@@ -37,11 +43,22 @@ export default function BranchForm({ branch }: { branch: Branch | null }) {
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
-        const payload = { ...data, is_active: data.is_active ? 1 : 0 };
+        const fd = new FormData();
+        Object.entries(data).forEach(([k, v]) => {
+            if (k === 'image_path') return;
+            if (Array.isArray(v)) {
+                v.forEach((item, i) => fd.append(`${k}[${i}]`, String(item)));
+            } else if (v !== null && v !== undefined) {
+                fd.append(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
+            }
+        });
+        if (imageFile) fd.append('image', imageFile);
+
         if (isEdit) {
-            router.put(`/admin/branches/${branch!.id}`, payload as any, { onFinish: () => setProcessing(false) });
+            fd.append('_method', 'PUT');
+            router.post(`/admin/branches/${branch!.id}`, fd, { forceFormData: true, onFinish: () => setProcessing(false) });
         } else {
-            router.post('/admin/branches', payload as any, { onFinish: () => setProcessing(false) });
+            router.post('/admin/branches', fd, { forceFormData: true, onFinish: () => setProcessing(false) });
         }
     };
 
@@ -129,6 +146,32 @@ export default function BranchForm({ branch }: { branch: Branch | null }) {
                                 </Button>
                             </div>
                         ))}
+                    </div>
+
+                    <div className="grid gap-2">
+                        <Label>Imagen de la sucursal</Label>
+                        {(() => {
+                            const fallback = FALLBACK_IMAGES[fallbackPosition % FALLBACK_IMAGES.length];
+                            if (imageFile) {
+                                return (
+                                    <div className="relative">
+                                        <img src={URL.createObjectURL(imageFile)} className="h-40 w-full rounded-lg object-cover ring-2 ring-primary" alt="" />
+                                        <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">Nueva imagen</span>
+                                    </div>
+                                );
+                            }
+                            if (data.image_path) {
+                                return <img src={data.image_path} className="h-40 w-full rounded-lg object-cover" alt="" />;
+                            }
+                            return (
+                                <div className="relative">
+                                    <img src={fallback} className="h-40 w-full rounded-lg object-cover" alt="" />
+                                    <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>
+                                </div>
+                            );
+                        })()}
+                        <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+                        <p className="text-xs text-muted-foreground">Aparece en la sección "Visítanos en nuestras sucursales" del sitio público. Si no subes una imagen, se mostrará la imagen default.</p>
                     </div>
 
                     <div className="grid gap-2">

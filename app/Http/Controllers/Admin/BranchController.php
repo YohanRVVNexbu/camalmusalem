@@ -4,12 +4,15 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Services\SiteSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Inertia\Inertia;
 
 class BranchController extends Controller
 {
+    public function __construct(private SiteSettingsService $settingsService) {}
+
     public function index()
     {
         return Inertia::render('admin/branches/index', [
@@ -26,6 +29,7 @@ class BranchController extends Controller
     {
         $data = $this->validated($request);
         $data['slug'] = Str::slug($data['name']);
+        $data['image_path'] = $this->handleImageUpload($request, null);
 
         Branch::create($data);
 
@@ -34,13 +38,24 @@ class BranchController extends Controller
 
     public function edit(Branch $branch)
     {
-        return Inertia::render('admin/branches/form', ['branch' => $branch]);
+        // Position among active branches (sorted as in the public view) — used to
+        // pick the right fallback image preview when no custom image is uploaded.
+        $position = Branch::where('is_active', true)
+            ->orderBy('display_order')
+            ->pluck('id')
+            ->search($branch->id);
+
+        return Inertia::render('admin/branches/form', [
+            'branch' => $branch,
+            'fallbackPosition' => $position === false ? 0 : $position,
+        ]);
     }
 
     public function update(Request $request, Branch $branch)
     {
         $data = $this->validated($request);
         $data['slug'] = Str::slug($data['name']);
+        $data['image_path'] = $this->handleImageUpload($request, $branch);
 
         $branch->update($data);
 
@@ -53,9 +68,25 @@ class BranchController extends Controller
             return back()->with('error', 'No se puede eliminar: la sucursal tiene seminuevos asociados.');
         }
 
+        if ($branch->image_path) {
+            $this->settingsService->deleteOldFile($branch->image_path);
+        }
+
         $branch->delete();
 
         return redirect('/admin/branches')->with('success', 'Sucursal eliminada.');
+    }
+
+    private function handleImageUpload(Request $request, ?Branch $branch): ?string
+    {
+        if ($request->hasFile('image')) {
+            if ($branch?->image_path) {
+                $this->settingsService->deleteOldFile($branch->image_path);
+            }
+            return $this->settingsService->uploadFile($request->file('image'), 'branches');
+        }
+
+        return $branch?->image_path;
     }
 
     private function validated(Request $request): array
@@ -70,6 +101,7 @@ class BranchController extends Controller
             'phone_repuestos' => ['nullable', 'string', 'max:50'],
             'phones_servicio_tecnico' => ['nullable', 'array'],
             'phones_servicio_tecnico.*' => ['string', 'max:50'],
+            'image' => ['nullable', 'image', 'max:5120'],
             'is_active' => ['boolean'],
             'display_order' => ['integer'],
         ]);

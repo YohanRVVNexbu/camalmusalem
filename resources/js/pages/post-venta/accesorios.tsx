@@ -12,8 +12,6 @@ const ordenarOpciones = ['Menor precio', 'Mayor precio', 'Más reciente'];
 import heroImg from '@images/navbar/accesorios.png?format=webp';
 import section2Img from '@images/accesorios/image_section2.png?format=webp';
 import ejemploVideo from '@images/seminuevos/ejemplo-video.png?format=webp';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
 type Accesorio = {
     id: number;
@@ -216,7 +214,7 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                 </section>
 
                 <ContactCtaBanner />
-                <BranchesSection image1={visitanos1} image2={visitanos2} />
+                <BranchesSection />
 
                 {footer && (
                     <div className="bg-black">

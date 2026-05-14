@@ -11,8 +11,6 @@ import { SpeedometerIcon } from '@/components/icons/speedometer-icon';
 import { TransmissionIcon } from '@/components/icons/transmission-icon';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import certificateImg from '@images/seminuevos/certificate-toyota.png?format=webp';
-import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
-import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
@@ -609,7 +607,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                 <ContactCtaBanner rounded="bottom" />
 
                 {/* Branches section */}
-                <BranchesSection image1={visitanos1} image2={visitanos2} />
+                <BranchesSection />
 
                 <div className="bg-black">
                     {footer && <Footer data={footer} />}
