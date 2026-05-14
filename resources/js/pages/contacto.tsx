@@ -3,14 +3,17 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { pickResponsiveImage } from '@/lib/media';
 import { toast } from 'sonner';
 import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 import formImgDefault from '@images/contacto/form_image.png?format=webp';
 
-export default function Contacto({ footer, contacto_info }: { footer: any; contacto_info?: any }) {
+export default function Contacto({ footer, contacto_info }: { footer: any | null; contacto_info?: any | null }) {
     const info = contacto_info ?? {};
-    const formImg = info.form_image || formImgDefault;
+    const isMobile = useIsMobile();
+    const formImg = pickResponsiveImage(info.form_image, info.form_image_mobile, isMobile) || formImgDefault;
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
 
     const { data, setData, post, processing, errors, reset } = useForm({
@@ -53,6 +56,7 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
             <main className="flex flex-col bg-black">
 
                 {/* Hero + Form */}
+                {contacto_info && (
                 <section className="pb-10 lg:px-15 lg:pb-20 lg:pt-32" style={{ background: 'linear-gradient(180deg, #000000 0%, #ffffff 100%)' }}>
                     <div className="flex flex-col overflow-hidden shadow-2xl lg:flex-row lg:rounded-[30px]">
 
@@ -257,6 +261,7 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
                         </form>
                     </div>
                 </section>
+                )}
 
                 <BranchesSection
                     image1={visitanos1}
@@ -268,9 +273,11 @@ export default function Contacto({ footer, contacto_info }: { footer: any; conta
 
             </main>
 
-            <div className="bg-black">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-black">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

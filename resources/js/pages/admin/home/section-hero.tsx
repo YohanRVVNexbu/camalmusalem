@@ -11,6 +11,7 @@ import { ResetSectionButton } from '@/components/admin/reset-section-button';
 type Props = {
     data: {
         background_video: string;
+        background_video_mobile?: string;
         subtitle: string;
         title: string;
         description: string;
@@ -24,6 +25,7 @@ export function SectionHero({ data: initialData, isVisible: initialVisible }: Pr
     const [data, setData] = useState(initialData);
     const [isVisible, setIsVisible] = useState(initialVisible);
     const [videoFile, setVideoFile] = useState<File | null>(null);
+    const [videoMobileFile, setVideoMobileFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
 
     const submit = (e: React.FormEvent) => {
@@ -32,6 +34,7 @@ export function SectionHero({ data: initialData, isVisible: initialVisible }: Pr
 
         const formData: any = { data, is_visible: isVisible, _method: 'PUT' };
         if (videoFile) formData.background_video = videoFile;
+        if (videoMobileFile) formData.background_video_mobile = videoMobileFile;
 
         router.post('/admin/home/hero', formData, {
             onFinish: () => setProcessing(false),
@@ -48,22 +51,44 @@ export function SectionHero({ data: initialData, isVisible: initialVisible }: Pr
 
             <Separator />
 
-            <div className="grid gap-2">
+            <div className="grid gap-3">
                 <Label>Fondo del hero (imagen o video)</Label>
-                {(() => {
-                    const isVideo = videoFile
-                        ? videoFile.type.startsWith('video/')
-                        : /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(data.background_video || '');
-                    const url = videoFile ? URL.createObjectURL(videoFile) : data.background_video;
-                    if (!url) return null;
-                    return isVideo ? (
-                        <video src={url} className={`h-32 rounded object-cover ${videoFile ? 'ring-2 ring-primary' : ''}`} muted controls playsInline />
-                    ) : (
-                        <img src={url} className={`h-32 rounded object-cover ${videoFile ? 'ring-2 ring-primary' : ''}`} alt="" />
-                    );
-                })()}
-                <Input type="file" accept="image/*,video/*" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} />
-                <p className="text-xs text-muted-foreground">Acepta imágenes (.jpg, .png, .webp) o videos (.mp4, .webm).</p>
+                <div className="grid gap-4 md:grid-cols-2">
+                    <div className="grid gap-2">
+                        <Label className="text-sm font-normal text-muted-foreground">Desktop</Label>
+                        {(() => {
+                            const isVideo = videoFile
+                                ? videoFile.type.startsWith('video/')
+                                : /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(data.background_video || '');
+                            const url = videoFile ? URL.createObjectURL(videoFile) : data.background_video;
+                            if (!url) return null;
+                            return isVideo ? (
+                                <video src={url} className={`h-32 rounded object-cover ${videoFile ? 'ring-2 ring-primary' : ''}`} muted controls playsInline />
+                            ) : (
+                                <img src={url} className={`h-32 rounded object-cover ${videoFile ? 'ring-2 ring-primary' : ''}`} alt="" />
+                            );
+                        })()}
+                        <Input type="file" accept="image/*,video/*" onChange={(e) => setVideoFile(e.target.files?.[0] ?? null)} />
+                        <p className="text-xs text-muted-foreground">Acepta imágenes (.jpg, .png, .webp) o videos (.mp4, .webm).</p>
+                    </div>
+                    <div className="grid gap-2">
+                        <Label className="text-sm font-normal text-muted-foreground">Mobile (opcional)</Label>
+                        {(() => {
+                            const isVideo = videoMobileFile
+                                ? videoMobileFile.type.startsWith('video/')
+                                : /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(data.background_video_mobile || '');
+                            const url = videoMobileFile ? URL.createObjectURL(videoMobileFile) : data.background_video_mobile;
+                            if (!url) return null;
+                            return isVideo ? (
+                                <video src={url} className={`h-32 rounded object-cover ${videoMobileFile ? 'ring-2 ring-primary' : ''}`} muted controls playsInline />
+                            ) : (
+                                <img src={url} className={`h-32 rounded object-cover ${videoMobileFile ? 'ring-2 ring-primary' : ''}`} alt="" />
+                            );
+                        })()}
+                        <Input type="file" accept="image/*,video/*" onChange={(e) => setVideoMobileFile(e.target.files?.[0] ?? null)} />
+                        <p className="text-xs text-muted-foreground">Si lo dejas vacío, se usará la imagen/video desktop.</p>
+                    </div>
+                </div>
             </div>
 
             <div className="grid gap-2">

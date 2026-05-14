@@ -4,7 +4,8 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
-import { isVideoUrl } from '@/lib/media';
+import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect } from 'react';
 
 const ordenarOpciones = ['Menor precio', 'Mayor precio', 'Más reciente'];
@@ -22,8 +23,10 @@ type Accesorio = {
     images: string[];
 };
 
-export default function Accesorios({ footer, accesorios_hero, accesorios = [] }: { footer: any; accesorios_hero?: any; accesorios: Accesorio[] }) {
+export default function Accesorios({ footer, accesorios_hero, accesorios = [] }: { footer: any | null; accesorios_hero?: any | null; accesorios: Accesorio[] }) {
     const hero = accesorios_hero ?? {};
+    const isMobile = useIsMobile();
+    const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
     const categorias = ['Todos', ...Array.from(new Set(accesorios.map(a => a.category)))];
     const [categoria, setCategoria] = useState('Todos');
     const [ordenar, setOrdenar] = useState('');
@@ -43,18 +46,19 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
             <main className="flex flex-col bg-black">
 
                 {/* Hero */}
+                {accesorios_hero && (
                 <section className="bg-white pb-10 lg:pb-20">
                     <div
                         className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
-                        style={!isVideoUrl(hero.hero_image) ? {
-                            backgroundImage: `url(${hero.hero_image || heroImg})`,
+                        style={!isVideoUrl(heroMedia) ? {
+                            backgroundImage: `url(${heroMedia || heroImg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
                         } : undefined}
                     >
-                        {isVideoUrl(hero.hero_image) && (
-                            <video src={hero.hero_image!} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
+                        {isVideoUrl(heroMedia) && (
+                            <video src={heroMedia!} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
                         )}
                         <div
                             className="absolute inset-0"
@@ -75,6 +79,7 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                         </span>
                     </div>
                 </section>
+                )}
 
                 {/* Merch section */}
                 <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-white px-5 pb-10 lg:flex-row lg:gap-15 lg:px-15 lg:pb-20">
@@ -213,9 +218,11 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                 <ContactCtaBanner image={ejemploVideo} />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
-                <div className="bg-black">
-                    <Footer data={footer} />
-                </div>
+                {footer && (
+                    <div className="bg-black">
+                        <Footer data={footer} />
+                    </div>
+                )}
 
             </main>
         </div>

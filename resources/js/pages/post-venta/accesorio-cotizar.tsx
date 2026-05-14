@@ -13,7 +13,7 @@ const BRANCHES = [
     { name: 'Sucursal Ovalle', address: 'Ariztía #358', url: 'https://www.google.com/maps/search/Aristia+358,+Ovalle,+Chile' },
 ];
 
-export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Accesorio; footer: any }) {
+export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Accesorio; footer: any | null }) {
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [email, setEmail] = useState('');

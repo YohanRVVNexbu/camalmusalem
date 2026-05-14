@@ -16,7 +16,9 @@ type Vehicle = {
     headline: string;
     image: string;
     video: string | null;
+    video_mobile: string | null;
     background_image: string | null;
+    background_image_mobile: string | null;
     duration: number | null;
     vehicle_model_id: number | null;
 };
@@ -117,42 +119,76 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
                                 <Input type="number" value={vehicle.duration ?? ''} onChange={(e) => updateVehicle(i, 'duration', e.target.value ? Number(e.target.value) : null)} />
                             </div>
                         </div>
-                        <div className="grid grid-cols-3 gap-4">
-                            <div className="grid gap-2">
-                                <Label>Imagen (miniatura)</Label>
-                                {files[`vehicles.${i}.image`] ? (
-                                    <img src={URL.createObjectURL(files[`vehicles.${i}.image`])} className="h-20 rounded object-contain ring-2 ring-primary" alt="" />
-                                ) : vehicle.image ? (
-                                    <img src={vehicle.image} className="h-20 rounded object-contain" alt="" />
-                                ) : null}
-                                <Input type="file" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setFiles({ ...files, [`vehicles.${i}.image`]: file });
-                                }} />
+                        <div className="grid gap-2">
+                            <Label>Imagen (miniatura)</Label>
+                            {files[`vehicles.${i}.image`] ? (
+                                <img src={URL.createObjectURL(files[`vehicles.${i}.image`])} className="h-20 rounded object-contain ring-2 ring-primary" alt="" />
+                            ) : vehicle.image ? (
+                                <img src={vehicle.image} className="h-20 rounded object-contain" alt="" />
+                            ) : null}
+                            <Input type="file" accept="image/*" onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) setFiles({ ...files, [`vehicles.${i}.image`]: file });
+                            }} />
+                        </div>
+                        <div className="grid gap-3">
+                            <Label>Video</Label>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="grid gap-2">
+                                    <Label className="text-sm font-normal text-muted-foreground">Desktop</Label>
+                                    {files[`vehicles.${i}.video`] ? (
+                                        <video src={URL.createObjectURL(files[`vehicles.${i}.video`])} className="h-20 rounded ring-2 ring-primary" muted controls />
+                                    ) : vehicle.video ? (
+                                        <video src={vehicle.video} className="h-20 rounded" muted controls />
+                                    ) : null}
+                                    <Input type="file" accept="video/mp4,video/webm" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) setFiles({ ...files, [`vehicles.${i}.video`]: file });
+                                    }} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-sm font-normal text-muted-foreground">Mobile (opcional)</Label>
+                                    {files[`vehicles.${i}.video_mobile`] ? (
+                                        <video src={URL.createObjectURL(files[`vehicles.${i}.video_mobile`])} className="h-20 rounded ring-2 ring-primary" muted controls />
+                                    ) : vehicle.video_mobile ? (
+                                        <video src={vehicle.video_mobile} className="h-20 rounded" muted controls />
+                                    ) : null}
+                                    <Input type="file" accept="video/mp4,video/webm" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) setFiles({ ...files, [`vehicles.${i}.video_mobile`]: file });
+                                    }} />
+                                    <p className="text-xs text-muted-foreground">Si lo dejas vacío, se usará el video desktop.</p>
+                                </div>
                             </div>
-                            <div className="grid gap-2">
-                                <Label>Video</Label>
-                                {files[`vehicles.${i}.video`] ? (
-                                    <video src={URL.createObjectURL(files[`vehicles.${i}.video`])} className="h-20 rounded ring-2 ring-primary" muted controls />
-                                ) : vehicle.video ? (
-                                    <video src={vehicle.video} className="h-20 rounded" muted controls />
-                                ) : null}
-                                <Input type="file" accept="video/mp4,video/webm" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setFiles({ ...files, [`vehicles.${i}.video`]: file });
-                                }} />
-                            </div>
-                            <div className="grid gap-2">
-                                <Label>Imagen de fondo (sin video)</Label>
-                                {files[`vehicles.${i}.background_image`] ? (
-                                    <img src={URL.createObjectURL(files[`vehicles.${i}.background_image`])} className="h-20 rounded object-cover ring-2 ring-primary" alt="" />
-                                ) : vehicle.background_image ? (
-                                    <img src={vehicle.background_image} className="h-20 rounded object-cover" alt="" />
-                                ) : null}
-                                <Input type="file" accept="image/*" onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) setFiles({ ...files, [`vehicles.${i}.background_image`]: file });
-                                }} />
+                        </div>
+                        <div className="grid gap-3">
+                            <Label>Imagen de fondo (sin video)</Label>
+                            <div className="grid gap-4 md:grid-cols-2">
+                                <div className="grid gap-2">
+                                    <Label className="text-sm font-normal text-muted-foreground">Desktop</Label>
+                                    {files[`vehicles.${i}.background_image`] ? (
+                                        <img src={URL.createObjectURL(files[`vehicles.${i}.background_image`])} className="h-20 rounded object-cover ring-2 ring-primary" alt="" />
+                                    ) : vehicle.background_image ? (
+                                        <img src={vehicle.background_image} className="h-20 rounded object-cover" alt="" />
+                                    ) : null}
+                                    <Input type="file" accept="image/*" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) setFiles({ ...files, [`vehicles.${i}.background_image`]: file });
+                                    }} />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-sm font-normal text-muted-foreground">Mobile (opcional)</Label>
+                                    {files[`vehicles.${i}.background_image_mobile`] ? (
+                                        <img src={URL.createObjectURL(files[`vehicles.${i}.background_image_mobile`])} className="h-20 rounded object-cover ring-2 ring-primary" alt="" />
+                                    ) : vehicle.background_image_mobile ? (
+                                        <img src={vehicle.background_image_mobile} className="h-20 rounded object-cover" alt="" />
+                                    ) : null}
+                                    <Input type="file" accept="image/*" onChange={(e) => {
+                                        const file = e.target.files?.[0];
+                                        if (file) setFiles({ ...files, [`vehicles.${i}.background_image_mobile`]: file });
+                                    }} />
+                                    <p className="text-xs text-muted-foreground">Si lo dejas vacío, se usará la imagen desktop.</p>
+                                </div>
                             </div>
                         </div>
                     </div>

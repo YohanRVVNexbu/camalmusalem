@@ -4,6 +4,8 @@ import { Navbar } from '@/components/landing/navbar';
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { useInView } from '@/hooks/use-in-view';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { pickResponsiveImage } from '@/lib/media';
 import defaultHeroImg from '@images/nosotros/hero_image.jpg?format=webp';
 import defaultMisionImg from '@images/nosotros/image_card.jpg?format=webp';
 import defaultVisionImg from '@images/nosotros/image_card_2.jpg?format=webp';
@@ -114,13 +116,13 @@ function EquipoCarousel({ members, title }: { members: any[]; title: string }) {
 }
 
 type Props = {
-    footer: any;
-    nosotros_hero: any;
-    nosotros_historia: any;
-    nosotros_mision: any;
-    nosotros_vision: any;
-    nosotros_equipo: any;
-    nosotros_reconocimientos: any;
+    footer: any | null;
+    nosotros_hero: any | null;
+    nosotros_historia: any | null;
+    nosotros_mision: any | null;
+    nosotros_vision: any | null;
+    nosotros_equipo: any | null;
+    nosotros_reconocimientos: any | null;
 };
 
 export default function Nosotros({ footer, nosotros_hero, nosotros_historia, nosotros_mision, nosotros_vision, nosotros_equipo, nosotros_reconocimientos }: Props) {
@@ -136,10 +138,13 @@ export default function Nosotros({ footer, nosotros_hero, nosotros_historia, nos
     const equipo = nosotros_equipo ?? {};
     const reconocimientos = nosotros_reconocimientos ?? {};
 
+    const isMobile = useIsMobile();
     // Default images (bundled by Vite) used when no custom image uploaded
-    const heroImg = hero.hero_image || defaultHeroImg;
-    const misionImg = mision.image || defaultMisionImg;
-    const visionImg = vision.image || defaultVisionImg;
+    const heroImg = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile) || defaultHeroImg;
+    const misionImg = pickResponsiveImage(mision.image, mision.image_mobile, isMobile) || defaultMisionImg;
+    const visionImg = pickResponsiveImage(vision.image, vision.image_mobile, isMobile) || defaultVisionImg;
+    const equipoMembers = (equipo.members ?? []) as any[];
+    const reconocimientosItems = (reconocimientos.items ?? []) as any[];
 
     useEffect(() => {
         const html = document.documentElement;
@@ -156,78 +161,90 @@ export default function Nosotros({ footer, nosotros_hero, nosotros_historia, nos
             <main className="flex flex-col bg-white">
 
                 {/* Hero */}
-                <section ref={heroInView.ref}>
-                    <div
-                        className={`flex h-100 flex-col items-center justify-end gap-7.5 rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:items-start lg:gap-10 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
-                        style={{ background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${heroImg}) lightgray 50% / cover no-repeat` }}
-                    >
-                        <div className="flex flex-col gap-0 text-center lg:text-left">
-                            <span className="text-lg font-semibold leading-[120%] text-white lg:text-[24px]" style={{ fontFamily: '"Toyota Type"' }}>
-                                {hero.subtitle ?? 'Nosotros'}
-                            </span>
-                            <span className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]" style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}>
-                                {hero.title ?? 'Camal Musalem'}
-                            </span>
+                {nosotros_hero && (
+                    <section ref={heroInView.ref}>
+                        <div
+                            className={`flex h-100 flex-col items-center justify-end gap-7.5 rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:items-start lg:gap-10 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                            style={{ background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${heroImg}) lightgray 50% / cover no-repeat` }}
+                        >
+                            <div className="flex flex-col gap-0 text-center lg:text-left">
+                                <span className="text-lg font-semibold leading-[120%] text-white lg:text-[24px]" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {hero.subtitle ?? 'Nosotros'}
+                                </span>
+                                <span className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]" style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}>
+                                    {hero.title ?? 'Camal Musalem'}
+                                </span>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
                 {/* Nuestra historia */}
-                <section ref={historiaInView.ref} className="flex flex-col items-start justify-center gap-7.5 self-stretch bg-white px-5 py-10 lg:gap-15 lg:py-15">
-                    <h2 className={`shrink-0 text-2xl font-semibold leading-[120%] text-black transition-all duration-700 ease-out lg:text-[28px] ${historiaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`} style={{ fontFamily: '"Toyota Type"' }}>
-                        {historia.title ?? 'Nuestra historia'}
-                    </h2>
-                    <p className={`max-w-2xl text-base leading-[120%] text-black transition-all duration-700 delay-150 ease-out lg:text-lg ${historiaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`} style={{ fontFamily: '"Toyota Type"', whiteSpace: 'pre-line' }}>
-                        {historia.content ?? ''}
-                    </p>
-                </section>
+                {nosotros_historia && (
+                    <section ref={historiaInView.ref} className="self-stretch bg-white px-5 py-10 lg:py-15">
+                        <div className="mx-auto flex w-full max-w-3xl flex-col items-start justify-center gap-7.5 text-left lg:gap-15">
+                            <h2 className={`shrink-0 text-2xl font-semibold leading-[120%] text-black transition-all duration-700 ease-out lg:text-[28px] ${historiaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`} style={{ fontFamily: '"Toyota Type"' }}>
+                                {historia.title ?? 'Nuestra historia'}
+                            </h2>
+                            <p className={`text-base leading-[120%] text-black transition-all duration-700 delay-150 ease-out lg:text-lg ${historiaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`} style={{ fontFamily: '"Toyota Type"', whiteSpace: 'pre-line' }}>
+                                {historia.content ?? ''}
+                            </p>
+                        </div>
+                    </section>
+                )}
 
                 {/* Nuestra misión */}
-                <section ref={misionInView.ref} className="bg-white px-5 pb-10 lg:px-15 lg:pb-15">
-                    <div className={`flex flex-col overflow-hidden rounded-[30px] transition-all duration-700 ease-out lg:flex-row ${misionInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                        <img src={misionImg} alt="Nuestra misión" className="aspect-3/2 w-full shrink-0 object-cover lg:hidden" style={{ objectPosition: '50% 20%' }} />
-                        <div className="flex flex-1 flex-col items-start justify-center gap-5 bg-black p-7.5 lg:gap-10 lg:rounded-tl-[30px] lg:rounded-bl-[30px] lg:py-15 lg:pr-10 lg:pl-32">
-                            <h2 className="text-2xl font-semibold leading-[120%] text-white lg:text-[32px]" style={{ fontFamily: '"Toyota Type"' }}>
-                                {mision.title ?? 'Nuestra misión'}
-                            </h2>
-                            <p className="text-sm leading-[120%] text-white lg:max-w-sm lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
-                                {mision.text ?? ''}
-                            </p>
+                {nosotros_mision && (
+                    <section ref={misionInView.ref} className="bg-white px-5 pb-10 lg:px-15 lg:pb-15">
+                        <div className={`flex flex-col overflow-hidden rounded-[30px] transition-all duration-700 ease-out lg:flex-row ${misionInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                            <img src={misionImg} alt="Nuestra misión" className="aspect-3/2 w-full shrink-0 object-cover lg:hidden" style={{ objectPosition: '50% 20%' }} />
+                            <div className="flex flex-1 flex-col items-start justify-center gap-5 bg-black p-7.5 lg:gap-10 lg:rounded-tl-[30px] lg:rounded-bl-[30px] lg:py-15 lg:pr-10 lg:pl-32">
+                                <h2 className="text-2xl font-semibold leading-[120%] text-white lg:text-[32px]" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {mision.title ?? 'Nuestra misión'}
+                                </h2>
+                                <p className="text-sm leading-[120%] text-white lg:max-w-sm lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {mision.text ?? ''}
+                                </p>
+                            </div>
+                            <img src={misionImg} alt="Nuestra misión" className="hidden h-120.75 w-[55%] shrink-0 object-cover lg:block" style={{ objectPosition: '50% 20%' }} />
                         </div>
-                        <img src={misionImg} alt="Nuestra misión" className="hidden h-120.75 w-[55%] shrink-0 object-cover lg:block" style={{ objectPosition: '50% 20%' }} />
-                    </div>
-                </section>
+                    </section>
+                )}
 
                 {/* Nuestra visión */}
-                <section ref={visionInView.ref} className="bg-white px-5 pb-10 lg:px-15 lg:pb-15">
-                    <div className={`flex flex-col overflow-hidden rounded-[30px] transition-all duration-700 ease-out lg:flex-row ${visionInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                        <img src={visionImg} alt="Nuestra visión" className="aspect-3/2 w-full shrink-0 object-cover object-top lg:h-120.75 lg:w-[55%] lg:aspect-auto" />
-                        <div className="flex flex-1 flex-col items-start justify-center gap-5 bg-black p-7.5 lg:gap-10 lg:py-15 lg:pr-10 lg:pl-32">
-                            <h2 className="text-2xl font-semibold leading-[120%] text-white lg:w-61 lg:text-[32px]" style={{ fontFamily: '"Toyota Type"' }}>
-                                {vision.title ?? 'Nuestra visión'}
-                            </h2>
-                            <p className="text-sm leading-[120%] text-white lg:max-w-sm lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
-                                {vision.text ?? ''}
-                            </p>
+                {nosotros_vision && (
+                    <section ref={visionInView.ref} className="bg-white px-5 pb-10 lg:px-15 lg:pb-15">
+                        <div className={`flex flex-col overflow-hidden rounded-[30px] transition-all duration-700 ease-out lg:flex-row ${visionInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
+                            <img src={visionImg} alt="Nuestra visión" className="aspect-3/2 w-full shrink-0 object-cover object-top lg:h-120.75 lg:w-[55%] lg:aspect-auto" />
+                            <div className="flex flex-1 flex-col items-start justify-center gap-5 bg-black p-7.5 lg:gap-10 lg:py-15 lg:pr-10 lg:pl-32">
+                                <h2 className="text-2xl font-semibold leading-[120%] text-white lg:w-61 lg:text-[32px]" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {vision.title ?? 'Nuestra visión'}
+                                </h2>
+                                <p className="text-sm leading-[120%] text-white lg:max-w-sm lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {vision.text ?? ''}
+                                </p>
+                            </div>
                         </div>
-                    </div>
-                </section>
+                    </section>
+                )}
 
                 {/* Equipo Musalem */}
-                {(equipo.members ?? []).length > 0 && (
-                    <EquipoCarousel members={equipo.members} title={equipo.title ?? 'Equipo Musalem'} />
+                {nosotros_equipo && equipoMembers.length > 0 && (
+                    <EquipoCarousel members={equipoMembers} title={equipo.title ?? 'Equipo Musalem'} />
                 )}
 
                 {/* Reconocimientos */}
-                {(reconocimientos.items ?? []).length > 0 && (
-                    <ReconocimientosCarousel items={reconocimientos.items} title={reconocimientos.title ?? 'Reconocimientos'} />
+                {nosotros_reconocimientos && reconocimientosItems.length > 0 && (
+                    <ReconocimientosCarousel items={reconocimientosItems} title={reconocimientos.title ?? 'Reconocimientos'} />
                 )}
 
             </main>
 
-            <div className="bg-[#EAEAF1]">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-[#EAEAF1]">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

@@ -8,14 +8,23 @@ use Inertia\Inertia;
 
 class SeminuevosController extends Controller
 {
+    private function visibleSection(string $key): ?array
+    {
+        $section = SiteSection::where('section', $key)->first();
+        if (! $section || ! $section->is_visible) {
+            return null;
+        }
+
+        return $section->data ?? [];
+    }
+
     public function index()
     {
         $section = SiteSection::where('section', 'seminuevos_page')->first();
-        $footer = SiteSection::where('section', 'footer')->first();
 
         return Inertia::render('seminuevos', [
-            'data'       => $section?->data ?? [],
-            'footer'     => $footer?->data ?? [],
+            'data'       => $section && $section->is_visible ? ($section->data ?? []) : null,
+            'footer'     => $this->visibleSection('footer'),
             'seminuevos' => Seminuevo::where('is_visible', true)
                 ->orderBy('order')
                 ->orderBy('brand')
@@ -25,10 +34,8 @@ class SeminuevosController extends Controller
 
     public function compare()
     {
-        $footer = SiteSection::where('section', 'footer')->first();
-
         return Inertia::render('seminuevos/compare', [
-            'footer' => $footer?->data ?? [],
+            'footer' => $this->visibleSection('footer'),
         ]);
     }
 
@@ -44,11 +51,9 @@ class SeminuevosController extends Controller
             ->where('is_visible', true)
             ->firstOrFail();
 
-        $footer = SiteSection::where('section', 'footer')->first();
-
         return Inertia::render('seminuevos/show', [
             'seminuevo' => $seminuevo,
-            'footer'    => $footer?->data ?? [],
+            'footer'    => $this->visibleSection('footer'),
         ]);
     }
 
@@ -66,7 +71,7 @@ class SeminuevosController extends Controller
 
         return Inertia::render('seminuevos/cotizar', [
             'seminuevo' => $seminuevo,
-            'footer'    => SiteSection::where('section', 'footer')->first()?->data ?? [],
+            'footer'    => $this->visibleSection('footer'),
         ]);
     }
 }

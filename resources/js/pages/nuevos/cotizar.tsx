@@ -23,7 +23,7 @@ type Vehicle = {
     versions?: Version[];
 };
 
-export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; footer: any }) {
+export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; footer: any | null }) {
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [email, setEmail] = useState('');

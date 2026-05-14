@@ -756,7 +756,7 @@ type RentalContext = {
     branches: { id: number; name: string; city: string }[];
 };
 
-export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtubeShorts, rentalContext }: { vehicle: typeof vehicleData; footer: any; shorts: any; youtubeShorts: any[]; rentalContext?: RentalContext | null }) {
+export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtubeShorts, rentalContext }: { vehicle: typeof vehicleData; footer: any | null; shorts: any | null; youtubeShorts: any[]; rentalContext?: RentalContext | null }) {
     const [selectedVersion, setSelectedVersion] = useState(0);
     const [versionCardTab, setVersionCardTab] = useState<VersionTab>('precio');
     const [modal360Open, setModal360Open] = useState(false);

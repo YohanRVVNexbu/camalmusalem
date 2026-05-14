@@ -22,7 +22,7 @@ const rows = [
     ['100.000 KM', '$299.990', '$339.990', '$299.990', '$314.990', '$389.990', '$494.990', '$600.000', '$690.000', '$384.990', '$649.990', '$344.990', '$429.990'],
 ];
 
-export default function ValoresMantencion({ footer }: { footer: any }) {
+export default function ValoresMantencion({ footer }: { footer: any | null }) {
     useEffect(() => {
         const html = document.documentElement;
         const prev = html.style.backgroundColor;
@@ -116,9 +116,11 @@ export default function ValoresMantencion({ footer }: { footer: any }) {
 
             </main>
 
-            <div className="bg-[#EAEAF1]">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-[#EAEAF1]">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

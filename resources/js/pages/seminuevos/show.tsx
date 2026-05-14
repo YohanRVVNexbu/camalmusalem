@@ -63,7 +63,7 @@ function formatKm(km: number) {
 
 type DetailsTab = 'general' | 'equipment' | 'downloads';
 
-export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Seminuevo; footer: any }) {
+export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Seminuevo; footer: any | null }) {
     const [currentImage, setCurrentImage] = useState(0);
     const [detailsTab, setDetailsTab] = useState<DetailsTab>('general');
 

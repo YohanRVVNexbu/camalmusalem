@@ -4,7 +4,8 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { isVideoUrl } from '@/lib/media';
+import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
+import { useIsMobile } from '@/hooks/use-mobile';
 import useEmblaCarousel from 'embla-carousel-react';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
@@ -64,8 +65,10 @@ const carouselCards: (
     },
 ];
 
-export default function AgendarMantencion({ footer, mantencion_hero }: { footer: any; mantencion_hero?: any }) {
+export default function AgendarMantencion({ footer, mantencion_hero }: { footer: any | null; mantencion_hero?: any | null }) {
     const hero = mantencion_hero ?? {};
+    const isMobile = useIsMobile();
+    const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [submitting, setSubmitting] = useState(false);
 
@@ -182,18 +185,19 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
 
             <main className="flex flex-col bg-black">
                 {/* Hero */}
+                {mantencion_hero && (
                 <section className="bg-white pb-10 lg:pb-20">
                     <div
                         className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
-                        style={!isVideoUrl(hero.hero_image) ? {
-                            backgroundImage: `url(${hero.hero_image || heroImg})`,
+                        style={!isVideoUrl(heroMedia) ? {
+                            backgroundImage: `url(${heroMedia || heroImg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
                         } : undefined}
                     >
-                        {isVideoUrl(hero.hero_image) && (
-                            <video src={hero.hero_image!} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
+                        {isVideoUrl(heroMedia) && (
+                            <video src={heroMedia!} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
                         )}
                         <div
                             className="absolute inset-0"
@@ -217,6 +221,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                         </span>
                     </div>
                 </section>
+                )}
 
                 {/* Carrusel */}
                 <section className="flex w-full flex-col items-start bg-white px-5 pt-10 lg:px-15 lg:pt-20">
@@ -687,9 +692,11 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                 {/* Branches section */}
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
-                <div className="bg-black">
-                    <Footer data={footer} />
-                </div>
+                {footer && (
+                    <div className="bg-black">
+                        <Footer data={footer} />
+                    </div>
+                )}
             </main>
         </div>
     );

@@ -5,6 +5,8 @@ import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { useEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { pickResponsiveImage } from '@/lib/media';
 import { formatCLP } from '@/lib/format';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
@@ -109,16 +111,17 @@ function SelectField({ label, placeholder, options, value, onChange, disabled, h
 }
 
 export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos, rentals = [], branches = [] }: {
-    footer: any;
-    kinto_hero?: any;
-    kinto_pasos?: any;
-    kinto_vehiculos?: any;
+    footer: any | null;
+    kinto_hero?: any | null;
+    kinto_pasos?: any | null;
+    kinto_vehiculos?: any | null;
     rentals?: Rental[];
     branches?: BranchLite[];
 }) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const heroData = kinto_hero ?? {};
-    const heroImg = heroData.hero_image || heroImgDefault;
+    const isMobile = useIsMobile();
+    const heroImg = pickResponsiveImage(heroData.hero_image, heroData.hero_image_mobile, isMobile) || heroImgDefault;
     const pasos = kinto_pasos?.pasos ?? DEFAULT_PASOS;
     const heroInView = useInView(0.1);
     const comoFuncionaInView = useInView(0.1);
@@ -215,6 +218,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
             <main className="flex flex-col bg-black">
 
                 {/* Hero */}
+                {kinto_hero && (
                 <section ref={heroInView.ref}>
                     <div
                         className={`flex h-125 flex-col items-start justify-end gap-7.5 rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:gap-10 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
@@ -258,8 +262,10 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                         </div>
                     </div>
                 </section>
+                )}
 
                 {/* ¿Cómo funciona KINTO? */}
+                {kinto_pasos && (
                 <section ref={comoFuncionaInView.ref} className="bg-black px-5 py-10 lg:px-15 lg:py-20">
                     <div className={`flex flex-col items-center gap-7.5 rounded-[30px] bg-[#EAEAF1] p-5 transition-all duration-700 ease-out lg:gap-10 lg:p-10 ${comoFuncionaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                         <h2
@@ -297,8 +303,10 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                         </div>
                     </div>
                 </section>
+                )}
 
                 {/* Vehículos disponibles */}
+                {kinto_vehiculos && (
                 <section ref={vehiculosInView.ref} className="bg-black px-5 py-10 lg:px-15 lg:py-20">
                     <div className={`flex flex-col gap-7.5 transition-all duration-700 ease-out lg:gap-10 ${vehiculosInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
 
@@ -425,6 +433,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                         )}
                     </div>
                 </section>
+                )}
 
                 {/* Solicita tu arriendo */}
                 <section ref={formSectionRef} className="bg-black px-5 py-10 lg:px-15 lg:py-20 scroll-mt-20">
@@ -895,9 +904,11 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
 
             </main>
 
-            <div className="bg-black">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-black">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

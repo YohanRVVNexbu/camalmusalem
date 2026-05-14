@@ -168,7 +168,7 @@ function ArrowLeft() {
     );
 }
 
-export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { footer: any; noticia: Noticia; relacionadas?: NoticiaItem[] }) {
+export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { footer: any | null; noticia: Noticia; relacionadas?: NoticiaItem[] }) {
     const inView = useInView(0.05);
 
     useEffect(() => {
@@ -256,9 +256,11 @@ export default function NoticiaShow({ footer, noticia, relacionadas = [] }: { fo
                 </section>
             )}
 
-            <div className="bg-[#EAEAF1]">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-[#EAEAF1]">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

@@ -585,7 +585,7 @@ function CompareCard({ vehicle, onRemove }: { vehicle: Vehicle; onRemove: () => 
     );
 }
 
-export default function Compare({ footer }: { footer: any }) {
+export default function Compare({ footer }: { footer: any | null }) {
     const [selected, setSelected] = useState<Vehicle[]>([]);
     const [selectorOpen, setSelectorOpen] = useState(false);
     const [modalVisible, setModalVisible] = useState(false);

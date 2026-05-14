@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import {
-    ImageField, MediaField, SectionCard, SectionProp, TextareaField, TextField,
+    ResponsiveMediaField, SectionCard, SectionProp, TextareaField, TextField,
     VisibilityField, resetSection, submitSection,
 } from './_section';
 import defaultHeroImg from '@images/nosotros/hero_image.jpg?format=webp';
@@ -51,18 +51,26 @@ export default function NosotrosPage({ sections }: { sections: Record<string, Se
 function SimpleHeroSection({ page, s }: { page: string; s: SectionProp }) {
     const [data, setData] = useState(s.data);
     const [visible, setVisible] = useState(s.is_visible);
-    const [file, setFile] = useState<File | null>(null);
+    const [desktopFile, setDesktopFile] = useState<File | null>(null);
+    const [mobileFile, setMobileFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
     const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
 
     return (
         <SectionCard page={page} sectionKey="nosotros_hero" label="Hero" isVisible={visible}
             processing={processing}
-            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'nosotros_hero', data, visible, { hero_image: file }, setProcessing); }}
+            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'nosotros_hero', data, visible, { hero_image: desktopFile, hero_image_mobile: mobileFile }, setProcessing); }}
             onReset={() => resetSection(page, 'nosotros_hero')}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
+            <ResponsiveMediaField
+                label="Hero (imagen o video)"
+                currentDesktopUrl={data.hero_image ?? ''}
+                currentMobileUrl={data.hero_image_mobile ?? ''}
+                defaultDesktopUrl={defaultHeroImg}
+                onChangeDesktop={setDesktopFile}
+                onChangeMobile={setMobileFile}
+            />
             <TextField label="Subtítulo (encima del título)" value={data.subtitle ?? ''} onChange={(v) => set('subtitle', v)} />
             <TextField label="Título principal" value={data.title ?? ''} onChange={(v) => set('title', v)} />
         </SectionCard>
@@ -91,18 +99,26 @@ function HistoriaSection({ page, s }: { page: string; s: SectionProp }) {
 function MisionVisionSection({ page, s, label, sectionKey, defaultImg }: { page: string; s: SectionProp; label: string; sectionKey: string; defaultImg: string }) {
     const [data, setData] = useState(s.data);
     const [visible, setVisible] = useState(s.is_visible);
-    const [file, setFile] = useState<File | null>(null);
+    const [desktopFile, setDesktopFile] = useState<File | null>(null);
+    const [mobileFile, setMobileFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
     const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
 
     return (
         <SectionCard page={page} sectionKey={sectionKey} label={label} isVisible={visible}
             processing={processing}
-            onSubmit={(e) => { e.preventDefault(); submitSection(page, sectionKey, data, visible, { image: file }, setProcessing); }}
+            onSubmit={(e) => { e.preventDefault(); submitSection(page, sectionKey, data, visible, { image: desktopFile, image_mobile: mobileFile }, setProcessing); }}
             onReset={() => resetSection(page, sectionKey)}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <ImageField label="Imagen" currentUrl={data.image ?? ''} defaultUrl={defaultImg} onChange={setFile} />
+            <ResponsiveMediaField
+                label="Imagen"
+                currentDesktopUrl={data.image ?? ''}
+                currentMobileUrl={data.image_mobile ?? ''}
+                defaultDesktopUrl={defaultImg}
+                onChangeDesktop={setDesktopFile}
+                onChangeMobile={setMobileFile}
+            />
             <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
             <TextareaField label="Texto" value={data.text ?? ''} onChange={(v) => set('text', v)} rows={4} />
         </SectionCard>

@@ -8,7 +8,7 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
-import { ImageField, MediaField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
+import { ImageField, ResponsiveMediaField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
 
 type VehicleLite = {
     id: number;
@@ -46,6 +46,7 @@ export default function NuevosPage({ sections, vehicle_models }: Props) {
     const [data, setData] = useState<any>(initial);
     const [visible, setVisible] = useState(s.is_visible);
     const [bannerFile, setBannerFile] = useState<File | null>(null);
+    const [bannerMobileFile, setBannerMobileFile] = useState<File | null>(null);
     const [cardImages, setCardImages] = useState<Record<number, File | null>>({});
     const [processing, setProcessing] = useState(false);
 
@@ -63,6 +64,7 @@ export default function NuevosPage({ sections, vehicle_models }: Props) {
         e.preventDefault();
         const files: Record<string, File | null> = {
             banner_image: bannerFile,
+            banner_image_mobile: bannerMobileFile,
         };
         Object.entries(cardImages).forEach(([idx, file]) => {
             files[`hero_cards.${idx}.image_override`] = file;
@@ -97,11 +99,12 @@ export default function NuevosPage({ sections, vehicle_models }: Props) {
                     <Separator />
 
                     {/* Banner */}
-                    <MediaField
+                    <ResponsiveMediaField
                         label="Banner (imagen o video)"
-                        currentUrl={data.banner_image ?? ''}
-                        defaultUrl=""
-                        onChange={setBannerFile}
+                        currentDesktopUrl={data.banner_image ?? ''}
+                        currentMobileUrl={data.banner_image_mobile ?? ''}
+                        onChangeDesktop={setBannerFile}
+                        onChangeMobile={setBannerMobileFile}
                     />
                     <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
                     <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={3} />

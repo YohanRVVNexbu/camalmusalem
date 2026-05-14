@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { useInView } from '@/hooks/use-in-view';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { pickResponsiveImage } from '@/lib/media';
 
 type Vehicle = {
     name: string;
@@ -8,7 +10,9 @@ type Vehicle = {
     headline: string;
     image: string;
     video?: string | null;
+    video_mobile?: string | null;
     background_image?: string | null;
+    background_image_mobile?: string | null;
     duration?: number | null;
     vehicle_model_id?: number | null;
     vehicle_slug?: string | null;
@@ -44,7 +48,10 @@ export function About({ data }: { data: AboutData }) {
     const elapsedRef   = useRef(0);
 
     const activeVehicle = vehicles[activeIndex];
-    const hasVideo      = !!activeVehicle?.video;
+    const isMobile      = useIsMobile();
+    const activeVideoSrc = pickResponsiveImage(activeVehicle?.video, activeVehicle?.video_mobile, isMobile);
+    const activeBgSrc    = pickResponsiveImage(activeVehicle?.background_image, activeVehicle?.background_image_mobile, isMobile);
+    const hasVideo      = !!activeVideoSrc;
 
     const clearImageTimer = useCallback(() => {
         if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
@@ -134,12 +141,12 @@ export function About({ data }: { data: AboutData }) {
     const Background = () => (
         <>
             {hasVideo ? (
-                <video ref={videoRef} muted playsInline onTimeUpdate={handleTimeUpdate} onEnded={handleEnded}
+                <video key={activeVideoSrc} ref={videoRef} muted playsInline onTimeUpdate={handleTimeUpdate} onEnded={handleEnded}
                     className="absolute inset-0 size-full object-cover">
-                    <source src={activeVehicle.video!} type="video/mp4" />
+                    <source src={activeVideoSrc} type="video/mp4" />
                 </video>
-            ) : activeVehicle.background_image ? (
-                <img src={activeVehicle.background_image} alt={activeVehicle.name}
+            ) : activeBgSrc ? (
+                <img src={activeBgSrc} alt={activeVehicle.name}
                     className="absolute inset-0 size-full object-cover" />
             ) : (
                 <div className="absolute inset-0 size-full bg-neutral-800" />

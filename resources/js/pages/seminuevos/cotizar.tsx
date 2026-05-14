@@ -22,7 +22,7 @@ type Seminuevo = {
     branch?: Branch | null;
 };
 
-export default function SeminuevoCotizar({ seminuevo, footer }: { seminuevo: Seminuevo; footer: any }) {
+export default function SeminuevoCotizar({ seminuevo, footer }: { seminuevo: Seminuevo; footer: any | null }) {
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [email, setEmail] = useState('');

@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import {
-    ImageField, SectionCard, SectionProp, TextField,
+    ResponsiveMediaField, SectionCard, SectionProp, TextField,
     VisibilityField, resetSection, submitSection,
 } from './_section';
 import defaultFormImg from '@images/contacto/form_image.png?format=webp';
@@ -35,18 +35,26 @@ export default function ContactoPage({ sections }: { sections: Record<string, Se
 function ContactoInfoSection({ page, s }: { page: string; s: SectionProp }) {
     const [data, setData] = useState(s.data);
     const [visible, setVisible] = useState(s.is_visible);
-    const [file, setFile] = useState<File | null>(null);
+    const [desktopFile, setDesktopFile] = useState<File | null>(null);
+    const [mobileFile, setMobileFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
     const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
 
     return (
         <SectionCard page={page} sectionKey="contacto_info" label="Información y formulario" isVisible={visible}
             processing={processing}
-            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'contacto_info', data, visible, { form_image: file }, setProcessing); }}
+            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'contacto_info', data, visible, { form_image: desktopFile, form_image_mobile: mobileFile }, setProcessing); }}
             onReset={() => resetSection(page, 'contacto_info')}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <ImageField label="Imagen lateral (formulario)" currentUrl={data.form_image ?? ''} defaultUrl={defaultFormImg} onChange={setFile} />
+            <ResponsiveMediaField
+                label="Imagen lateral (formulario)"
+                currentDesktopUrl={data.form_image ?? ''}
+                currentMobileUrl={data.form_image_mobile ?? ''}
+                defaultDesktopUrl={defaultFormImg}
+                onChangeDesktop={setDesktopFile}
+                onChangeMobile={setMobileFile}
+            />
             <div className="grid grid-cols-2 gap-4">
                 <TextField label="Horario Lunes a Viernes" value={data.horario_lv ?? ''} onChange={(v) => set('horario_lv', v)} placeholder="09:00 a 13:30 - 14:45 a 18:30" />
                 <TextField label="Horario Sábado / Domingo" value={data.horario_sab ?? ''} onChange={(v) => set('horario_sab', v)} placeholder="Cerrado" />

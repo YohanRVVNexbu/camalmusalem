@@ -5,7 +5,8 @@ import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 import { useInView } from '@/hooks/use-in-view';
-import { isVideoUrl } from '@/lib/media';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
 import heroImg from '@images/programas-toyota/hero_section.png?format=webp';
 import card2Img from '@images/programas-toyota/card_2_image.png?format=webp';
 import grid1 from '@images/programas-toyota/grid_1.png?format=webp';
@@ -18,9 +19,11 @@ import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
 import visitanos1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import visitanos2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
-export default function ProgramasPage({ footer, programas, programas_hero, programas_grid }: { footer: any; programas: any; programas_hero?: any; programas_grid?: any }) {
+export default function ProgramasPage({ footer, programas, programas_hero, programas_grid }: { footer: any | null; programas: any | null; programas_hero?: any | null; programas_grid?: any | null }) {
     const hero = programas_hero ?? {};
     const grid = programas_grid ?? {};
+    const isMobile = useIsMobile();
+    const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
     const heroInView = useInView(0.1);
     const gridInView = useInView(0.05);
     const cardInView = useInView(0.1);
@@ -40,32 +43,35 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
             <main className="flex flex-col bg-white">
 
                 {/* Hero */}
-                <section ref={heroInView.ref}>
-                    <div
-                        className={`relative flex h-100 flex-col items-start justify-end gap-10 overflow-hidden rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
-                        style={!isVideoUrl(hero.hero_image) ? {
-                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
-                        } : undefined}
-                    >
-                        {isVideoUrl(hero.hero_image) && (
-                            <>
-                                <video src={hero.hero_image} className="absolute inset-0 -z-20 size-full object-cover" autoPlay muted loop playsInline />
-                                <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)' }} />
-                            </>
-                        )}
-                        <span
-                            style={{
-                                fontFamily: '"Toyota Type"',
-                                fontFeatureSettings: '"liga" off, "clig" off',
-                            }}
-                            className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]"
+                {programas_hero && (
+                    <section ref={heroInView.ref}>
+                        <div
+                            className={`relative flex h-100 flex-col items-start justify-end gap-10 overflow-hidden rounded-b-[30px] px-5 pt-25 pb-10 transition-all duration-700 ease-out lg:h-165 lg:px-10 lg:pt-15 lg:pb-15 ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                            style={!isVideoUrl(heroMedia) ? {
+                                background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${heroMedia || heroImg}) lightgray 50% / cover no-repeat`,
+                            } : undefined}
                         >
-                            {hero.title || 'Programas Toyota'}
-                        </span>
-                    </div>
-                </section>
+                            {isVideoUrl(heroMedia) && (
+                                <>
+                                    <video src={heroMedia} className="absolute inset-0 -z-20 size-full object-cover" autoPlay muted loop playsInline />
+                                    <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)' }} />
+                                </>
+                            )}
+                            <span
+                                style={{
+                                    fontFamily: '"Toyota Type"',
+                                    fontFeatureSettings: '"liga" off, "clig" off',
+                                }}
+                                className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]"
+                            >
+                                {hero.title || 'Programas Toyota'}
+                            </span>
+                        </div>
+                    </section>
+                )}
 
                 {/* Grid de programas */}
+                {programas_grid && (
                 <section ref={gridInView.ref} className="bg-white px-5 py-10 lg:px-15 lg:py-20">
                     <div className="flex flex-col gap-7.5 lg:gap-10">
                         {/* Header */}
@@ -155,6 +161,7 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                         </div>
                     </div>
                 </section>
+                )}
 
                 {/* Card mantenimiento */}
                 <section ref={cardInView.ref} className="px-5 py-10 lg:px-15 lg:py-15" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #EAEAF1 100%)' }}>
@@ -199,9 +206,11 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
 
             </main>
 
-            <div className="bg-black">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-black">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

@@ -30,7 +30,10 @@
       "Bash(python3)",
       "Bash(composer show *)",
       "Bash(awk '/\"model_slug\": \"bz4x\"/,/^    \\\\},$/' /Users/nexbuescl/Sites/camalmusalem/database/seeders/data/toyota_specs.json)",
-      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://camalmusalem.test/nuevos/corolla)"
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\\\\n\" http://camalmusalem.test/nuevos/corolla)",
+      "Bash(curl -sk -X POST -F \"name=TestUpload\" -F \"logo=@/Users/nexbuescl/Sites/camalmusalem/storage/app/public/home/about/BZ4X.png\" -F \"is_active=1\" -F \"display_order=99\" http://camalmusalem.test/admin/brands -b /tmp/cookies.txt -c /tmp/cookies.txt -L -w \"\\\\nHTTP %{http_code}\\\\n\")",
+      "Bash(curl -sI \"http://camalmusalem.test/storage/defaults/home/hero/hero_video.mp4\")",
+      "Bash(git check-ignore *)"
     ],
     "additionalDirectories": [
       "/tmp"

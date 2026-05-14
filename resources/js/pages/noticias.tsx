@@ -4,14 +4,17 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useMemo, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
-import { isVideoUrl } from '@/lib/media';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
 import heroImg from '@images/noticias/hero_image.png?format=webp';
 
 const CATEGORIAS_FIJAS = ['Todas', 'Noticias', 'Concursos', 'Reconocimientos', 'Camal Musalem', 'Mundo Toyota'];
 const PER_PAGE = 9;
 
-export default function Noticias({ footer, noticias_hero, noticias = [] }: { footer: any; noticias_hero?: any; noticias?: NoticiaItem[] }) {
+export default function Noticias({ footer, noticias_hero, noticias = [] }: { footer: any | null; noticias_hero?: any | null; noticias?: NoticiaItem[] }) {
     const hero = noticias_hero ?? {};
+    const isMobile = useIsMobile();
+    const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
     const heroInView = useInView(0.1);
 
     const [categoriaActiva, setCategoriaActiva] = useState('Todas');
@@ -56,27 +59,29 @@ export default function Noticias({ footer, noticias_hero, noticias = [] }: { foo
             <main className="flex flex-col bg-white">
 
                 {/* Hero */}
-                <section ref={heroInView.ref}>
-                    <div
-                        className={`relative flex h-100 flex-col items-center justify-end gap-7.5 overflow-hidden rounded-b-[30px] px-5 pt-25 pb-10 text-center transition-all duration-700 ease-out lg:h-165 lg:items-start lg:gap-10 lg:px-10 lg:pt-15 lg:pb-15 lg:text-left ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
-                        style={!isVideoUrl(hero.hero_image) ? {
-                            background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${hero.hero_image || heroImg}) lightgray 50% / cover no-repeat`,
-                        } : undefined}
-                    >
-                        {isVideoUrl(hero.hero_image) && (
-                            <>
-                                <video src={hero.hero_image} className="absolute inset-0 -z-20 size-full object-cover" autoPlay muted loop playsInline />
-                                <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)' }} />
-                            </>
-                        )}
-                        <span
-                            className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]"
-                            style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}
+                {noticias_hero && (
+                    <section ref={heroInView.ref}>
+                        <div
+                            className={`relative flex h-100 flex-col items-center justify-end gap-7.5 overflow-hidden rounded-b-[30px] px-5 pt-25 pb-10 text-center transition-all duration-700 ease-out lg:h-165 lg:items-start lg:gap-10 lg:px-10 lg:pt-15 lg:pb-15 lg:text-left ${heroInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}
+                            style={!isVideoUrl(heroMedia) ? {
+                                background: `linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${heroMedia || heroImg}) lightgray 50% / cover no-repeat`,
+                            } : undefined}
                         >
-                            {hero.title || 'Noticias / Blog Musalem'}
-                        </span>
-                    </div>
-                </section>
+                            {isVideoUrl(heroMedia) && (
+                                <>
+                                    <video src={heroMedia} className="absolute inset-0 -z-20 size-full object-cover" autoPlay muted loop playsInline />
+                                    <div className="absolute inset-0 -z-10" style={{ background: 'linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.80) 100%), linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)' }} />
+                                </>
+                            )}
+                            <span
+                                className="text-[32px] font-normal leading-[110%] text-white lg:text-[48px] lg:leading-[100%]"
+                                style={{ fontFamily: '"Toyota Type"', fontFeatureSettings: '"liga" off, "clig" off' }}
+                            >
+                                {hero.title || 'Noticias / Blog Musalem'}
+                            </span>
+                        </div>
+                    </section>
+                )}
 
                 {/* Filtros */}
                 <section className="flex flex-col gap-5 px-5 py-10 lg:px-15 lg:py-20">
@@ -178,9 +183,11 @@ export default function Noticias({ footer, noticias_hero, noticias = [] }: { foo
 
             </main>
 
-            <div className="bg-white">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-white">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

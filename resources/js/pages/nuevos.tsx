@@ -110,7 +110,7 @@ type VehicleWithFilter = Vehicle & {
     };
 };
 
-export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCardsProp, filterOptions }: { data: any; footer: any; vehicles: VehicleWithFilter[]; heroCards?: HeroCardVehicle[]; filterOptions?: FilterOptions }) {
+export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCardsProp, filterOptions }: { data: any | null; footer: any | null; vehicles: VehicleWithFilter[]; heroCards?: HeroCardVehicle[]; filterOptions?: FilterOptions }) {
     const [cardsVisible, setCardsVisible] = useState(false);
     const [contentVisible, setContentVisible] = useState(false);
     const [filtersVisible, setFiltersVisible] = useState(true);

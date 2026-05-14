@@ -21,7 +21,7 @@ type Repuesto = {
     stock_ovalle: boolean;
 };
 
-export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto; footer: any }) {
+export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto; footer: any | null }) {
     const [currentImage, setCurrentImage] = useState(0);
     const images = repuesto.images?.length ? repuesto.images : [];
 

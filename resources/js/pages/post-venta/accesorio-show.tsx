@@ -23,7 +23,7 @@ const BRANCHES = [
     { name: 'Sucursal Ovalle', address: 'Ariztía #358', mapsUrl: 'https://www.google.com/maps/search/Aristia+358,+Ovalle,+Chile' },
 ];
 
-export default function AccesorioShow({ accesorio, footer }: { accesorio: Accesorio; footer: any }) {
+export default function AccesorioShow({ accesorio, footer }: { accesorio: Accesorio; footer: any | null }) {
     const [currentImage, setCurrentImage] = useState(0);
     const images = accesorio.images?.length ? accesorio.images : [];
 

@@ -2,7 +2,7 @@ import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
-import { MediaField, ImageField, SectionCard, SectionProp, TextField, VisibilityField, resetSection, submitSection } from './_section';
+import { ResponsiveMediaField, SectionCard, SectionProp, TextField, VisibilityField, resetSection, submitSection } from './_section';
 import defaultHeroImg from '@images/shorts/hero_image.png?format=webp';
 
 export default function ShortsPage({ sections }: { sections: Record<string, SectionProp> }) {
@@ -11,7 +11,8 @@ export default function ShortsPage({ sections }: { sections: Record<string, Sect
     const s = sections['shorts_hero'];
     const [data, setData] = useState(s.data);
     const [visible, setVisible] = useState(s.is_visible);
-    const [file, setFile] = useState<File | null>(null);
+    const [desktopFile, setDesktopFile] = useState<File | null>(null);
+    const [mobileFile, setMobileFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
     const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
 
@@ -29,11 +30,18 @@ export default function ShortsPage({ sections }: { sections: Record<string, Sect
                 )}
                 <SectionCard page={page} sectionKey="shorts_hero" label="Hero" isVisible={visible}
                     processing={processing}
-                    onSubmit={(e) => { e.preventDefault(); submitSection(page, 'shorts_hero', data, visible, { hero_image: file }, setProcessing); }}
+                    onSubmit={(e) => { e.preventDefault(); submitSection(page, 'shorts_hero', data, visible, { hero_image: desktopFile, hero_image_mobile: mobileFile }, setProcessing); }}
                     onReset={() => resetSection(page, 'shorts_hero')}>
                     <VisibilityField checked={visible} onChange={setVisible} />
                     <Separator />
-                    <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setFile} />
+                    <ResponsiveMediaField
+                        label="Hero (imagen o video)"
+                        currentDesktopUrl={data.hero_image ?? ''}
+                        currentMobileUrl={data.hero_image_mobile ?? ''}
+                        defaultDesktopUrl={defaultHeroImg}
+                        onChangeDesktop={setDesktopFile}
+                        onChangeMobile={setMobileFile}
+                    />
                     <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
                     <TextField label="Subtítulo" value={data.subtitle ?? ''} onChange={(v) => set('subtitle', v)} />
                 </SectionCard>

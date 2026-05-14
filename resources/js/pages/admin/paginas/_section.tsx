@@ -164,6 +164,51 @@ export function MediaField({
     );
 }
 
+// ── Responsive Media field (desktop + mobile) ─────────────────────────────────
+// Renders two MediaField side by side. The mobile variant is optional — if the
+// user leaves it empty, the public site falls back to the desktop image.
+export function ResponsiveMediaField({
+    label,
+    currentDesktopUrl,
+    currentMobileUrl,
+    defaultDesktopUrl,
+    defaultMobileUrl,
+    onChangeDesktop,
+    onChangeMobile,
+    hint,
+}: {
+    label: string;
+    currentDesktopUrl: string;
+    currentMobileUrl: string;
+    defaultDesktopUrl?: string;
+    defaultMobileUrl?: string;
+    onChangeDesktop: (file: File | null) => void;
+    onChangeMobile: (file: File | null) => void;
+    hint?: string;
+}) {
+    return (
+        <div className="grid gap-3">
+            <Label>{label}</Label>
+            <div className="grid gap-4 md:grid-cols-2">
+                <MediaField
+                    label="Desktop"
+                    currentUrl={currentDesktopUrl}
+                    defaultUrl={defaultDesktopUrl}
+                    onChange={onChangeDesktop}
+                    hint={hint}
+                />
+                <MediaField
+                    label="Mobile (opcional)"
+                    currentUrl={currentMobileUrl}
+                    defaultUrl={defaultMobileUrl}
+                    onChange={onChangeMobile}
+                    hint="Si lo dejas vacío, se usará la imagen desktop."
+                />
+            </div>
+        </div>
+    );
+}
+
 // ── Image-only field (preserved for cases where only image makes sense) ──────
 export function ImageField({
     label,

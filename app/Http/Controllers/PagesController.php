@@ -9,9 +9,14 @@ use Inertia\Inertia;
 
 class PagesController extends Controller
 {
-    private function section(string $key): array
+    private function section(string $key): ?array
     {
-        return SiteSection::where('section', $key)->first()?->data ?? [];
+        $section = SiteSection::where('section', $key)->first();
+        if (! $section || ! $section->is_visible) {
+            return null;
+        }
+
+        return $section->data ?? [];
     }
 
     public function programas()

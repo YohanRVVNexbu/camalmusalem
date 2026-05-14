@@ -16,10 +16,20 @@ class NuevosController extends Controller
 {
     public function __construct(private CatalogPresenter $presenter) {}
 
+    private function visibleSection(string $key): ?array
+    {
+        $section = SiteSection::where('section', $key)->first();
+        if (! $section || ! $section->is_visible) {
+            return null;
+        }
+
+        return $section->data ?? [];
+    }
+
     public function index()
     {
         $section = SiteSection::where('section', 'nuevos_page')->first();
-        $footer = SiteSection::where('section', 'footer')->first();
+        $footerData = $this->visibleSection('footer');
 
         $models = VehicleModel::with([
             'brand',
@@ -47,11 +57,12 @@ class NuevosController extends Controller
             return $presented;
         })->all();
 
-        $heroCards = $this->resolveHeroCards($section?->data['hero_cards'] ?? null, $models);
+        $heroCardsConfigured = $section && $section->is_visible ? ($section->data['hero_cards'] ?? null) : null;
+        $heroCards = $this->resolveHeroCards($heroCardsConfigured, $models);
 
         return Inertia::render('nuevos', [
-            'data' => $section?->data ?? [],
-            'footer' => $footer?->data ?? [],
+            'data' => $section && $section->is_visible ? ($section->data ?? []) : null,
+            'footer' => $footerData,
             'vehicles' => $vehicles,
             'heroCards' => $heroCards,
             'filterOptions' => $this->buildFilterOptions($models),
@@ -156,8 +167,8 @@ class NuevosController extends Controller
             })
             ->firstOrFail();
 
-        $footer = SiteSection::where('section', 'footer')->first();
-        $shorts = SiteSection::where('section', 'shorts')->first();
+        $footerData = $this->visibleSection('footer');
+        $shortsData = $this->visibleSection('shorts');
 
         // Optional rental context: when the visitor comes from the KINTO page
         // via "Ver detalles vehículo", we surface rental-specific data so the
@@ -188,8 +199,8 @@ class NuevosController extends Controller
 
         return Inertia::render('nuevos/show', [
             'vehicle' => $this->presenter->presentModel($model),
-            'footer' => $footer?->data ?? [],
-            'shorts' => $shorts?->data ?? [],
+            'footer' => $footerData,
+            'shorts' => $shortsData,
             'youtubeShorts' => $youtubeService->getShorts(),
             'rentalContext' => $rentalContext,
         ]);
@@ -213,7 +224,7 @@ class NuevosController extends Controller
 
         return Inertia::render('nuevos/cotizar', [
             'vehicle' => $this->presenter->presentModel($model),
-            'footer' => SiteSection::where('section', 'footer')->first()?->data ?? [],
+            'footer' => $this->visibleSection('footer'),
         ]);
     }
 }

@@ -31,7 +31,7 @@ function formatKm(km: number) {
     return km.toLocaleString('es-CL') + ' km';
 }
 
-export default function Seminuevos({ data, footer, seminuevos = [] }: { data: any; footer: any; seminuevos: Seminuevo[] }) {
+export default function Seminuevos({ data, footer, seminuevos = [] }: { data: any | null; footer: any | null; seminuevos: Seminuevo[] }) {
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');

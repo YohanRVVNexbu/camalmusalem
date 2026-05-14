@@ -9,7 +9,7 @@ type Repuesto = { id: number; name: string; price: string | null; images: string
 
 const sucursales = ['La Serena', 'Ovalle'];
 
-export default function RepuestoCotizar({ repuesto, footer }: { repuesto: Repuesto; footer: any }) {
+export default function RepuestoCotizar({ repuesto, footer }: { repuesto: Repuesto; footer: any | null }) {
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [email, setEmail] = useState('');

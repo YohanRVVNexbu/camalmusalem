@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import {
-    ImageField, MediaField, SectionCard, SectionProp, TextareaField, TextField,
+    ImageField, MediaField, ResponsiveMediaField, SectionCard, SectionProp, TextareaField, TextField,
     VisibilityField, resetSection, submitSection,
 } from './_section';
 import defaultHeroImg from '@images/kinto/hero_image.png?format=webp';
@@ -50,17 +50,25 @@ function HeroSection({ page, s }: { page: string; s: SectionProp }) {
     const [data, setData] = useState(s.data);
     const [visible, setVisible] = useState(s.is_visible);
     const [heroFile, setHeroFile] = useState<File | null>(null);
+    const [heroMobileFile, setHeroMobileFile] = useState<File | null>(null);
     const [processing, setProcessing] = useState(false);
     const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
 
     return (
         <SectionCard page={page} sectionKey="kinto_hero" label="Hero" isVisible={visible}
             processing={processing}
-            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'kinto_hero', data, visible, { 'hero_image': heroFile }, setProcessing); }}
+            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'kinto_hero', data, visible, { hero_image: heroFile, hero_image_mobile: heroMobileFile }, setProcessing); }}
             onReset={() => resetSection(page, 'kinto_hero')}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <MediaField label="Hero (imagen o video)" currentUrl={data.hero_image ?? ''} defaultUrl={defaultHeroImg} onChange={setHeroFile} />
+            <ResponsiveMediaField
+                label="Hero (imagen o video)"
+                currentDesktopUrl={data.hero_image ?? ''}
+                currentMobileUrl={data.hero_image_mobile ?? ''}
+                defaultDesktopUrl={defaultHeroImg}
+                onChangeDesktop={setHeroFile}
+                onChangeMobile={setHeroMobileFile}
+            />
             <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
             <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={4} />
             <TextField label="Texto botón" value={data.button_text ?? ''} onChange={(v) => set('button_text', v)} />

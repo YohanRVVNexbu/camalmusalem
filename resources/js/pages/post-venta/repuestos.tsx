@@ -4,7 +4,8 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
-import { isVideoUrl } from '@/lib/media';
+import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useState } from 'react';
 import heroImg from '@images/repuestos/hero_image.png?format=webp';
 import section2Img from '@images/repuestos/image_section2.jpg?format=webp';
@@ -31,8 +32,10 @@ const modelos = ['Hilux', 'Land Cruiser', 'Corolla', 'Yaris', 'RAV4', 'Fortuner'
 const marcas = ['Toyota', 'Lexus', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Nissan', 'Volkswagen', 'Mazda', 'Honda'];
 const sucursales = ['La Serena — Av. Francisco de Aguirre #070', 'Ovalle — Aristía #358'];
 
-export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { footer: any; repuestos_hero?: any; repuestos: Repuesto[] }) {
+export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { footer: any | null; repuestos_hero?: any | null; repuestos: Repuesto[] }) {
     const hero = repuestos_hero ?? {};
+    const isMobile = useIsMobile();
+    const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
     const [step, setStep] = useState<SolicitudStep>('default');
     const [visible, setVisible] = useState(true);
     const [formKey, setFormKey] = useState(0);
@@ -112,18 +115,19 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
             <main className="flex flex-col bg-black">
 
                 {/* Hero */}
+                {repuestos_hero && (
                 <section className="bg-white pb-10 lg:pb-20">
                     <div
                         className="relative h-100 shrink-0 overflow-hidden rounded-b-[30px] lg:h-119.25"
-                        style={!isVideoUrl(hero.hero_image) ? {
-                            backgroundImage: `url(${hero.hero_image || heroImg})`,
+                        style={!isVideoUrl(heroMedia) ? {
+                            backgroundImage: `url(${heroMedia || heroImg})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center',
                             backgroundRepeat: 'no-repeat',
                         } : undefined}
                     >
-                        {isVideoUrl(hero.hero_image) && (
-                            <video src={hero.hero_image!} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
+                        {isVideoUrl(heroMedia) && (
+                            <video src={heroMedia} className="absolute inset-0 size-full object-cover" autoPlay muted loop playsInline />
                         )}
                         <div
                             className="absolute inset-0"
@@ -144,6 +148,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                         </span>
                     </div>
                 </section>
+                )}
 
                 {/* Repuestos section */}
                 <section className="flex flex-col items-start gap-10 bg-white px-5 py-10 lg:gap-20 lg:px-15 lg:py-20">
@@ -555,9 +560,11 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
 
             </main>
 
-            <div className="bg-black">
-                <Footer data={footer} />
-            </div>
+            {footer && (
+                <div className="bg-black">
+                    <Footer data={footer} />
+                </div>
+            )}
         </div>
     );
 }

@@ -1,8 +1,11 @@
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { useInView } from '@/hooks/use-in-view';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { pickResponsiveImage } from '@/lib/media';
 
 type HeroData = {
     background_video: string;
+    background_video_mobile?: string;
     subtitle: string;
     title: string;
     description: string;
@@ -12,20 +15,22 @@ type HeroData = {
 
 export function Hero({ data }: { data: HeroData }) {
     const { ref, visible } = useInView(0.1);
+    const isMobile = useIsMobile();
 
     const fadeIn = visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0';
 
-    const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(data.background_video || '');
+    const media = pickResponsiveImage(data.background_video, data.background_video_mobile, isMobile);
+    const isVideo = /\.(mp4|webm|mov|m4v|ogg)(\?|$)/i.test(media || '');
 
     return (
         <section ref={ref} className="relative flex h-dvh flex-col items-center justify-end self-stretch px-5 pb-10 lg:px-15 lg:pb-20">
             {/* Background media (video or image) */}
             {isVideo ? (
-                <video autoPlay muted loop playsInline className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center">
-                    <source src={data.background_video} />
+                <video key={media} autoPlay muted loop playsInline className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center">
+                    <source src={media} />
                 </video>
-            ) : data.background_video ? (
-                <img src={data.background_video} alt="" className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center" />
+            ) : media ? (
+                <img src={media} alt="" className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center" />
             ) : null}
 
             {/* Gradient overlay */}
