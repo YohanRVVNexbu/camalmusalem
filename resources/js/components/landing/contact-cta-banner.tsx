@@ -1,36 +1,50 @@
+import { usePage } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { pickResponsiveImage } from '@/lib/media';
 import ejemploVideo from '@images/seminuevos/ejemplo-video.png?format=webp';
 
-interface ContactCtaBannerProps {
-    image?: string;
-    href?: string;
+type SharedBanner = {
     text?: string;
-    ctaLabel?: string;
+    button_label?: string;
+    button_href?: string;
+    image?: string;
+    image_mobile?: string;
+} | null;
+
+interface ContactCtaBannerProps {
+    /** Visual layout. */
     rounded?: 'all' | 'bottom';
     bg?: 'light' | 'dark';
 }
 
 export function ContactCtaBanner({
-    image,
-    href = '#',
-    text = 'Contáctanos para recibir asesoría personalizada',
-    ctaLabel = 'Contactar ventas',
     rounded = 'all',
     bg = 'light',
 }: ContactCtaBannerProps) {
+    const shared = (usePage().props.contactCtaBanner ?? null) as SharedBanner;
+    const isMobile = useIsMobile();
+
+    if (shared === null) return null;
+
+    const text = shared.text || 'Contáctanos para recibir asesoría personalizada';
+    const ctaLabel = shared.button_label || 'Contactar ventas';
+    const href = shared.button_href || '/contacto';
+    const responsiveImage = pickResponsiveImage(shared.image, shared.image_mobile, isMobile);
+    const image = responsiveImage || ejemploVideo;
+
     const wrapperRounded = rounded === 'bottom' ? 'rounded-b-[30px]' : '';
     const wrapperBg = bg === 'dark' ? 'bg-black' : 'bg-[#EAEAF1]';
 
     return (
         <div className={`flex flex-col items-center px-5 py-10 lg:p-15 ${wrapperBg} ${wrapperRounded}`}>
-            <div className="relative flex h-115 w-full flex-col items-start justify-end gap-2.5 overflow-hidden rounded-[30px] p-5 lg:h-85 lg:p-7.5">
+            <div className="relative flex h-115 w-full flex-col items-start justify-end gap-2.5 overflow-hidden rounded-[30px] bg-neutral-900 p-5 lg:h-85 lg:p-7.5">
                 <img
-                    src={image || ejemploVideo}
+                    src={image}
                     alt=""
                     aria-hidden
                     onError={(e) => { (e.currentTarget as HTMLImageElement).src = ejemploVideo; }}
                     className="absolute inset-0 h-full w-full object-cover object-center"
-                    style={{ objectPosition: 'center 30%' }}
                 />
                 <div
                     className="absolute inset-0"

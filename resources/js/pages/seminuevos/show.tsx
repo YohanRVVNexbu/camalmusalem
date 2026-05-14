@@ -606,7 +606,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                 </div>
 
                 {/* Contact CTA banner */}
-                <ContactCtaBanner image={images[0]} rounded="bottom" />
+                <ContactCtaBanner rounded="bottom" />
 
                 {/* Branches section */}
                 <BranchesSection image1={visitanos1} image2={visitanos2} />

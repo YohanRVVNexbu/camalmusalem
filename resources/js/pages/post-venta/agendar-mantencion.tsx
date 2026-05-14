@@ -687,7 +687,7 @@ export default function AgendarMantencion({ footer, mantencion_hero }: { footer:
                     </div>
                 </section>
 
-                <ContactCtaBanner image={ejemploVideo} />
+                <ContactCtaBanner />
 
                 {/* Branches section */}
                 <BranchesSection image1={visitanos1} image2={visitanos2} />

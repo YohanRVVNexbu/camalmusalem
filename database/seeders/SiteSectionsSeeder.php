@@ -426,6 +426,18 @@ class SiteSectionsSeeder extends Seeder
             'order' => 7,
         ]);
 
+        SiteSection::updateOrCreate(['section' => 'contact_cta_banner'], [
+            'data' => [
+                'text'         => 'Contáctanos para recibir asesoría personalizada',
+                'button_label' => 'Contactar ventas',
+                'button_href'  => '/contacto',
+                'image'        => '',
+                'image_mobile' => '',
+            ],
+            'is_visible' => true,
+            'order' => 8,
+        ]);
+
         // Snapshot current `data` as `default_data` for any home section that
         // doesn't have one yet, rewriting media URLs from /storage/home/ to
         // /storage/defaults/home/ so the originals live in a protected folder

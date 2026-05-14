@@ -215,7 +215,7 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                     </div>
                 </section>
 
-                <ContactCtaBanner image={ejemploVideo} />
+                <ContactCtaBanner />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
                 {footer && (

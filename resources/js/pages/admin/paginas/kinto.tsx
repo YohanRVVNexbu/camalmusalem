@@ -1,23 +1,18 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
-import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import {
-    ImageField, MediaField, ResponsiveMediaField, SectionCard, SectionProp, TextareaField, TextField,
+    ResponsiveMediaField, SectionCard, SectionProp, TextareaField, TextField,
     VisibilityField, resetSection, submitSection,
 } from './_section';
 import defaultHeroImg from '@images/kinto/hero_image.png?format=webp';
 import defaultCard1 from '@images/kinto/card_1.jpg?format=webp';
 import defaultCard2 from '@images/kinto/card_2.jpg?format=webp';
 import defaultCard3 from '@images/kinto/card_3.jpg?format=webp';
-import defaultCar1 from '@images/kinto/car_1.png?format=webp';
-import defaultCar2 from '@images/kinto/car_2.png?format=webp';
-
 const DEFAULT_PASO_IMGS = [defaultCard1, defaultCard2, defaultCard3];
-const DEFAULT_CAR_IMGS = [defaultCar1, defaultCar2];
 
 export default function KintoPage({ sections }: { sections: Record<string, SectionProp> }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
@@ -132,58 +127,27 @@ function PasosSection({ page, s }: { page: string; s: SectionProp }) {
     );
 }
 
-// ── Vehículos ──────────────────────────────────────────────────────────────────
+// ── Vehículos: solo título (los vehículos se gestionan en /admin/rentals) ─────
 function VehiculosSection({ page, s }: { page: string; s: SectionProp }) {
     const [data, setData] = useState(s.data);
     const [visible, setVisible] = useState(s.is_visible);
-    const [vehiculoFiles, setVehiculoFiles] = useState<(File | null)[]>([null, null]);
     const [processing, setProcessing] = useState(false);
-
-    const setV = (i: number, k: string, v: any) => {
-        const vehiculos = [...data.vehiculos];
-        vehiculos[i] = { ...vehiculos[i], [k]: v };
-        setData((d: any) => ({ ...d, vehiculos }));
-    };
 
     return (
         <SectionCard page={page} sectionKey="kinto_vehiculos" label="Vehículos disponibles" isVisible={visible}
             processing={processing}
             onSubmit={(e) => {
                 e.preventDefault();
-                const files: Record<string, File | null> = {};
-                vehiculoFiles.forEach((f, i) => { files[`vehiculos.${i}.img`] = f; });
-                submitSection(page, 'kinto_vehiculos', data, visible, files, setProcessing);
+                submitSection(page, 'kinto_vehiculos', data, visible, {}, setProcessing);
             }}
             onReset={() => resetSection(page, 'kinto_vehiculos')}>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
             <TextField label="Título de sección" value={data.title ?? ''} onChange={(v) => setData((d: any) => ({ ...d, title: v }))} />
-            {(data.vehiculos ?? []).map((v: any, i: number) => (
-                <div key={i} className="grid gap-3 rounded-lg border p-4">
-                    <p className="font-medium text-sm">Vehículo {i + 1}</p>
-                    <div className="grid gap-2">
-                        <Label>Imagen</Label>
-                        <div className="relative">
-                            {vehiculoFiles[i] ? (
-                                <>
-                                    <img src={URL.createObjectURL(vehiculoFiles[i] as File)} className="h-32 w-full rounded-lg object-contain bg-gray-100 ring-2 ring-primary" alt="" />
-                                    <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">Nueva imagen</span>
-                                </>
-                            ) : (
-                                <>
-                                    <img src={v.img || DEFAULT_CAR_IMGS[i]} className="h-32 w-full rounded-lg object-contain bg-gray-100" alt="" />
-                                    {!v.img && <span className="absolute bottom-2 left-2 rounded bg-black/60 px-2 py-0.5 text-xs text-white">Default</span>}
-                                </>
-                            )}
-                        </div>
-                        <input type="file" accept="image/*" onChange={(e) => {
-                            const f = [...vehiculoFiles]; f[i] = e.target.files?.[0] ?? null; setVehiculoFiles(f);
-                        }} className="text-sm" />
-                    </div>
-                    <TextField label="Nombre" value={v.nombre ?? ''} onChange={(val) => setV(i, 'nombre', val)} />
-                    <TextField label="Precio" value={v.precio ?? ''} onChange={(val) => setV(i, 'precio', val)} />
-                </div>
-            ))}
+            <p className="text-xs text-muted-foreground">
+                Los vehículos disponibles se administran en{' '}
+                <a href="/admin/rentals" className="font-medium underline">Arriendos</a>.
+            </p>
         </SectionCard>
     );
 }

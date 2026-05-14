@@ -296,7 +296,7 @@ export default function AccesorioShow({ accesorio, footer }: { accesorio: Acceso
                     </div>
                 </div>
 
-                <ContactCtaBanner image={ctaImg} />
+                <ContactCtaBanner />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
                 <div className="bg-black">

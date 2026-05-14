@@ -25,6 +25,7 @@ class PageContentController extends Controller
         'repuestos'    => ['repuestos_hero'],
         'accesorios'   => ['accesorios_hero'],
         'mantencion'   => ['mantencion_hero'],
+        'banner-cta'   => ['contact_cta_banner'],
     ];
 
     public function __construct(private SiteSettingsService $settingsService) {}
@@ -43,6 +44,7 @@ class PageContentController extends Controller
             ['slug' => 'repuestos',  'title' => 'Repuestos',           'icon' => '🔧'],
             ['slug' => 'accesorios', 'title' => 'Accesorios y Merch',  'icon' => '👕'],
             ['slug' => 'mantencion', 'title' => 'Agendar Mantención',  'icon' => '🛠️'],
+            ['slug' => 'banner-cta', 'title' => 'Banner Contáctanos (global)', 'icon' => '📣'],
         ];
 
         return Inertia::render('admin/paginas/index', ['pages' => $pages]);

@@ -201,7 +201,7 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                     </div>
                 </section>
 
-                <ContactCtaBanner image={ctaImg} />
+                <ContactCtaBanner />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
             </main>

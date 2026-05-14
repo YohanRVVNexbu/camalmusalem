@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\Branch;
+use App\Models\SiteSection;
 use Illuminate\Http\Request;
 use Inertia\Middleware;
 
@@ -53,7 +54,18 @@ class HandleInertiaRequests extends Middleware
                     'id', 'name', 'address', 'city', 'maps_url',
                     'phone_sucursal', 'phone_repuestos', 'phones_servicio_tecnico',
                 ]),
+            'contactCtaBanner' => fn () => $this->contactCtaBanner(),
         ];
+    }
+
+    private function contactCtaBanner(): ?array
+    {
+        $section = SiteSection::where('section', 'contact_cta_banner')->first();
+        if (! $section || ! $section->is_visible) {
+            return null;
+        }
+
+        return $section->data ?? [];
     }
 
 }

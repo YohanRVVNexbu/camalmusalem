@@ -305,7 +305,7 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                     </div>
                 </div>
 
-                <ContactCtaBanner image={ctaImg} />
+                <ContactCtaBanner />
                 <BranchesSection image1={visitanos1} image2={visitanos2} />
 
                 <div className="bg-black">

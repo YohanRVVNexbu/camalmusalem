@@ -900,7 +900,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                     </div>
                 </section>
 
-                <ContactCtaBanner image={ctaImg} bg="dark" />
+                <ContactCtaBanner bg="dark" />
 
             </main>
 
