@@ -28,6 +28,7 @@ Route::get('/seminuevos/{id}', [SeminuevosController::class, 'show'])->name('sem
 
 Route::get('/post-venta/agendar-mantencion', [PostVentaController::class, 'agendarMantencion'])->name('post-venta.agendar-mantencion');
 Route::post('/post-venta/agendar-mantencion', [MantencionController::class, 'store'])->name('mantencion.store');
+Route::get('/post-venta/agendar-mantencion/slots', [MantencionController::class, 'bookedSlots'])->name('mantencion.slots');
 Route::get('/post-venta/accesorios', [PostVentaController::class, 'accesorios'])->name('post-venta.accesorios');
 Route::get('/post-venta/accesorios/{id}', [PostVentaController::class, 'accesorioShow'])->name('post-venta.accesorios.show');
 Route::get('/post-venta/accesorios/{id}/cotizar', [PostVentaController::class, 'accesorioCotizar'])->name('post-venta.accesorios.cotizar');

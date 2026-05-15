@@ -51,7 +51,9 @@
       "Bash(grep -rn \"pricing\\\\|toLocaleString\\\\|\\\\\\\\$.*price\" /Users/nexbuescl/Sites/camalmusalem/app/Services/CatalogPresenter.php)",
       "Bash(grep -rn '\\\\$\\\\\\\\${' /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/)",
       "Bash(grep -rn \"\\\\\\\\\\\\$\\\\{[a-zA-Z._]*price\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/ /Users/nexbuescl/Sites/camalmusalem/resources/js/components/)",
-      "Bash(grep -n \"DESDE\\\\|price\\\\|formatCLP\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/components/nuevos/product-card.tsx)"
+      "Bash(grep -n \"DESDE\\\\|price\\\\|formatCLP\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/components/nuevos/product-card.tsx)",
+      "Bash(find /tmp -name \"*Contacto*\" 2>/dev/null | head -5; find ~/Downloads -name \"Contacto*Correos*\" 2>/dev/null | head -5)",
+      "Read(//Users/nexbuescl/Downloads/**)"
     ],
     "additionalDirectories": [
       "/tmp"

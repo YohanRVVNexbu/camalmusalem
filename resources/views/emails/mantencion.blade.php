@@ -30,6 +30,25 @@
         <p style="white-space: pre-line;">{{ $mantencion->comentario }}</p>
     @endif
 
-    <div class="divider"></div>
-    <p>Datos de contacto registrados: {{ $mantencion->correo }} · {{ $mantencion->telefono }}</p>
+    <h2>Datos de contacto</h2>
+    <div class="summary">
+        <div class="summary-row">
+            <span class="summary-label">Nombre</span>
+            <span class="summary-value">{{ $mantencion->nombre }}</span>
+        </div>
+        <div class="summary-row">
+            <span class="summary-label">Email</span>
+            <span class="summary-value">{{ $mantencion->correo }}</span>
+        </div>
+        <div class="summary-row">
+            <span class="summary-label">Teléfono</span>
+            <span class="summary-value">{{ $mantencion->telefono }}</span>
+        </div>
+        @if (! empty($mantencion->rut))
+        <div class="summary-row">
+            <span class="summary-label">RUT</span>
+            <span class="summary-value">{{ $mantencion->rut }}</span>
+        </div>
+        @endif
+    </div>
 @endsection

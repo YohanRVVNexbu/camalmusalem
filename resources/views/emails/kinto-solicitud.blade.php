@@ -25,6 +25,25 @@
         </div>
     </div>
 
-    <div class="divider"></div>
-    <p>Datos de contacto registrados: {{ $solicitud->correo }} · {{ $solicitud->telefono }}</p>
+    <h2>Datos de contacto</h2>
+    <div class="summary">
+        <div class="summary-row">
+            <span class="summary-label">Nombre</span>
+            <span class="summary-value">{{ $solicitud->nombre }}</span>
+        </div>
+        <div class="summary-row">
+            <span class="summary-label">Email</span>
+            <span class="summary-value">{{ $solicitud->correo }}</span>
+        </div>
+        <div class="summary-row">
+            <span class="summary-label">Teléfono</span>
+            <span class="summary-value">{{ $solicitud->telefono }}</span>
+        </div>
+        @if (! empty($solicitud->rut))
+        <div class="summary-row">
+            <span class="summary-label">RUT</span>
+            <span class="summary-value">{{ $solicitud->rut }}</span>
+        </div>
+        @endif
+    </div>
 @endsection

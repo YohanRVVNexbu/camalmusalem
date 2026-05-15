@@ -28,6 +28,25 @@
         <p style="white-space: pre-line;">{{ $cotizacion->comentarios }}</p>
     @endif
 
-    <div class="divider"></div>
-    <p>Datos de contacto registrados: {{ $cotizacion->email }} · {{ $cotizacion->telefono }}@if ($cotizacion->rut) · RUT {{ $cotizacion->rut }}@endif</p>
+    <h2>Datos de contacto</h2>
+    <div class="summary">
+        <div class="summary-row">
+            <span class="summary-label">Nombre</span>
+            <span class="summary-value">{{ $cotizacion->nombre }}</span>
+        </div>
+        <div class="summary-row">
+            <span class="summary-label">Email</span>
+            <span class="summary-value">{{ $cotizacion->email }}</span>
+        </div>
+        <div class="summary-row">
+            <span class="summary-label">Teléfono</span>
+            <span class="summary-value">{{ $cotizacion->telefono }}</span>
+        </div>
+        @if ($cotizacion->rut)
+        <div class="summary-row">
+            <span class="summary-label">RUT</span>
+            <span class="summary-value">{{ $cotizacion->rut }}</span>
+        </div>
+        @endif
+    </div>
 @endsection
