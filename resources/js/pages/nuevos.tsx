@@ -1,7 +1,7 @@
 import { Head } from '@inertiajs/react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { Car, X } from 'lucide-react';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import type { FilterGroupKey, FilterOptions, FilterSelection } from '@/components/nuevos/filters';
@@ -11,7 +11,8 @@ import { NuevosProductCard } from '@/components/nuevos/product-card';
 import { NuevosListItem } from '@/components/nuevos/product-list-item';
 import { Pagination } from '@/components/seminuevos/pagination';
 import { Toolbar } from '@/components/seminuevos/toolbar';
-import type { ViewMode } from '@/components/seminuevos/toolbar';
+import type { PerPage, SortMode, ViewMode } from '@/components/seminuevos/toolbar';
+import { PillButton } from '@/components/ui/pill-button';
 
 type Version = {
     name: string;
@@ -173,11 +174,41 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                 : prev[group].filter((c) => c !== code),
         }));
     };
-    const clearFilters = () => setFilterSelection(emptyFilterSelection);
+    const clearFilters = () => {
+        setFilterSelection(emptyFilterSelection);
+        setActiveCategory(null);
+        setSortMode('');
+    };
+
+    // Categorías destacadas y orden
+    const NUEVOS_CATEGORIES = ['Camionetas', 'SUVs', 'Híbridos', 'Eléctricos'] as const;
+    type NuevosCategory = typeof NUEVOS_CATEGORIES[number];
+    const [activeCategory, setActiveCategory] = useState<NuevosCategory | null>(null);
+    const [sortMode, setSortMode] = useState<SortMode>('');
+    const [perPage, setPerPage] = useState<PerPage>(15);
+
+    const matchesNuevosCategory = (v: VehicleWithFilter, cat: NuevosCategory): boolean => {
+        const f = v._filter;
+        const bodyType = (f?.body_type ?? '').toLowerCase();
+        const powertrains = f?.powertrains ?? [];
+        switch (cat) {
+            case 'Camionetas':
+                return bodyType.includes('camion') || bodyType.includes('pickup');
+            case 'SUVs':
+                return bodyType === 'suv' || bodyType.includes('suv');
+            case 'Híbridos':
+                return powertrains.some((p) => p === 'hev' || p === 'phev' || p.toLowerCase().includes('hybrid') || p.toLowerCase().includes('hibrid'));
+            case 'Eléctricos':
+                return powertrains.some((p) => p === 'bev' || p.toLowerCase().includes('elec'));
+            default:
+                return true;
+        }
+    };
 
     const filteredVehicles = useMemo(() => {
         const any = (arr: string[]) => arr.length === 0;
-        return vehicles.filter((v) => {
+        const priceOf = (v: Vehicle) => Number(String(v.versions?.[0]?.price ?? '').replace(/[^0-9]/g, '')) || 0;
+        let list = vehicles.filter((v) => {
             const f = v._filter;
             if (!f) return true;
             if (!any(filterSelection.gama) && !filterSelection.gama.includes(f.body_type ?? '')) return false;
@@ -185,41 +216,31 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
             if (!any(filterSelection.combustible) && !f.powertrains.some((p) => filterSelection.combustible.includes(p))) return false;
             if (!any(filterSelection.transmision) && !f.transmissions.some((t) => filterSelection.transmision.includes(t))) return false;
             if (!any(filterSelection.traccion) && !f.drivetrains.some((d) => filterSelection.traccion.includes(d))) return false;
+            if (activeCategory && !matchesNuevosCategory(v, activeCategory)) return false;
             return true;
         });
-    }, [vehicles, filterSelection]);
 
-    const filtersRef = useRef<HTMLDivElement | null>(null);
-    const [filtersHeight, setFiltersHeight] = useState(0);
+        if (sortMode === 'price-asc') list = [...list].sort((a, b) => priceOf(a) - priceOf(b));
+        else if (sortMode === 'price-desc') list = [...list].sort((a, b) => priceOf(b) - priceOf(a));
+        // year/km no aplican a vehículos nuevos (sin esos campos en CatalogPresenter)
+
+        return list;
+    }, [vehicles, filterSelection, activeCategory, sortMode]);
 
     useEffect(() => {
-        if (!filtersRef.current) return;
-        const el = filtersRef.current;
-        const obs = new ResizeObserver(([entry]) => setFiltersHeight(entry.contentRect.height));
-        obs.observe(el);
-        setFiltersHeight(el.offsetHeight);
-        return () => obs.disconnect();
-    }, [filtersVisible]);
+        setCurrentPage(1);
+    }, [activeCategory, sortMode]);
 
-    const GRID_COLS = 4;
-    const GRID_ROW_HEIGHT = 340;
-    const LIST_ROW_HEIGHT = 196;
 
-    const itemsPerPage = useMemo(() => {
-        if (filtersHeight < 100) {
-            return viewMode === 'grid' ? GRID_COLS * 2 : 4;
-        }
-        if (viewMode === 'grid') {
-            const rows = Math.max(1, Math.floor(filtersHeight / GRID_ROW_HEIGHT));
-            return rows * GRID_COLS;
-        }
-        return Math.max(1, Math.floor(filtersHeight / LIST_ROW_HEIGHT));
-    }, [filtersHeight, viewMode]);
-    const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(filteredVehicles.length / perPage));
     const paginatedVehicles = useMemo(() => {
-        const start = (currentPage - 1) * itemsPerPage;
-        return filteredVehicles.slice(start, start + itemsPerPage);
-    }, [currentPage, itemsPerPage, filteredVehicles]);
+        const start = (currentPage - 1) * perPage;
+        return filteredVehicles.slice(start, start + perPage);
+    }, [currentPage, perPage, filteredVehicles]);
+
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [perPage]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
@@ -419,12 +440,37 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                         )}
                     </section>
 
-                    <Toolbar filtersVisible={filtersVisible} onToggleFilters={() => setFiltersVisible(!filtersVisible)} viewMode={viewMode} onChangeViewMode={handleViewModeChange} />
+                    {/* Categorías destacadas (desktop) */}
+                    <div className="mt-10 hidden items-center gap-3.5 overflow-x-auto pb-1 lg:flex [&::-webkit-scrollbar]:hidden">
+                        <span className="shrink-0 text-base leading-none text-black">Categorías destacadas:</span>
+                        {NUEVOS_CATEGORIES.map((cat) => {
+                            const isActive = activeCategory === cat;
+                            return (
+                                <PillButton
+                                    key={cat}
+                                    variant={isActive ? 'solid' : 'outline'}
+                                    onClick={() => setActiveCategory(isActive ? null : cat)}
+                                >
+                                    {cat}
+                                </PillButton>
+                            );
+                        })}
+                    </div>
+
+                    <Toolbar
+                        filtersVisible={filtersVisible}
+                        onToggleFilters={() => setFiltersVisible(!filtersVisible)}
+                        viewMode={viewMode}
+                        onChangeViewMode={handleViewModeChange}
+                        sortMode={sortMode}
+                        onChangeSort={setSortMode}
+                        perPage={perPage}
+                        onChangePerPage={setPerPage}
+                    />
 
                     {/* Grid section: filters + products */}
                     <div data-products className="mt-10 flex items-stretch gap-5 overflow-hidden">
                         <div
-                            ref={filtersRef}
                             className={`hidden shrink-0 transition-all duration-500 ease-in-out lg:block ${
                                 filtersVisible
                                     ? 'w-69.5 opacity-100'

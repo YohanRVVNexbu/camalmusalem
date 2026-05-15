@@ -56,6 +56,23 @@ export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
         }
     }, [open]);
 
+    // Bloquea el scroll del body mientras el modal está montado (en mobile y desktop).
+    useEffect(() => {
+        if (!mounted) return;
+        const prevOverflow = document.body.style.overflow;
+        const prevPaddingRight = document.body.style.paddingRight;
+        // Compensa el ancho del scrollbar para evitar saltos al ocultar el scroll.
+        const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+        document.body.style.overflow = 'hidden';
+        if (scrollbarWidth > 0) {
+            document.body.style.paddingRight = `${scrollbarWidth}px`;
+        }
+        return () => {
+            document.body.style.overflow = prevOverflow;
+            document.body.style.paddingRight = prevPaddingRight;
+        };
+    }, [mounted]);
+
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
         setIsDragging(true);
         dragStartX.current = e.clientX;
@@ -81,43 +98,44 @@ export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
 
     return (
         <div
-            className={`fixed inset-0 z-50 flex items-center justify-center transition-all duration-300 ${visible ? 'bg-black/50' : 'bg-black/0'}`}
+            className={`fixed inset-0 z-50 flex items-center justify-center overflow-y-auto p-4 transition-all duration-300 lg:p-6 ${visible ? 'bg-black/50' : 'bg-black/0'}`}
             onClick={onClose}
         >
             <div
-                className={`relative flex w-[1000px] flex-col items-center rounded-[30px] bg-[#EBEBEB] px-10 py-10 transition-all duration-300 ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
-                style={{ height: '731px' }}
+                className={`relative flex max-h-full w-full max-w-250 flex-col items-center rounded-[20px] bg-[#EBEBEB] px-5 py-6 transition-all duration-300 lg:rounded-[30px] lg:px-10 lg:py-10 ${visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+                style={{ minHeight: '0', maxHeight: 'calc(100dvh - 2rem)' }}
                 onClick={(e) => e.stopPropagation()}
             >
                 {/* Close button */}
                 <button
                     onClick={onClose}
-                    className="absolute right-6 top-6 flex size-10 cursor-pointer items-center justify-center rounded-[60px] border border-black transition-colors hover:bg-black/5"
+                    className="absolute right-3 top-3 z-10 flex size-9 cursor-pointer items-center justify-center rounded-[60px] border border-black bg-white/70 transition-colors hover:bg-black/5 lg:right-6 lg:top-6 lg:size-10 lg:bg-transparent"
                     style={{ backdropFilter: 'blur(15px)' }}
+                    aria-label="Cerrar"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" className="lg:size-6">
                         <path d="M6.40331 18.3084L5.69531 17.6004L11.2953 12.0004L5.69531 6.40038L6.40331 5.69238L12.0033 11.2924L17.6033 5.69238L18.3113 6.40038L12.7113 12.0004L18.3113 17.6004L17.6033 18.3084L12.0033 12.7084L6.40331 18.3084Z" fill="black"/>
                     </svg>
                 </button>
 
                 {/* Title */}
-                <h2 className="mt-6 text-center text-[32px] font-semibold leading-none text-black">
+                <h2 className="mt-2 text-center text-2xl font-semibold leading-tight text-black lg:mt-6 lg:text-[32px] lg:leading-none">
                     {name}
                 </h2>
 
                 {/* Subtitle */}
-                <p className="mt-3 text-center text-[32px] leading-none text-black">
+                <p className="mt-2 text-center text-lg leading-tight text-black lg:mt-3 lg:text-[32px] lg:leading-none">
                     {subtitle}
                 </p>
 
                 {/* 360 icon */}
-                <div className="mt-4">
+                <div className="mt-3 lg:mt-4">
                     <Icon360Large />
                 </div>
 
                 {/* 360 Viewer */}
                 <div
-                    className={`mt-4 flex w-full flex-1 items-center justify-center overflow-hidden rounded-[20px] select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                    className={`mt-3 flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-[20px] select-none touch-none lg:mt-4 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
                     onPointerDown={handlePointerDown}
                     onPointerMove={handlePointerMove}
                     onPointerUp={handlePointerUp}
@@ -135,10 +153,10 @@ export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
                 </div>
 
                 {/* Buttons */}
-                <div className="mt-6 flex items-center gap-4">
+                <div className="mt-4 flex w-full flex-col items-stretch gap-2.5 lg:mt-6 lg:w-auto lg:flex-row lg:items-center lg:gap-4">
                     <a
                         href="#"
-                        className="flex items-center gap-2.5 rounded-[60px] border border-black p-1 pl-4 text-base leading-none text-black transition hover:bg-black/5"
+                        className="flex items-center justify-between gap-2.5 rounded-[60px] border border-black p-1 pl-4 text-base leading-none text-black transition hover:bg-black/5 lg:justify-start"
                     >
                         Ver detalles
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-[60px] border border-black bg-black" style={{ backdropFilter: 'blur(15px)' }}>
@@ -147,7 +165,7 @@ export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
                     </a>
                     <a
                         href="#"
-                        className="flex items-center gap-2.5 rounded-[60px] bg-black p-1 pl-4 text-base leading-none text-white transition hover:bg-black/85"
+                        className="flex items-center justify-between gap-2.5 rounded-[60px] bg-black p-1 pl-4 text-base leading-none text-white transition hover:bg-black/85 lg:justify-start"
                     >
                         Cotizar
                         <span className="flex size-10 shrink-0 items-center justify-center rounded-[60px] bg-white">

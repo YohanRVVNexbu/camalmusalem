@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\PrevencionDelitoController;
 use App\Http\Controllers\CotizacionAccesorioController;
 use App\Http\Controllers\CotizacionRepuestoController;
 use App\Http\Controllers\CotizacionVehiculoController;
@@ -43,6 +44,9 @@ Route::get('/noticias', [PagesController::class, 'noticias'])->name('noticias');
 Route::get('/noticias/{slug}', [PagesController::class, 'noticiaShow'])->name('noticias.show');
 Route::get('/contacto', [PagesController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [ContactoController::class, 'store'])->name('contacto.store');
+
+Route::get('/prevencion-delito', [PrevencionDelitoController::class, 'show'])->name('prevencion-delito');
+Route::post('/prevencion-delito', [PrevencionDelitoController::class, 'store'])->name('prevencion-delito.store');
 Route::get('/nosotros', [PagesController::class, 'nosotros'])->name('nosotros');
 Route::get('/kinto', [PagesController::class, 'kinto'])->name('kinto');
 Route::post('/kinto/solicitud', [KintoSolicitudController::class, 'store'])->name('kinto.solicitud.store');

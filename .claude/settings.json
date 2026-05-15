@@ -41,7 +41,17 @@
       "Bash(awk 'BEGIN{FS=\"\"} {for\\(i=5950;i<=6000;i++\\) printf \"%s\", $i}' /Users/nexbuescl/Sites/camalmusalem/public/build/assets/index-DMAVGSEZ.js)",
       "Bash(grep -rln \"formatCLP\\\\|price\\\\|precio\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/seminuevos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/nuevos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/repuestos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/accesorios.tsx)",
       "Bash(grep -nE \"price|msrp|precio|\\\\\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/seminuevos.tsx)",
-      "Bash(grep -n \"import\\\\|setData.*price\\\\|placeholder=\\\\\"\\\\\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/admin/repuestos/form.tsx)"
+      "Bash(grep -n \"import\\\\|setData.*price\\\\|placeholder=\\\\\"\\\\\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/admin/repuestos/form.tsx)",
+      "Bash(node -e \"const fs = require\\('fs'\\); const code = fs.readFileSync\\('/Users/nexbuescl/Sites/camalmusalem/public/build/assets/index-DMAVGSEZ.js', 'utf8'\\); console.log\\(JSON.stringify\\(code.substring\\(5900, 6100\\)\\)\\);\")",
+      "Bash(grep -rn \"price\\\\|precio\\\\|Precio\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/nuevos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/seminuevos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/nuevos/show.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/seminuevos/show.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/repuestos.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/accesorios.tsx)",
+      "Bash(grep -iE \"\\(price|precio\\).*[\\\\$\\\\.,]\\\\|\\\\\\\\$\\\\\\\\{.*price|formatCLP|format.*price\")",
+      "Bash(grep -n \"price\\\\|formatCLP\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/accesorios.tsx)",
+      "Bash(grep -n \"price\\\\|formatCLP\\\\|\\\\\\\\$\\\\\\\\|Precio\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/accesorio-show.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/repuesto-show.tsx)",
+      "Bash(grep -rn \"price\\\\|Precio\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/accesorio-cotizar.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/post-venta/repuesto-cotizar.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/seminuevos/cotizar.tsx /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/nuevos/cotizar.tsx)",
+      "Bash(grep -rn \"pricing\\\\|toLocaleString\\\\|\\\\\\\\$.*price\" /Users/nexbuescl/Sites/camalmusalem/app/Services/CatalogPresenter.php)",
+      "Bash(grep -rn '\\\\$\\\\\\\\${' /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/)",
+      "Bash(grep -rn \"\\\\\\\\\\\\$\\\\{[a-zA-Z._]*price\" /Users/nexbuescl/Sites/camalmusalem/resources/js/pages/ /Users/nexbuescl/Sites/camalmusalem/resources/js/components/)",
+      "Bash(grep -n \"DESDE\\\\|price\\\\|formatCLP\\\\|\\\\\\\\$\" /Users/nexbuescl/Sites/camalmusalem/resources/js/components/nuevos/product-card.tsx)"
     ],
     "additionalDirectories": [
       "/tmp"

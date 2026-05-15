@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\RentalController;
 use App\Http\Controllers\Admin\VehicleModelController;
 use App\Http\Controllers\Admin\VehicleVersionController;
 use App\Http\Controllers\Admin\ContactoController;
+use App\Http\Controllers\Admin\PrevencionDelitoController;
 use App\Http\Controllers\Admin\CotizacionAccesorioController;
 use App\Http\Controllers\Admin\CotizacionRepuestoController;
 use App\Http\Controllers\Admin\CotizacionVehiculoController;
@@ -143,6 +144,10 @@ Route::middleware('admin')->group(function () {
     Route::get('contactos', [ContactoController::class, 'index'])->name('admin.contactos');
     Route::patch('contactos/{contacto}/leido', [ContactoController::class, 'marcarLeido'])->name('admin.contactos.leido');
     Route::delete('contactos/{contacto}', [ContactoController::class, 'destroy'])->name('admin.contactos.destroy');
+
+    Route::get('prevencion-delito', [PrevencionDelitoController::class, 'index'])->name('admin.prevencion-delito');
+    Route::patch('prevencion-delito/{denuncia}/leido', [PrevencionDelitoController::class, 'marcarLeido'])->name('admin.prevencion-delito.leido');
+    Route::delete('prevencion-delito/{denuncia}', [PrevencionDelitoController::class, 'destroy'])->name('admin.prevencion-delito.destroy');
 
     // Agendamientos de mantención
     Route::get('mantenciones', [MantencionController::class, 'index'])->name('admin.mantenciones');

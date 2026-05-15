@@ -2,6 +2,7 @@ import { Link } from '@inertiajs/react';
 import VehicleImage from './vehicle-image';
 import { ElectricIcon as ElectricSvg } from '@/components/icons/electric-icon';
 import { HybridIcon as HybridSvg } from '@/components/icons/hybrid-icon';
+import { formatCLP } from '@/lib/format';
 
 function tagIcon(tag: string): React.ReactNode | null {
     const t = tag.toLowerCase();
@@ -54,82 +55,137 @@ export function NuevosProductCard({
     on360Click,
 }: NuevosProductCardProps) {
     return (
-        <div className="relative w-full pt-16 lg:w-81.75">
-            {/* Vehicle image - overflows above the card */}
-            <div className="absolute left-1/2 -top-4 z-10 flex h-36 w-[85%] -translate-x-1/2 items-center justify-center">
-                <VehicleImage
-                    src={image}
-                    alt={name}
-                    className="max-h-full w-full object-contain"
-                />
-            </div>
+        <>
+            {/* ── Mobile: layout horizontal (imagen izq, contenido der) ── */}
+            <div className="flex h-65 w-full overflow-hidden rounded-[20px] bg-white p-3 lg:hidden">
+                {/* Imagen izquierda */}
+                <div className="flex w-[42%] shrink-0 items-center justify-center">
+                    <VehicleImage
+                        src={image}
+                        alt={name}
+                        className="max-h-full w-full object-contain"
+                    />
+                </div>
 
-            {/* Card body */}
-            <div className="relative rounded-[20px] bg-white px-1 pb-3 pt-2">
-                {/* Spacer for image area */}
-                <div className="h-10" />
-
-                {/* Content */}
-                <div className="flex flex-col gap-3.5 overflow-hidden px-2">
-                    <div className="flex flex-col items-center gap-3">
-                        {/* Name */}
-                        <div className="flex items-end gap-1.5">
-                            {electric && <ElectricIcon />}
-                            <span className="text-xl font-semibold uppercase leading-none text-black">
-                                {name}
-                            </span>
-                        </div>
-
-                        {/* Tags */}
-                        <div className="flex flex-wrap items-start justify-center gap-1.25">
-                            {tags.map((tag) => {
-                                const icon = tagIcon(tag);
-                                return (
-                                    <span
-                                        key={tag}
-                                        className="flex items-center gap-1 rounded-[3.36px] bg-[#EAEAF1] p-1.25 text-sm leading-none text-black/60"
-                                    >
-                                        {icon}
-                                        {tag}
-                                    </span>
-                                );
-                            })}
-                        </div>
-
-                        {/* Price */}
-                        <div className="text-center uppercase text-black">
-                            <span className="block text-sm leading-none">Desde</span>
-                            <span className="block text-xl font-semibold leading-[150%]">
-                                $ {price}
-                            </span>
-                        </div>
+                {/* Contenido derecho */}
+                <div className="flex flex-1 flex-col items-start gap-2.5 pl-3">
+                    <div className="flex items-end gap-1.5">
+                        {electric && <ElectricIcon />}
+                        <span className="text-lg font-semibold uppercase leading-none text-black">
+                            {name}
+                        </span>
                     </div>
 
-                    {/* Buttons */}
-                    <div className="flex items-center justify-center gap-4.25">
+                    <div className="flex flex-wrap items-start gap-1.25">
+                        {tags.map((tag) => {
+                            const icon = tagIcon(tag);
+                            return (
+                                <span
+                                    key={tag}
+                                    className="flex items-center gap-1 rounded-[3.36px] bg-[#EAEAF1] px-1.5 py-1 text-xs leading-none text-black/60"
+                                >
+                                    {icon}
+                                    {tag}
+                                </span>
+                            );
+                        })}
+                    </div>
+
+                    <div className="uppercase text-black">
+                        <span className="block text-xs leading-none">Desde</span>
+                        <span className="block text-base font-semibold leading-tight">
+                            {formatCLP(price)}
+                        </span>
+                    </div>
+
+                    <div className="mt-auto flex w-full flex-col items-stretch gap-1.5">
                         <Link
                             href={href}
-                            className="flex h-10 items-center gap-2.5 rounded-[60px] border border-transparent bg-black p-1 transition hover:bg-black/85"
+                            className="flex h-9 items-center justify-between gap-2 rounded-[60px] border border-transparent bg-black px-3 transition hover:bg-black/85"
                         >
-                            <span className="pl-2.5 text-sm leading-none text-white">
-                                Ver detalles
-                            </span>
-                            <span className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] border border-white/20 bg-white/10" style={{ backdropFilter: 'blur(15px)' }}>
-                                <ArrowRightIcon />
-                            </span>
+                            <span className="text-xs leading-none text-white">Ver detalles</span>
+                            <ArrowRightIcon />
                         </Link>
                         <button
                             onClick={on360Click}
-                            className="flex h-13 cursor-pointer items-center gap-3.25 rounded-[78px] border border-black py-1.25 pl-4 pr-2 transition hover:bg-black/5"
+                            className="flex h-9 cursor-pointer items-center justify-between gap-2 rounded-[60px] border border-black px-3 transition hover:bg-black/5"
                         >
-                            <span className="text-lg leading-none text-black">360°</span>
-                            <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black" style={{ backdropFilter: 'blur(20px)' }}>
-                                <RotateArrowIcon />
-                            </span>
+                            <span className="text-xs leading-none text-black">360°</span>
+                            <RotateArrowIcon color="black" />
                         </button>
                     </div>
                 </div>
             </div>
-        </div>
+
+            {/* ── Desktop: layout vertical centrado con imagen overflow arriba ── */}
+            <div className="relative hidden w-full pt-16 lg:block lg:w-81.75">
+                <div className="absolute left-1/2 -top-4 z-10 flex h-36 w-[85%] -translate-x-1/2 items-center justify-center">
+                    <VehicleImage
+                        src={image}
+                        alt={name}
+                        className="max-h-full w-full object-contain"
+                    />
+                </div>
+
+                <div className="relative flex h-90 flex-col rounded-[20px] bg-white px-1 pb-3 pt-2">
+                    <div className="h-10 shrink-0" />
+
+                    <div className="flex flex-1 flex-col gap-3.5 overflow-hidden px-2">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="flex items-end gap-1.5">
+                                {electric && <ElectricIcon />}
+                                <span className="text-xl font-semibold uppercase leading-none text-black">
+                                    {name}
+                                </span>
+                            </div>
+
+                            <div className="flex flex-wrap items-start justify-center gap-1.25">
+                                {tags.map((tag) => {
+                                    const icon = tagIcon(tag);
+                                    return (
+                                        <span
+                                            key={tag}
+                                            className="flex items-center gap-1 rounded-[3.36px] bg-[#EAEAF1] p-1.25 text-sm leading-none text-black/60"
+                                        >
+                                            {icon}
+                                            {tag}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+
+                            <div className="text-center uppercase text-black">
+                                <span className="block text-sm leading-none">Desde</span>
+                                <span className="block text-xl font-semibold leading-[150%]">
+                                    {formatCLP(price)}
+                                </span>
+                            </div>
+                        </div>
+
+                        {/* Botones fijados al fondo del card */}
+                        <div className="mt-auto flex items-center justify-center gap-4.25">
+                            <Link
+                                href={href}
+                                className="flex h-10 items-center gap-2.5 rounded-[60px] border border-transparent bg-black p-1 transition hover:bg-black/85"
+                            >
+                                <span className="pl-2.5 text-sm leading-none text-white">Ver detalles</span>
+                                <span className="flex size-7.5 shrink-0 items-center justify-center rounded-[60px] border border-white/20 bg-white/10" style={{ backdropFilter: 'blur(15px)' }}>
+                                    <ArrowRightIcon />
+                                </span>
+                            </Link>
+                            <button
+                                onClick={on360Click}
+                                className="flex h-13 cursor-pointer items-center gap-3.25 rounded-[78px] border border-black py-1.25 pl-4 pr-2 transition hover:bg-black/5"
+                            >
+                                <span className="text-lg leading-none text-black">360°</span>
+                                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black" style={{ backdropFilter: 'blur(20px)' }}>
+                                    <RotateArrowIcon />
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
     );
 }

@@ -46,7 +46,11 @@ class CatalogPresenter
             'type' => self::BODY_TYPE_LABELS[$model->body_type] ?? null,
             'fuel' => $firstPowertrain ? (self::POWERTRAIN_LABELS[$firstPowertrain] ?? null) : null,
             'hero_image' => $model->hero_image,
-            'price' => $firstVersion?->msrp_clp ? '$'.number_format($firstVersion->msrp_clp, 0, ',', '.') : 'Consultar',
+            'datasheet_url' => $model->datasheet_url,
+            // Precios siempre como string de dígitos crudos. El frontend
+            // aplica formatCLP() para mostrarlos. Esto evita formato doble y
+            // mantiene una sola fuente de verdad para la presentación CLP.
+            'price' => $firstVersion?->msrp_clp ? (string) $firstVersion->msrp_clp : 'Consultar',
             'gallery' => [],
             'highlights' => $this->buildHighlights($firstVersion),
             'versions' => $model->versions->map(fn ($v) => $this->presentVersion($v))->values()->all(),
@@ -135,23 +139,26 @@ class CatalogPresenter
      */
     private function buildPricing(VehicleVersion $v): array
     {
-        $fmt = fn (?int $val) => $val ? '$'.number_format($val, 0, ',', '.') : null;
+        // Devolvemos siempre dígitos crudos (como string). El frontend aplica
+        // formatCLP() para presentar como "$18.990.000". Esto evita formatear
+        // dos veces y deja una sola fuente de verdad de la presentación CLP.
+        $raw = fn (?int $val) => $val !== null ? (string) $val : null;
 
         $lista  = $v->msrp_clp;
         $bMarca = $v->bono_marca;
         $bR9    = $v->bono_financiamiento_r9;
         $bTrad  = $v->bono_financiamiento_tradicional;
 
-        $precioLista  = $lista ? $fmt($lista) : null;
-        $precioBono   = ($lista && $bMarca)  ? $fmt($lista - $bMarca)        : null;
-        $precioR9     = ($lista && $bMarca && $bR9)   ? $fmt($lista - $bMarca - $bR9)   : null;
-        $precioTrad   = ($lista && $bMarca && $bTrad) ? $fmt($lista - $bMarca - $bTrad) : null;
+        $precioLista  = $lista ? $raw($lista) : null;
+        $precioBono   = ($lista && $bMarca)            ? $raw($lista - $bMarca)         : null;
+        $precioR9     = ($lista && $bMarca && $bR9)    ? $raw($lista - $bMarca - $bR9)  : null;
+        $precioTrad   = ($lista && $bMarca && $bTrad)  ? $raw($lista - $bMarca - $bTrad): null;
 
         $rows = array_values(array_filter([
-            $precioLista ? ['label' => 'Precio de lista',                           'value' => $precioLista,  'highlight' => false] : null,
-            $precioBono  ? ['label' => 'Precio Bono Marca',                         'value' => $precioBono,   'highlight' => true,  'bono' => $fmt($bMarca)] : null,
-            $precioR9    ? ['label' => 'Precio Bono Financiamiento R9',             'value' => $precioR9,     'highlight' => true,  'bono' => $fmt($bMarca + $bR9)] : null,
-            $precioTrad  ? ['label' => 'Precio Bono Financiamiento Tradicional',    'value' => $precioTrad,   'highlight' => true,  'bono' => $fmt($bMarca + $bTrad)] : null,
+            $precioLista ? ['label' => 'Precio de lista',                        'value' => $precioLista, 'highlight' => false] : null,
+            $precioBono  ? ['label' => 'Precio Bono Marca',                      'value' => $precioBono,  'highlight' => true,  'bono' => $raw($bMarca)] : null,
+            $precioR9    ? ['label' => 'Precio Bono Financiamiento R9',          'value' => $precioR9,    'highlight' => true,  'bono' => $raw($bMarca + $bR9)] : null,
+            $precioTrad  ? ['label' => 'Precio Bono Financiamiento Tradicional', 'value' => $precioTrad,  'highlight' => true,  'bono' => $raw($bMarca + $bTrad)] : null,
         ]));
 
         return [

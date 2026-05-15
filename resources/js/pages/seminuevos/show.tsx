@@ -30,6 +30,7 @@ type Seminuevo = {
     id: number;
     brand: string;
     model: string;
+    vu_code: string | null;
     slug: string | null;
     branch?: Branch | null;
     year: number;
@@ -109,7 +110,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                             Volver
                         </Link>
                         <div className="flex items-center gap-2.5">
-                            <Link href={`/seminuevos/comparar?from=/seminuevos/${vehicleSlug}`} className="hidden h-9.5 cursor-pointer items-center gap-2.5 rounded-[60px] border border-black px-5 py-2.5 text-sm leading-none text-black transition hover:bg-black hover:text-white lg:flex">
+                            <Link href={`/seminuevos/comparar?ids=s-${seminuevo.id}&from=/seminuevos/${vehicleSlug}`} className="hidden h-9.5 cursor-pointer items-center gap-2.5 rounded-[60px] border border-black px-5 py-2.5 text-sm leading-none text-black transition hover:bg-black hover:text-white lg:flex">
                                 <CompareDetailIcon className="text-current" />
                                 Comparar
                             </Link>
@@ -123,9 +124,16 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                     {/* ───────── Mobile layout ───────── */}
                     <div className="mt-7.5 flex flex-col gap-5 lg:hidden">
                         {/* Title */}
-                        <h1 className="text-2xl font-bold uppercase leading-[120%] text-black">
-                            {title}
-                        </h1>
+                        <div className="flex flex-col gap-2">
+                            <h1 className="text-2xl font-bold uppercase leading-[120%] text-black">
+                                {title}
+                            </h1>
+                            {seminuevo.vu_code && (
+                                <span className="w-fit rounded-full bg-black px-3 py-1.5 text-xs font-semibold uppercase leading-none tracking-wider text-white">
+                                    VU · {seminuevo.vu_code}
+                                </span>
+                            )}
+                        </div>
 
                         {/* Specs pills */}
                         <div className="flex flex-wrap gap-2.5">
@@ -198,7 +206,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
                         {/* Comparar button */}
                         <Link
-                            href={`/seminuevos/comparar?from=/seminuevos/${vehicleSlug}`}
+                            href={`/seminuevos/comparar?ids=s-${seminuevo.id}&from=/seminuevos/${vehicleSlug}`}
                             className="flex h-11 cursor-pointer items-center justify-center gap-2.5 rounded-[60px] border border-black bg-white text-sm leading-none text-black transition hover:bg-black/5"
                         >
                             <CompareDetailIcon className="text-current" />
@@ -227,16 +235,16 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
                         {/* Price */}
                         <div className="flex flex-col gap-1.5">
-                            <span className="text-base leading-none text-black/60">Precio:</span>
+                            <span className="text-base leading-none text-black/60">*Precio</span>
                             <div className="rounded-[10px] bg-white p-4">
                                 <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
                             </div>
                         </div>
 
-                        {/* Down payment */}
+                        {/* Precio con financiamiento */}
                         {seminuevo.down_payment && (
                             <div className="flex items-center gap-1.5 rounded-[10px] bg-white px-5 py-2.5">
-                                <span className="text-base leading-none text-black/60">Pie mínimo</span>
+                                <span className="text-base leading-none text-black/60">*Precio con Financiamiento</span>
                                 <span className="text-base font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
                             </div>
                         )}
@@ -466,9 +474,16 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
                         {/* Right: Vehicle info card */}
                         <div className="flex w-[35%] flex-col gap-5 rounded-[20px] bg-white p-7.5">
-                            <h1 className="text-[32px] font-bold uppercase leading-none text-black">
-                                {title}
-                            </h1>
+                            <div className="flex flex-col gap-2.5">
+                                <h1 className="text-[32px] font-bold uppercase leading-none text-black">
+                                    {title}
+                                </h1>
+                                {seminuevo.vu_code && (
+                                    <span className="w-fit rounded-full bg-black px-3 py-1.5 text-xs font-semibold uppercase leading-none tracking-wider text-white">
+                                        VU · {seminuevo.vu_code}
+                                    </span>
+                                )}
+                            </div>
 
                             {/* Specs pills */}
                             <div className="flex flex-wrap gap-2.5">
@@ -512,16 +527,16 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
                             {/* Price */}
                             <div className="flex flex-col gap-1.5">
-                                <span className="text-lg leading-none text-black/60">Precio:</span>
+                                <span className="text-lg leading-none text-black/60">*Precio</span>
                                 <div className="rounded-[10px] bg-[#EAEAF1] p-4">
                                     <span className="text-[28px] font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
                                 </div>
                             </div>
 
-                            {/* Down payment */}
+                            {/* Precio con financiamiento */}
                             {seminuevo.down_payment && (
                                 <div className="flex items-center gap-1.5 rounded-[10px] bg-[#EAEAF1] px-5 py-2.5">
-                                    <span className="text-lg leading-none text-black/60">Pie mínimo</span>
+                                    <span className="text-lg leading-none text-black/60">*Precio con Financiamiento</span>
                                     <span className="text-lg font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
                                 </div>
                             )}

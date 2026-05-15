@@ -3,6 +3,7 @@ import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useState } from 'react';
+import { formatCLP } from '@/lib/format';
 
 type Accesorio = { id: number; name: string; price: string | null; images: string[]; };
 
@@ -264,7 +265,7 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                                 <div className="flex items-center justify-between self-stretch">
                                     <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                                     <span className="text-base font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                        {accesorio.price ?? '—'}
+                                        {accesorio.price ? formatCLP(accesorio.price) : '—'}
                                     </span>
                                 </div>
                             </div>

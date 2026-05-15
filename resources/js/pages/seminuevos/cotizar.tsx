@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useState } from 'react';
 import { formatRut } from '@/lib/rut';
+import { formatCLP } from '@/lib/format';
 
 type Branch = {
     id: number;
@@ -274,7 +275,7 @@ export default function SeminuevoCotizar({ seminuevo, footer }: { seminuevo: Sem
                                             Precio lista
                                         </span>
                                         <span className="shrink-0 text-right text-sm font-semibold leading-[120%] text-black lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
-                                            {seminuevo.price}
+                                            {formatCLP(seminuevo.price)}
                                         </span>
                                     </div>
                                 </div>

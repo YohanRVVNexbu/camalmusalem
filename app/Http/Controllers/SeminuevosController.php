@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Seminuevo;
 use App\Models\SiteSection;
+use App\Services\VehiculoComparadorService;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class SeminuevosController extends Controller
@@ -32,10 +34,21 @@ class SeminuevosController extends Controller
         ]);
     }
 
-    public function compare()
+    /**
+     * Comparador unificado de Nuevos + Seminuevos.
+     * Query: ?ids=s-1,v-2,v-3 — preselecciona esos vehículos al cargar.
+     * Catalog: stock disponible para el modal "Añadir vehículo".
+     */
+    public function compare(Request $request, VehiculoComparadorService $comparador)
     {
+        $ids = (string) $request->query('ids', '');
+        $preselected = $comparador->resolveMany($ids);
+
         return Inertia::render('seminuevos/compare', [
-            'footer' => $this->visibleSection('footer'),
+            'preselected' => $preselected,
+            'catalog'     => $comparador->catalogo(),
+            'sections'    => VehiculoComparadorService::SECTIONS,
+            'footer'      => $this->visibleSection('footer'),
         ]);
     }
 

@@ -384,10 +384,10 @@ class SiteSectionsSeeder extends Seeder
                     'youtube' => '#',
                 ],
                 'nav_links' => [
-                    ['label' => 'Vehículos', 'href' => '#vehiculos'],
-                    ['label' => 'Seminuevos', 'href' => '#seminuevos'],
-                    ['label' => 'Postventa', 'href' => '#postventa'],
-                    ['label' => 'Contáctanos', 'href' => '#contacto'],
+                    ['label' => 'Vehículos', 'href' => '/nuevos'],
+                    ['label' => 'Seminuevos', 'href' => '/seminuevos'],
+                    ['label' => 'Postventa', 'href' => '/post-venta/agendar-mantencion'],
+                    ['label' => 'Contáctanos', 'href' => '/contacto'],
                 ],
                 'locations' => [
                     [
@@ -413,12 +413,12 @@ class SiteSectionsSeeder extends Seeder
                     ],
                 ],
                 'legal_links' => [
-                    'Aviso legal',
-                    'Ley 20.393',
-                    'Mapa del sitio',
-                    'Bases legales',
-                    'Compliance',
-                    'Ley de Prevención del delito',
+                    ['label' => 'Aviso legal',                  'href' => '#'],
+                    ['label' => 'Ley 20.393',                   'href' => '#'],
+                    ['label' => 'Mapa del sitio',               'href' => '#'],
+                    ['label' => 'Bases legales',                'href' => '#'],
+                    ['label' => 'Compliance',                   'href' => '#'],
+                    ['label' => 'Ley de Prevención del delito', 'href' => '/prevencion-delito'],
                 ],
                 'copyright' => 'Copyright Camal Musalem',
             ],

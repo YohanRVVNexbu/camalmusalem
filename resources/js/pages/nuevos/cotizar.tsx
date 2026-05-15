@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useState } from 'react';
 import { formatRut } from '@/lib/rut';
+import { formatCLP } from '@/lib/format';
 
 type PricingRow = { label: string; value: string };
 
@@ -281,7 +282,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                                 className={`shrink-0 text-right text-sm leading-[120%] text-black lg:text-base ${i === 0 ? 'font-semibold' : 'font-normal'}`}
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             >
-                                                {row.value}
+                                                {formatCLP(row.value)}
                                             </span>
                                         </div>
                                     ))}
@@ -293,7 +294,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                 <div className="flex items-center justify-between self-stretch rounded-[10px] bg-white p-4 lg:p-5">
                                     <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                                     <span className="text-base font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                        {vehicle.price}
+                                        {formatCLP(vehicle.price)}
                                     </span>
                                 </div>
                             )}

@@ -20,12 +20,15 @@ function SocialButton({
     );
 }
 
+type LegalLink = { label: string; href: string };
+
 type FooterData = {
     logo: string;
     social_links: Record<string, string>;
     nav_links: { label: string; href: string }[];
     locations: { title: string; items: string[] }[];
-    legal_links: string[];
+    /** Acepta el formato nuevo {label,href} o el antiguo (string) por compat */
+    legal_links: (string | LegalLink)[];
     copyright: string;
 };
 
@@ -95,15 +98,22 @@ export function Footer({ data }: { data: FooterData }) {
                             <span className="text-sm font-semibold leading-none uppercase text-[#231F20]">
                                 Legales
                             </span>
-                            {data.legal_links.map((item) => (
-                                <a
-                                    key={item}
-                                    href="#"
-                                    className="text-sm leading-normal text-[rgba(35,31,32,0.80)] transition hover:text-black"
-                                >
-                                    {item}
-                                </a>
-                            ))}
+                            {data.legal_links.map((item, i) => {
+                                // Soporta tanto el formato nuevo {label,href} como el legacy (string).
+                                const label = typeof item === 'string' ? item : item.label;
+                                const href = typeof item === 'string'
+                                    ? (/prevenci[óo]n.*del\s*delito/i.test(item) ? '/prevencion-delito' : '#')
+                                    : (item.href || '#');
+                                return (
+                                    <a
+                                        key={`${label}-${i}`}
+                                        href={href}
+                                        className="text-sm leading-normal text-[rgba(35,31,32,0.80)] transition hover:text-black"
+                                    >
+                                        {label}
+                                    </a>
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

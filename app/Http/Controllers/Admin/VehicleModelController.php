@@ -140,6 +140,7 @@ class VehicleModelController extends Controller
             'segment' => ['nullable', 'string', 'max:100'],
             'generation' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
+            'datasheet_url' => ['nullable', 'url', 'max:500'],
             'is_active' => ['boolean'],
             'display_order' => ['integer'],
         ]);

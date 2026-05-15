@@ -35,6 +35,7 @@ type VehicleModel = {
     generation: string | null;
     description: string | null;
     hero_image: string | null;
+    datasheet_url: string | null;
     detail_content: DetailContent | null;
     is_active: boolean;
     display_order: number;
@@ -85,7 +86,7 @@ export default function VehicleModelForm({
         const base = model ?? {
             brand_id: brands[0]?.id ?? null,
             name: '', body_type: null, segment: null, generation: null,
-            description: null, hero_image: null,
+            description: null, hero_image: null, datasheet_url: null,
             detail_content: null,
             is_active: true, display_order: 0,
         };
@@ -184,6 +185,7 @@ export default function VehicleModelForm({
         formData.append('segment', data.segment ?? '');
         formData.append('generation', data.generation ?? '');
         formData.append('description', data.description ?? '');
+        formData.append('datasheet_url', data.datasheet_url ?? '');
         formData.append('is_active', data.is_active ? '1' : '0');
         formData.append('display_order', String(data.display_order));
         if (heroFile) formData.append('hero_image', heroFile);
@@ -333,6 +335,19 @@ export default function VehicleModelForm({
                         <div className="grid gap-2">
                             <Label>Descripción</Label>
                             <Textarea rows={3} value={data.description ?? ''} onChange={(e) => setData({ ...data, description: e.target.value || null })} />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label>URL ficha técnica (PDF descargable)</Label>
+                            <Input
+                                type="url"
+                                value={data.datasheet_url ?? ''}
+                                onChange={(e) => setData({ ...data, datasheet_url: e.target.value || null })}
+                                placeholder="https://www.toyota.cl/.../ficha-corolla.pdf"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Si está completo, en el hero del detalle aparece el botón "Descargar ficha técnica" que abre/descarga este PDF. Si lo dejas vacío, el botón se oculta.
+                            </p>
                         </div>
 
                         <div className="grid gap-2">

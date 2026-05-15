@@ -13,7 +13,7 @@ class VehicleModel extends Model
 
     protected $fillable = [
         'brand_id', 'name', 'slug', 'body_type', 'segment',
-        'generation', 'description', 'hero_image', 'detail_content',
+        'generation', 'description', 'hero_image', 'datasheet_url', 'detail_content',
         'is_active', 'display_order',
     ];
 

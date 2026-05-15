@@ -482,7 +482,7 @@ function VersionsSection({
 
     const getTabRows = (ver: typeof vehicleData.versions[0]) => {
         switch (versionCardTab) {
-            case 'precio': return ver.pricing.map(r => ({ label: r.label, value: r.value }));
+            case 'precio': return ver.pricing.map(r => ({ label: r.label, value: formatCLP(r.value) }));
             case 'motor': return ver.motor;
             case 'interior': return ver.interior;
             case 'exterior': return ver.exterior;
@@ -605,13 +605,16 @@ function VersionsSection({
                                                 </svg>
                                             </span>
                                         </Link>
-                                        <a
-                                            href="#"
+                                        {/* TODO: cuando nuevos/show.tsx use VehicleVersion real del backend,
+                                            pasar ?ids=v-{ver.id} para preseleccionar. Hoy `vehicleData` es mock
+                                            y no tiene IDs reales. Por ahora se va al comparador sin preselect. */}
+                                        <Link
+                                            href={`/seminuevos/comparar?from=${typeof window !== 'undefined' ? window.location.pathname : '/nuevos'}`}
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex h-10 w-full items-center justify-center rounded-[60px] border border-black p-1 transition hover:bg-black/5"
                                         >
                                             <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Comparar modelo</span>
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             );
@@ -729,9 +732,13 @@ function VersionsSection({
                                         <Link href={cotizarHref} onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
                                             {cotizarLabel}
                                         </Link>
-                                        <a href="#" onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] border border-black text-sm leading-none text-black transition hover:bg-black/5">
+                                        <Link
+                                            href={`/seminuevos/comparar?from=${typeof window !== 'undefined' ? window.location.pathname : '/nuevos'}`}
+                                            onClick={(e) => e.stopPropagation()}
+                                            className="flex h-10 items-center justify-center rounded-[60px] border border-black text-sm leading-none text-black transition hover:bg-black/5"
+                                        >
                                             Comparar modelo
-                                        </a>
+                                        </Link>
                                     </div>
                                 </div>
                             </div>
@@ -811,7 +818,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     : rentalContext.price_month
                         ? `${formatCLP(rentalContext.price_month)} al mes`
                         : 'Consultar')
-        : vehicle.price;
+        : formatCLP(vehicle.price);
 
     const cotizarHref: string = rentalContext
         ? `/kinto?rental=${rentalContext.id}`
@@ -931,18 +938,22 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                                 </div>
                             )}
 
-                            {/* Download button */}
-                            <a
-                                href="#"
-                                className="flex items-center justify-between rounded-[60px] border border-white p-1 transition hover:bg-white/10"
-                            >
-                                <span className="pl-4 text-base leading-none text-white">Descargar ficha técnica</span>
-                                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
-                                        <path d="M6.75 0.75L6.75 16.75M6.75 16.75L0.75 10.75M6.75 16.75L12.75 10.75" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </span>
-                            </a>
+                            {/* Download button — solo si admin configuró URL de ficha */}
+                            {vehicle.datasheet_url && (
+                                <a
+                                    href={vehicle.datasheet_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-between rounded-[60px] border border-white p-1 transition hover:bg-white/10"
+                                >
+                                    <span className="pl-4 text-base leading-none text-white">Descargar ficha técnica</span>
+                                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
+                                            <path d="M6.75 0.75L6.75 16.75M6.75 16.75L0.75 10.75M6.75 16.75L12.75 10.75" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </a>
+                            )}
                         </div>
                     </div>
 
@@ -992,18 +1003,22 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                                 ))}
                             </div>
 
-                            {/* Download button */}
-                            <a
-                                href="#"
-                                className="flex items-center gap-2.5 rounded-[60px] border border-white p-1 transition hover:bg-white/10"
-                            >
-                                <span className="pl-4 text-base leading-none text-white">Descargar ficha técnica</span>
-                                <span className="flex size-10 items-center justify-center rounded-full bg-white" style={{ backdropFilter: 'blur(15px)' }}>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
-                                        <path d="M6.75 0.75L6.75 16.75M6.75 16.75L0.75 10.75M6.75 16.75L12.75 10.75" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                    </svg>
-                                </span>
-                            </a>
+                            {/* Download button — solo si admin configuró URL de ficha */}
+                            {vehicle.datasheet_url && (
+                                <a
+                                    href={vehicle.datasheet_url}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2.5 rounded-[60px] border border-white p-1 transition hover:bg-white/10"
+                                >
+                                    <span className="pl-4 text-base leading-none text-white">Descargar ficha técnica</span>
+                                    <span className="flex size-10 items-center justify-center rounded-full bg-white" style={{ backdropFilter: 'blur(15px)' }}>
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="18" viewBox="0 0 14 18" fill="none">
+                                            <path d="M6.75 0.75L6.75 16.75M6.75 16.75L0.75 10.75M6.75 16.75L12.75 10.75" stroke="black" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </a>
+                            )}
                         </div>
                     </div>
                     </div>

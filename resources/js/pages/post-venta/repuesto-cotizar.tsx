@@ -4,6 +4,7 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { formatCLP } from '@/lib/format';
 
 type Repuesto = { id: number; name: string; price: string | null; images: string[]; stock_la_serena: boolean; stock_ovalle: boolean; };
 
@@ -290,7 +291,7 @@ export default function RepuestoCotizar({ repuesto, footer }: { repuesto: Repues
                                     <div className="flex items-center justify-between self-stretch">
                                         <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
                                         <span className="text-base font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                            {repuesto.price}
+                                            {formatCLP(repuesto.price)}
                                         </span>
                                     </div>
                                 </div>

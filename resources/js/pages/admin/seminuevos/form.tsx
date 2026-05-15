@@ -19,7 +19,7 @@ type NewDownload = { label: string; file: File | null };
 type BranchLite = { id: number; name: string; city: string | null };
 
 type Seminuevo = {
-    id?: number; brand: string; model: string; slug: string | null; year: number; km: number;
+    id?: number; brand: string; model: string; vu_code: string | null; slug: string | null; year: number; km: number;
     price: string; down_payment: string | null;
     fuel: string | null; transmission: string | null; traction: string | null;
     doors: number; seats: number; color: string | null; description: string | null;
@@ -199,7 +199,7 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
 
     const [data, setData] = useState<Seminuevo>(() => {
         const base = seminuevo ?? {
-            brand: 'Toyota', model: '', slug: null, year: new Date().getFullYear(), km: 0,
+            brand: 'Toyota', model: '', vu_code: null, slug: null, year: new Date().getFullYear(), km: 0,
             price: '', down_payment: null, fuel: null, transmission: null, traction: null,
             doors: 5, seats: 5, color: null, description: null,
             gallery: [], featured_gallery: [], specs: null, is_visible: true, order: 0,
@@ -226,7 +226,7 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
         setProcessing(true);
         const formData = new FormData();
         const fields: (keyof Seminuevo)[] = [
-            'brand', 'model', 'slug', 'year', 'km', 'price', 'down_payment',
+            'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'down_payment',
             'fuel', 'transmission', 'traction', 'doors', 'seats', 'color', 'description', 'is_visible', 'order', 'branch_id',
         ];
         fields.forEach((f) => formData.append(f as string, String(data[f] ?? '')));
@@ -273,9 +273,17 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                             <Label>Marca *</Label>
                             <Input value={data.brand} onChange={(e) => set('brand', e.target.value)} required />
                         </div>
-                        <div className="col-span-3 grid gap-2">
+                        <div className="col-span-2 grid gap-2">
                             <Label>Modelo *</Label>
                             <Input value={data.model} onChange={(e) => set('model', e.target.value)} required />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>VU (código único)</Label>
+                            <Input
+                                value={data.vu_code ?? ''}
+                                onChange={(e) => set('vu_code', e.target.value || null)}
+                                placeholder="Ej: VU-2024-001"
+                            />
                         </div>
                         <div className="col-span-4 grid gap-2">
                             <Label>Slug (URL) <span className="text-muted-foreground text-xs">(auto-generado si se deja vacío)</span></Label>
@@ -290,7 +298,7 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                             <Input type="number" value={data.km} onChange={(e) => set('km', Number(e.target.value))} required min={0} />
                         </div>
                         <div className="grid gap-2">
-                            <Label>Precio *</Label>
+                            <Label>*Precio *</Label>
                             <Input
                                 value={formatCLP(data.price)}
                                 onChange={(e) => set('price', e.target.value.replace(/[^0-9]/g, ''))}
@@ -300,11 +308,11 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                             />
                         </div>
                         <div className="grid gap-2">
-                            <Label>Pie mínimo</Label>
+                            <Label>*Precio con Financiamiento</Label>
                             <Input
                                 value={formatCLP(data.down_payment)}
                                 onChange={(e) => set('down_payment', e.target.value.replace(/[^0-9]/g, '') || null)}
-                                placeholder="$ 5.000.000"
+                                placeholder="$ 14.500.000"
                                 inputMode="numeric"
                             />
                         </div>

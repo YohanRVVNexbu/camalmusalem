@@ -3,14 +3,14 @@ import { useEffect, useMemo, useState } from 'react';
 import { Head } from '@inertiajs/react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
-import { Categories } from '@/components/seminuevos/categories';
-import { Filters } from '@/components/seminuevos/filters';
+import { Categories, type SeminuevoCategory } from '@/components/seminuevos/categories';
+import { Filters, emptySeminuevoFilterState, type SeminuevoFilterState } from '@/components/seminuevos/filters';
 import { Hero } from '@/components/seminuevos/hero';
 import { Pagination } from '@/components/seminuevos/pagination';
 import { ProductCard } from '@/components/seminuevos/product-card';
 import { ProductListItem } from '@/components/seminuevos/product-list-item';
 import { Toolbar } from '@/components/seminuevos/toolbar';
-import type { ViewMode } from '@/components/seminuevos/toolbar';
+import type { PerPage, SortMode, ViewMode } from '@/components/seminuevos/toolbar';
 
 type Seminuevo = {
     id: number;
@@ -25,10 +25,32 @@ type Seminuevo = {
     color: string;
     description: string;
     gallery: string[];
+    body_type?: string | null;
 };
 
 function formatKm(km: number) {
     return km.toLocaleString('es-CL') + ' km';
+}
+
+function matchesCategory(v: Seminuevo, category: SeminuevoCategory): boolean {
+    const fuel = v.fuel.toLowerCase();
+    const priceN = Number(String(v.price).replace(/[^0-9]/g, ''));
+    switch (category) {
+        case 'Camionetas':
+            return (v.body_type ?? '').toLowerCase().includes('camion')
+                || (v.body_type ?? '').toLowerCase().includes('pickup')
+                || v.model.toLowerCase().includes('hilux');
+        case 'Híbridos':
+            return fuel.includes('híbrido') || fuel.includes('hibrido');
+        case 'Eléctricos':
+            return fuel.includes('eléctrico') || fuel.includes('electrico');
+        case 'Menos de $10mm':
+            return priceN > 0 && priceN < 10_000_000;
+        case 'Año 2024 +':
+            return v.year >= 2024;
+        default:
+            return true;
+    }
 }
 
 export default function Seminuevos({ data, footer, seminuevos = [] }: { data: any | null; footer: any | null; seminuevos: Seminuevo[] }) {
@@ -37,29 +59,78 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [currentPage, setCurrentPage] = useState(1);
 
+    // Estado de filtros, categoría destacada, orden y elementos por página
+    const [filterState, setFilterState] = useState<SeminuevoFilterState>(emptySeminuevoFilterState);
+    const [activeCategory, setActiveCategory] = useState<SeminuevoCategory | null>(null);
+    const [sortMode, setSortMode] = useState<SortMode>('');
+    const [perPage, setPerPage] = useState<PerPage>(15);
+
     useEffect(() => {
         document.body.style.overflow = mobileFiltersOpen ? 'hidden' : '';
         return () => { document.body.style.overflow = ''; };
     }, [mobileFiltersOpen]);
 
-    const ITEMS_PER_PAGE_GRID = 9;
-    const ITEMS_PER_PAGE_LIST = 6;
+    // Opciones del filtro derivadas del data real (no hardcodeadas).
+    const filterOptions = useMemo(() => {
+        const uniq = (arr: string[]) => Array.from(new Set(arr.filter(Boolean))).sort();
+        const years = Array.from(new Set(seminuevos.map((v) => v.year))).sort((a, b) => b - a);
+        return {
+            brands: uniq(seminuevos.map((v) => v.brand)),
+            years,
+            transmissions: uniq(seminuevos.map((v) => v.transmission)),
+            fuels: uniq(seminuevos.map((v) => v.fuel)),
+            colors: uniq(seminuevos.map((v) => v.color)),
+        };
+    }, [seminuevos]);
 
-    const itemsPerPage = viewMode === 'grid' ? ITEMS_PER_PAGE_GRID : ITEMS_PER_PAGE_LIST;
-    const totalPages = Math.ceil(seminuevos.length / itemsPerPage);
+    // Aplica filtros + categoría destacada + orden.
+    const filteredSorted = useMemo(() => {
+        const priceOf = (v: Seminuevo) => Number(String(v.price).replace(/[^0-9]/g, '')) || 0;
+        let list = seminuevos.filter((v) => {
+            if (filterState.brands.length && !filterState.brands.includes(v.brand)) return false;
+            if (filterState.yearFrom !== null && v.year < filterState.yearFrom) return false;
+            if (filterState.yearTo !== null && v.year > filterState.yearTo) return false;
+            if (filterState.kmFrom !== null && v.km < filterState.kmFrom) return false;
+            if (filterState.kmTo !== null && v.km > filterState.kmTo) return false;
+            const p = priceOf(v);
+            if (filterState.priceFrom !== null && p < filterState.priceFrom) return false;
+            if (filterState.priceTo !== null && p > filterState.priceTo) return false;
+            if (filterState.transmissions.length && !filterState.transmissions.includes(v.transmission)) return false;
+            if (filterState.fuels.length && !filterState.fuels.includes(v.fuel)) return false;
+            if (filterState.colors.length && !filterState.colors.includes(v.color)) return false;
+            if (activeCategory && !matchesCategory(v, activeCategory)) return false;
+            return true;
+        });
+
+        if (sortMode === 'price-asc') list = [...list].sort((a, b) => priceOf(a) - priceOf(b));
+        else if (sortMode === 'price-desc') list = [...list].sort((a, b) => priceOf(b) - priceOf(a));
+        else if (sortMode === 'year-desc') list = [...list].sort((a, b) => b.year - a.year);
+        else if (sortMode === 'year-asc') list = [...list].sort((a, b) => a.year - b.year);
+        else if (sortMode === 'km-asc') list = [...list].sort((a, b) => a.km - b.km);
+
+        return list;
+    }, [seminuevos, filterState, activeCategory, sortMode]);
+
+    // Cualquier cambio de filtros/orden/perPage vuelve a la página 1.
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterState, activeCategory, sortMode, viewMode, perPage]);
+
+    const totalPages = Math.max(1, Math.ceil(filteredSorted.length / perPage));
     const paginated = useMemo(() => {
-        const start = (currentPage - 1) * itemsPerPage;
-        return seminuevos.slice(start, start + itemsPerPage);
-    }, [currentPage, itemsPerPage, seminuevos]);
+        const start = (currentPage - 1) * perPage;
+        return filteredSorted.slice(start, start + perPage);
+    }, [currentPage, perPage, filteredSorted]);
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
         document.querySelector('[data-products]')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     };
 
-    const handleViewModeChange = (mode: ViewMode) => {
-        setViewMode(mode);
-        setCurrentPage(1);
+    const clearAllFilters = () => {
+        setFilterState(emptySeminuevoFilterState);
+        setActiveCategory(null);
+        setSortMode('');
     };
 
     return (
@@ -69,7 +140,7 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                 <Navbar variant="white" />
                 <div className="px-5 pt-25 pb-20 lg:px-15 lg:pt-15 lg:pb-50">
                     <Hero />
-                    <Categories />
+                    <Categories active={activeCategory} onChange={setActiveCategory} />
 
                     {/* Botones mobile: Filtros + Comparar */}
                     <div className="mt-5 flex flex-col gap-2.5 lg:hidden">
@@ -98,7 +169,16 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                         </a>
                     </div>
 
-                    <Toolbar filtersVisible={filtersVisible} onToggleFilters={() => setFiltersVisible(!filtersVisible)} viewMode={viewMode} onChangeViewMode={handleViewModeChange} />
+                    <Toolbar
+                        filtersVisible={filtersVisible}
+                        onToggleFilters={() => setFiltersVisible(!filtersVisible)}
+                        viewMode={viewMode}
+                        onChangeViewMode={setViewMode}
+                        sortMode={sortMode}
+                        onChangeSort={setSortMode}
+                        perPage={perPage}
+                        onChangePerPage={setPerPage}
+                    />
 
                     {/* Grid section: filters + products */}
                     <div data-products className="mt-10 flex items-stretch gap-5 overflow-hidden">
@@ -109,12 +189,14 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                                     : '-ml-74.5 w-69.5 opacity-0'
                             }`}
                         >
-                            <Filters />
+                            <Filters state={filterState} onChange={setFilterState} options={filterOptions} />
                         </div>
                         <div className="flex flex-1 flex-col justify-between transition-all duration-500 ease-in-out">
-                            {seminuevos.length === 0 ? (
+                            {filteredSorted.length === 0 ? (
                                 <div className="flex flex-1 items-center justify-center py-20 text-black/40">
-                                    No hay seminuevos disponibles en este momento.
+                                    {seminuevos.length === 0
+                                        ? 'No hay seminuevos disponibles en este momento.'
+                                        : 'No se encontraron vehículos con los filtros aplicados.'}
                                 </div>
                             ) : (
                                 <div>
@@ -171,7 +253,6 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                     mobileFiltersOpen ? 'translate-y-0' : 'translate-y-full'
                 }`}
             >
-                {/* Header */}
                 <div className="flex w-full shrink-0 items-center justify-between px-5 pb-5 pt-15 shadow-[0_4px_10px_rgba(0,0,0,0.05)]">
                     <span className="text-base font-bold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                         Filtros
@@ -185,16 +266,15 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                     </button>
                 </div>
 
-                {/* Contenido scrolleable */}
                 <div className="min-h-0 flex-1 overflow-y-auto">
                     <div className="w-full px-5 py-5 pb-15">
-                        <Filters variant="drawer" />
+                        <Filters variant="drawer" state={filterState} onChange={setFilterState} options={filterOptions} />
                     </div>
                 </div>
 
-                {/* Footer con acciones */}
                 <div className="flex shrink-0 flex-col gap-2.5 bg-white px-2.5 pb-10 pt-5 shadow-[0_-3px_20px_rgba(0,0,0,0.05)]">
                     <button
+                        onClick={clearAllFilters}
                         className="flex h-12 items-center justify-center self-stretch rounded-[60px] border border-black bg-white px-1"
                     >
                         <span className="text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Limpiar filtros</span>
@@ -204,7 +284,7 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                         className="flex h-12 items-center justify-center self-stretch rounded-[60px] bg-black px-1"
                     >
                         <span className="text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                            {seminuevos.length} Vehículos disponibles
+                            {filteredSorted.length} Vehículos disponibles
                         </span>
                     </button>
                 </div>

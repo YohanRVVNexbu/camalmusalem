@@ -199,6 +199,7 @@ class SeminuevoController extends Controller
         $data = $request->validate([
             'brand'        => ['required', 'string', 'max:100'],
             'model'        => ['required', 'string', 'max:255'],
+            'vu_code'      => ['nullable', 'string', 'max:50'],
             'slug'         => ['nullable', 'string', 'max:255'],
             'year'         => ['required', 'integer', 'min:1990', 'max:2030'],
             'km'           => ['required', 'integer', 'min:0'],
