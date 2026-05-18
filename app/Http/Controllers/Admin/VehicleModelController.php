@@ -50,6 +50,7 @@ class VehicleModelController extends Controller
     {
         $data = $this->validated($request);
         $data['slug'] = Str::slug($data['name']);
+        unset($data['datasheet_file']);
 
         $detailContent = $this->resolveDetailContent($request, null);
         if ($detailContent !== null) {
@@ -61,6 +62,12 @@ class VehicleModelController extends Controller
         if ($request->hasFile('hero_image')) {
             $model->update([
                 'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-models/'.$model->id),
+            ]);
+        }
+
+        if ($request->hasFile('datasheet_file')) {
+            $model->update([
+                'datasheet_file' => $this->settings->uploadFile($request->file('datasheet_file'), 'vehicle-models/'.$model->id.'/datasheets'),
             ]);
         }
 
@@ -98,6 +105,7 @@ class VehicleModelController extends Controller
     {
         $data = $this->validated($request);
         $data['slug'] = Str::slug($data['name']);
+        unset($data['datasheet_file']);
 
         if ($request->hasFile('hero_image')) {
             $this->settings->deleteOldFile($vehicleModel->hero_image);
@@ -105,6 +113,14 @@ class VehicleModelController extends Controller
         } elseif ($request->boolean('hero_image_remove')) {
             $this->settings->deleteOldFile($vehicleModel->hero_image);
             $data['hero_image'] = null;
+        }
+
+        if ($request->hasFile('datasheet_file')) {
+            $this->settings->deleteOldFile($vehicleModel->datasheet_file);
+            $data['datasheet_file'] = $this->settings->uploadFile($request->file('datasheet_file'), 'vehicle-models/'.$vehicleModel->id.'/datasheets');
+        } elseif ($request->boolean('datasheet_file_remove')) {
+            $this->settings->deleteOldFile($vehicleModel->datasheet_file);
+            $data['datasheet_file'] = null;
         }
 
         $detailContent = $this->resolveDetailContent($request, $vehicleModel);
@@ -126,6 +142,7 @@ class VehicleModelController extends Controller
         }
 
         $this->settings->deleteOldFile($vehicleModel->hero_image);
+        $this->settings->deleteOldFile($vehicleModel->datasheet_file);
         $vehicleModel->delete();
 
         return redirect('/admin/vehicle-models')->with('success', 'Modelo eliminado.');
@@ -141,6 +158,7 @@ class VehicleModelController extends Controller
             'generation' => ['nullable', 'string', 'max:100'],
             'description' => ['nullable', 'string'],
             'datasheet_url' => ['nullable', 'url', 'max:500'],
+            'datasheet_file' => ['nullable', 'file', 'mimes:pdf', 'max:20480'],
             'is_active' => ['boolean'],
             'display_order' => ['integer'],
         ]);

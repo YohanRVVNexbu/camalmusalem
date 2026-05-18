@@ -6,6 +6,7 @@ use App\Mail\CotizacionVehiculoMail;
 use App\Models\CotizacionVehiculo;
 use App\Models\Seminuevo;
 use App\Models\VehicleModel;
+use App\Models\VehicleVersion;
 use App\Rules\Rut;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -30,6 +31,7 @@ class CotizacionVehiculoController extends Controller
         $request->validate([
             'tipo'        => ['required', 'in:nuevo,seminuevo'],
             'vehicle_id'  => ['required', 'integer'],
+            'version_id'  => ['nullable', 'integer', 'exists:vehicle_versions,id'],
             'nombre'      => ['required', 'string', 'max:255'],
             'email'       => ['required', 'email', 'max:255'],
             'telefono'    => ['required', 'string', 'max:50'],
@@ -37,12 +39,19 @@ class CotizacionVehiculoController extends Controller
             'comentarios' => ['nullable', 'string'],
         ]);
 
-        // Snapshot del vehículo
+        // Snapshot del vehículo. Cuando viene version_id, usamos esa versión
+        // específica (la que el cliente clickeó) en vez de la primera del
+        // modelo — así el asesor sabe exactamente qué trim le interesa.
         if ($request->tipo === 'nuevo') {
             $model = VehicleModel::with('versions')->find($request->vehicle_id);
-            $nombre = $model?->name ?? 'Vehículo nuevo';
-            $firstVersion = $model?->versions->first();
-            $precio = $firstVersion?->msrp_clp ? '$'.number_format($firstVersion->msrp_clp, 0, ',', '.') : null;
+            $version = $request->filled('version_id')
+                ? VehicleVersion::find($request->integer('version_id'))
+                : $model?->versions->first();
+            $modelName = $model?->name ?? 'Vehículo nuevo';
+            $nombre = $version
+                ? trim($modelName.' — '.$version->trim_name)
+                : $modelName;
+            $precio = $version?->msrp_clp ? '$'.number_format($version->msrp_clp, 0, ',', '.') : null;
         } else {
             $seminuevo = Seminuevo::find($request->vehicle_id);
             $nombre = $seminuevo ? "{$seminuevo->brand} {$seminuevo->model} {$seminuevo->year}" : 'Seminuevo';

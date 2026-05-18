@@ -57,12 +57,23 @@ class HandleInertiaRequests extends Middleware
                     'image_path',
                 ]),
             'contactCtaBanner' => fn () => $this->contactCtaBanner(),
+            'whatsappButton'   => fn () => $this->whatsappButton(),
         ];
     }
 
     private function contactCtaBanner(): ?array
     {
         $section = SiteSection::where('section', 'contact_cta_banner')->first();
+        if (! $section || ! $section->is_visible) {
+            return null;
+        }
+
+        return $section->data ?? [];
+    }
+
+    private function whatsappButton(): ?array
+    {
+        $section = SiteSection::where('section', 'whatsapp_button')->first();
         if (! $section || ! $section->is_visible) {
             return null;
         }

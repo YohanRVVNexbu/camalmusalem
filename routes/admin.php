@@ -98,6 +98,9 @@ Route::middleware('admin')->group(function () {
     Route::get('vehicle-versions/template', [VehicleVersionController::class, 'template'])->name('admin.vehicle-versions.template');
     Route::get('vehicle-versions/precios/export', [VehicleVersionController::class, 'preciosExport'])->name('admin.vehicle-versions.precios.export');
     Route::post('vehicle-versions/precios/import', [VehicleVersionController::class, 'preciosImport'])->name('admin.vehicle-versions.precios.import');
+    Route::get('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImport'])->name('admin.vehicle-versions.bulk-import');
+    Route::post('vehicle-versions/bulk-import/preview', [VehicleVersionController::class, 'bulkImportPreview'])->name('admin.vehicle-versions.bulk-import.preview');
+    Route::post('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImportStore'])->name('admin.vehicle-versions.bulk-import.store');
     Route::resource('vehicle-versions', VehicleVersionController::class)
         ->except(['show'])
         ->parameters(['vehicle-versions' => 'vehicleVersion'])

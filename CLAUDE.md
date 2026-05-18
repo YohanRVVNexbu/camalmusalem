@@ -83,6 +83,7 @@ Ruta base: `/admin`. Sidebar configurado en
 | Listas editables (lookups) | `/admin/lookups` | body_type, drivetrain, powertrain_type, transmission_type |
 | **Páginas** | `/admin/paginas` | Editor por página + sección |
 | **Banner Contáctanos (global)** | `/admin/paginas/banner-cta` | Aparece en 9 vistas, una sola fuente |
+| **Botón WhatsApp (flotante)** | `/admin/paginas/whatsapp` | Solo en home. Toggle + teléfono + mensaje pre-cargado |
 | **Inicio** | `/admin/home` | Hero, About (vehículos), Features, Seminuevos, Programas, Shorts, Footer |
 
 ### Páginas administrables vía `/admin/paginas/`
@@ -288,14 +289,12 @@ Equipamiento por tipo:
 
 ### Pendientes del comparador
 
-1. `nuevos/show.tsx` sigue siendo mock — cuando se conecte al backend real,
-   cambiar el href del botón Comparar para incluir `?ids=v-${ver.id}`.
-2. Posible refactor de ruta a `/comparar` (porque compara también Nuevos) con
+1. Posible refactor de ruta a `/comparar` (porque compara también Nuevos) con
    redirect 301 desde `/seminuevos/comparar`.
-3. Botón "Compartir" en el header no hace nada todavía — sugerencia:
+2. Botón "Compartir" en el header no hace nada todavía — sugerencia:
    `navigator.share({url})` con fallback `navigator.clipboard.writeText`. La
    URL ya es sharing-friendly porque el estado vive en `?ids=...`.
-4. Si querés mostrar error 404 cuando se pasa un id inválido, hay que cambiar
+3. Si querés mostrar error 404 cuando se pasa un id inválido, hay que cambiar
    la política de `resolveMany` (hoy filtra silenciosamente).
 
 ## Lista de tareas del cliente

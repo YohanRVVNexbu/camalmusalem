@@ -1,6 +1,21 @@
+import { usePage } from '@inertiajs/react';
 import { useEffect, useState } from 'react';
 
+type WhatsappConfig = { phone?: string; message?: string };
+
+/**
+ * Botón flotante de WhatsApp en home.
+ *
+ * Configurable desde /admin/paginas/whatsapp:
+ *  - Toggle visibilidad (si está oculto, este componente no renderiza nada).
+ *  - Número de teléfono (formato libre, se limpia a dígitos para wa.me).
+ *  - Mensaje pre-cargado que aparece en el chat al abrir WhatsApp.
+ *
+ * Si el admin oculta el botón, el middleware Inertia devuelve `whatsappButton`
+ * como `null`, así que no se monta nada en pantalla.
+ */
 export function WhatsappButton() {
+    const { whatsappButton } = usePage<{ whatsappButton: WhatsappConfig | null }>().props;
     const [hidden, setHidden] = useState(false);
 
     useEffect(() => {
@@ -16,9 +31,17 @@ export function WhatsappButton() {
         return () => observer.disconnect();
     }, []);
 
+    if (!whatsappButton) return null;
+
+    const digits = (whatsappButton.phone ?? '').replace(/\D/g, '');
+    const message = whatsappButton.message ?? '';
+    const href = digits
+        ? `https://wa.me/${digits}${message ? `?text=${encodeURIComponent(message)}` : ''}`
+        : 'https://wa.me/';
+
     return (
         <a
-            href="https://wa.me/"
+            href={href}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Contactar por WhatsApp"

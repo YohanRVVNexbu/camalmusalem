@@ -438,6 +438,15 @@ class SiteSectionsSeeder extends Seeder
             'order' => 8,
         ]);
 
+        SiteSection::updateOrCreate(['section' => 'whatsapp_button'], [
+            'data' => [
+                'phone'   => '+56912345678',
+                'message' => 'Hola, quisiera información sobre los vehículos Toyota.',
+            ],
+            'is_visible' => true,
+            'order' => 9,
+        ]);
+
         // Snapshot current `data` as `default_data` for any home section that
         // doesn't have one yet, rewriting media URLs from /storage/home/ to
         // /storage/defaults/home/ so the originals live in a protected folder

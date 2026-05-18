@@ -42,11 +42,11 @@ class CatalogPresenter
             'slug' => $model->slug,
             'full_name' => trim("{$model->brand->name} {$model->name}"),
             'subtitle' => $model->segment ?? $model->generation ?? null,
-            'description' => $model->description,
+            'description' => $model->description ?: (data_get($model->detail_content, 'hero.description') ?: null),
             'type' => self::BODY_TYPE_LABELS[$model->body_type] ?? null,
             'fuel' => $firstPowertrain ? (self::POWERTRAIN_LABELS[$firstPowertrain] ?? null) : null,
             'hero_image' => $model->hero_image,
-            'datasheet_url' => $model->datasheet_url,
+            'datasheet_url' => $model->datasheet_file ?: $model->datasheet_url,
             // Precios siempre como string de dígitos crudos. El frontend
             // aplica formatCLP() para mostrarlos. Esto evita formato doble y
             // mantiene una sola fuente de verdad para la presentación CLP.

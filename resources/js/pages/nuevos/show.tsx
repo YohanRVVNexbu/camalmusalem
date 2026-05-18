@@ -376,6 +376,7 @@ function VersionsSection({
     setVersionCardTab,
     cotizarHref,
     cotizarLabel = 'Cotizar',
+    buildCotizarHref,
 }: {
     versions: typeof vehicleData.versions;
     selectedVersion: number;
@@ -384,6 +385,7 @@ function VersionsSection({
     setVersionCardTab: (tab: VersionTab) => void;
     cotizarHref: string;
     cotizarLabel?: string;
+    buildCotizarHref?: (verId: number | undefined | null) => string;
 }) {
     const sectionRef = useRef<HTMLDivElement>(null);
     const [visible, setVisible] = useState(false);
@@ -594,7 +596,7 @@ function VersionsSection({
                                     {/* CTA buttons */}
                                     <div className="flex flex-col gap-2.5">
                                         <Link
-                                            href={cotizarHref}
+                                            href={buildCotizarHref ? buildCotizarHref(ver.id) : cotizarHref}
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex h-10 w-full items-center justify-between rounded-[60px] border border-transparent bg-black p-1 transition hover:bg-black/85"
                                         >
@@ -605,11 +607,8 @@ function VersionsSection({
                                                 </svg>
                                             </span>
                                         </Link>
-                                        {/* TODO: cuando nuevos/show.tsx use VehicleVersion real del backend,
-                                            pasar ?ids=v-{ver.id} para preseleccionar. Hoy `vehicleData` es mock
-                                            y no tiene IDs reales. Por ahora se va al comparador sin preselect. */}
                                         <Link
-                                            href={`/seminuevos/comparar?from=${typeof window !== 'undefined' ? window.location.pathname : '/nuevos'}`}
+                                            href={ver.id ? `/seminuevos/comparar?ids=v-${ver.id}` : '/seminuevos/comparar'}
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex h-10 w-full items-center justify-center rounded-[60px] border border-black p-1 transition hover:bg-black/5"
                                         >
@@ -729,11 +728,11 @@ function VersionsSection({
                                     </div>
 
                                     <div className="flex w-full flex-col gap-2.5">
-                                        <Link href={cotizarHref} onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
+                                        <Link href={buildCotizarHref ? buildCotizarHref(ver.id) : cotizarHref} onClick={(e) => e.stopPropagation()} className="flex h-10 items-center justify-center rounded-[60px] bg-black text-sm leading-none text-white transition hover:bg-black/85">
                                             {cotizarLabel}
                                         </Link>
                                         <Link
-                                            href={`/seminuevos/comparar?from=${typeof window !== 'undefined' ? window.location.pathname : '/nuevos'}`}
+                                            href={ver.id ? `/seminuevos/comparar?ids=v-${ver.id}` : '/seminuevos/comparar'}
                                             onClick={(e) => e.stopPropagation()}
                                             className="flex h-10 items-center justify-center rounded-[60px] border border-black text-sm leading-none text-black transition hover:bg-black/5"
                                         >
@@ -823,6 +822,11 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
     const cotizarHref: string = rentalContext
         ? `/kinto?rental=${rentalContext.id}`
         : `/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`;
+    const cotizarHrefForVersion = (verId: number | undefined | null): string => {
+        if (rentalContext) return `/kinto?rental=${rentalContext.id}`;
+        const base = `/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`;
+        return verId ? `${base}?version=${verId}` : base;
+    };
     const cotizarLabel: string = rentalContext ? 'Solicitar arriendo' : 'Cotizar';
 
     const topSpecs: { label: string; value: string }[] = detail.hero?.top_specs ?? [];
@@ -898,7 +902,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                             height: '678px',
                         }}
                     >
-                        {/* Top: badge + name */}
+                        {/* Top: badge + name + description */}
                         <div className="flex flex-col gap-3">
                             {showElectricBadge && (
                                 <div className="flex items-center gap-2">
@@ -909,6 +913,11 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                                 </div>
                             )}
                             <span className="text-6xl font-bold leading-none text-white uppercase">{vehicle.name}</span>
+                            {heroDescription && (
+                                <p className="text-sm leading-[140%] text-white/90" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {heroDescription}
+                                </p>
+                            )}
                         </div>
 
                         {/* Bottom: price + specs grid + download button */}
@@ -981,8 +990,15 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                             {/* Vehicle name */}
                             <span className="text-[56px] font-semibold leading-none text-white uppercase">{vehicle.name}</span>
 
+                            {/* Description */}
+                            {heroDescription && (
+                                <p className="mt-2 text-sm leading-[140%] text-white/90" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {heroDescription}
+                                </p>
+                            )}
+
                             {/* Price */}
-                            <div className="mt-4 flex flex-col gap-1">
+                            <div className="mt-2 flex flex-col gap-1">
                                 <span className="text-base leading-none text-white">{heroTagline}</span>
                                 <span className="text-[32px] font-semibold leading-none text-white">{displayPrice}</span>
                             </div>
@@ -1024,16 +1040,6 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     </div>
                 </div>
 
-                {/* Vehicle description */}
-                {heroDescription && (
-                    <p
-                        className="px-5 pt-5 pb-0 text-base leading-[120%] text-black lg:px-15 lg:pt-10"
-                        style={{ fontFamily: '"Toyota Type"' }}
-                    >
-                        {heroDescription}
-                    </p>
-                )}
-
                 {/* Versions section */}
                 <VersionsSection
                     versions={vehicle.versions}
@@ -1043,6 +1049,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     setVersionCardTab={setVersionCardTab}
                     cotizarHref={cotizarHref}
                     cotizarLabel={cotizarLabel}
+                    buildCotizarHref={cotizarHrefForVersion}
                 />
 
                 {/* 360 Section */}

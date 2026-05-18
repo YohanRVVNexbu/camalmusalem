@@ -6,7 +6,9 @@ use App\Http\Controllers\Controller;
 use App\Services\CatalogExport\ListaPreciosExporter;
 use App\Services\CatalogExport\VehicleVersionsExporter;
 use App\Services\CatalogImport\ListaPreciosImporter;
+use App\Services\CatalogImport\ListaPreciosMayo2026Importer;
 use App\Services\CatalogImport\VehicleVersionsImporter;
+use App\Models\Branch;
 use App\Models\ColorType;
 use App\Models\Drivetrain;
 use App\Models\Feature;
@@ -182,6 +184,45 @@ class VehicleVersionController extends Controller
     {
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
         $result = (new ListaPreciosImporter)->import($request->file('file'));
+
+        return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());
+    }
+
+    /**
+     * Página de import masivo del Excel "Lista de Precios sugeridos Mayo 2026".
+     * Flujo: el admin elige sucursal(es) → sube el archivo → ve un preview con
+     * qué versiones se crearán vs. cuáles solo actualizarán precio → confirma.
+     */
+    public function bulkImport()
+    {
+        return Inertia::render('admin/vehicle-versions/bulk-import', [
+            'branches' => Branch::query()
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->get(['id', 'name']),
+        ]);
+    }
+
+    public function bulkImportPreview(Request $request)
+    {
+        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
+        $data = (new ListaPreciosMayo2026Importer)->preview($request->file('file'));
+
+        return response()->json($data);
+    }
+
+    public function bulkImportStore(Request $request)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:xlsx,xls'],
+            'branch_ids' => ['required', 'array', 'min:1'],
+            'branch_ids.*' => ['integer', 'exists:branches,id'],
+        ]);
+
+        $result = (new ListaPreciosMayo2026Importer)->import(
+            $request->file('file'),
+            array_map('intval', $request->input('branch_ids', []))
+        );
 
         return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());
     }

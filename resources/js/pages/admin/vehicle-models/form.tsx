@@ -33,9 +33,9 @@ type VehicleModel = {
     body_type: string | null;
     segment: string | null;
     generation: string | null;
-    description: string | null;
     hero_image: string | null;
     datasheet_url: string | null;
+    datasheet_file: string | null;
     detail_content: DetailContent | null;
     is_active: boolean;
     display_order: number;
@@ -86,7 +86,7 @@ export default function VehicleModelForm({
         const base = model ?? {
             brand_id: brands[0]?.id ?? null,
             name: '', body_type: null, segment: null, generation: null,
-            description: null, hero_image: null, datasheet_url: null,
+            hero_image: null, datasheet_url: null, datasheet_file: null,
             detail_content: null,
             is_active: true, display_order: 0,
         };
@@ -94,6 +94,8 @@ export default function VehicleModelForm({
     });
     const [heroFile, setHeroFile] = useState<File | null>(null);
     const [removeHero, setRemoveHero] = useState(false);
+    const [datasheetFile, setDatasheetFile] = useState<File | null>(null);
+    const [removeDatasheet, setRemoveDatasheet] = useState(false);
     const [detailFiles, setDetailFiles] = useState<Record<string, File>>({});
     const [processing, setProcessing] = useState(false);
     const [tab, setTab] = useState<Tab>('basico');
@@ -184,12 +186,13 @@ export default function VehicleModelForm({
         formData.append('body_type', data.body_type ?? '');
         formData.append('segment', data.segment ?? '');
         formData.append('generation', data.generation ?? '');
-        formData.append('description', data.description ?? '');
         formData.append('datasheet_url', data.datasheet_url ?? '');
         formData.append('is_active', data.is_active ? '1' : '0');
         formData.append('display_order', String(data.display_order));
         if (heroFile) formData.append('hero_image', heroFile);
         if (removeHero && !heroFile) formData.append('hero_image_remove', '1');
+        if (datasheetFile) formData.append('datasheet_file', datasheetFile);
+        if (removeDatasheet && !datasheetFile) formData.append('datasheet_file_remove', '1');
         if (addVersionAfter) formData.append('add_version_after', '1');
 
         // detail_content serializado
@@ -332,22 +335,69 @@ export default function VehicleModelForm({
                             </div>
                         </div>
 
-                        <div className="grid gap-2">
-                            <Label>Descripción</Label>
-                            <Textarea rows={3} value={data.description ?? ''} onChange={(e) => setData({ ...data, description: e.target.value || null })} />
-                        </div>
-
-                        <div className="grid gap-2">
-                            <Label>URL ficha técnica (PDF descargable)</Label>
-                            <Input
-                                type="url"
-                                value={data.datasheet_url ?? ''}
-                                onChange={(e) => setData({ ...data, datasheet_url: e.target.value || null })}
-                                placeholder="https://www.toyota.cl/.../ficha-corolla.pdf"
-                            />
+                        <div className="grid gap-2 rounded-lg border p-4">
+                            <Label className="text-base">Ficha técnica (PDF descargable)</Label>
                             <p className="text-xs text-muted-foreground">
-                                Si está completo, en el hero del detalle aparece el botón "Descargar ficha técnica" que abre/descarga este PDF. Si lo dejas vacío, el botón se oculta.
+                                Puedes pegar una URL externa <strong>o</strong> subir un archivo PDF. Si completas las dos, el archivo subido tiene prioridad. Si dejas todo vacío, el botón "Descargar ficha técnica" se oculta en el hero del detalle.
                             </p>
+
+                            <div className="mt-2 grid gap-2">
+                                <Label className="text-xs font-normal text-muted-foreground">URL externa</Label>
+                                <Input
+                                    type="url"
+                                    value={data.datasheet_url ?? ''}
+                                    onChange={(e) => setData({ ...data, datasheet_url: e.target.value || null })}
+                                    placeholder="https://www.toyota.cl/.../ficha-corolla.pdf"
+                                />
+                            </div>
+
+                            <div className="mt-3 grid gap-2">
+                                <Label className="text-xs font-normal text-muted-foreground">o archivo PDF subido</Label>
+                                {datasheetFile ? (
+                                    <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                                        <span className="truncate">📄 {datasheetFile.name}</span>
+                                        <span className="text-xs text-muted-foreground">({(datasheetFile.size / 1024).toFixed(0)} KB)</span>
+                                        <button
+                                            type="button"
+                                            onClick={() => setDatasheetFile(null)}
+                                            className="ml-auto text-xs text-red-600 hover:underline"
+                                        >
+                                            Quitar
+                                        </button>
+                                    </div>
+                                ) : data.datasheet_file && !removeDatasheet ? (
+                                    <div className="flex items-center gap-2 rounded-md border bg-muted/40 px-3 py-2 text-sm">
+                                        <a
+                                            href={data.datasheet_file}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="truncate text-blue-600 hover:underline"
+                                        >
+                                            📄 Ver PDF actual
+                                        </a>
+                                        <button
+                                            type="button"
+                                            onClick={() => setRemoveDatasheet(true)}
+                                            className="ml-auto text-xs text-red-600 hover:underline"
+                                        >
+                                            Eliminar
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <Input
+                                        type="file"
+                                        accept="application/pdf"
+                                        onChange={(e) => {
+                                            const f = e.target.files?.[0] ?? null;
+                                            setDatasheetFile(f);
+                                            if (f) setRemoveDatasheet(false);
+                                        }}
+                                    />
+                                )}
+                                {removeDatasheet && !datasheetFile && (
+                                    <p className="text-xs text-amber-600">El PDF se eliminará al guardar.</p>
+                                )}
+                            </div>
                         </div>
 
                         <div className="grid gap-2">

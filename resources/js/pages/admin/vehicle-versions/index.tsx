@@ -1,6 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { ImportExportBar } from '@/components/admin/import-export-bar';
 import { useMemo, useState } from 'react';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -70,19 +69,11 @@ export default function VersionsIndex({
                         <p className="text-sm text-muted-foreground">Ficha técnica completa por trim: motor, dimensiones, equipamiento, colores.</p>
                     </div>
                     <div className="flex gap-2">
-                        <ImportExportBar
-                            entityLabel="lista de precios"
-                            exportUrl="/admin/vehicle-versions/precios/export"
-                            importUrl="/admin/vehicle-versions/precios/import"
-                            templateUrl="/admin/vehicle-versions/precios/export"
-                            label="Precios"
-                        />
-                        <ImportExportBar
-                            entityLabel="vehículos nuevos"
-                            exportUrl="/admin/vehicle-versions/export"
-                            importUrl="/admin/vehicle-versions/import"
-                            templateUrl="/admin/vehicle-versions/template"
-                        />
+                        <Button asChild variant="secondary">
+                            <Link href="/admin/vehicle-versions/bulk-import">
+                                Importar lista de precios
+                            </Link>
+                        </Button>
                         <Button asChild>
                             <Link href="/admin/vehicle-versions/create"><Plus className="mr-1 size-4" />Nueva versión</Link>
                         </Button>

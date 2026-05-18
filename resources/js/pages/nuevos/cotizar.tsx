@@ -43,6 +43,19 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
         return () => { html.style.backgroundColor = prev; };
     }, []);
 
+    // Versión preseleccionada vía ?version=ID. Si no hay match, cae al
+     // primer trim disponible — mantiene el comportamiento anterior.
+    const versionIdFromUrl = (() => {
+        if (typeof window === 'undefined') return null;
+        const v = new URLSearchParams(window.location.search).get('version');
+        return v ? Number(v) || null : null;
+    })();
+    const activeVersion = (
+        versionIdFromUrl
+            ? vehicle.versions?.find((v) => v.id === versionIdFromUrl)
+            : null
+    ) ?? vehicle.versions?.[0];
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (submitting) return;
@@ -50,6 +63,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
         router.post('/cotizaciones/vehiculo', {
             tipo: 'nuevo',
             vehicle_id: vehicle.id,
+            version_id: activeVersion?.id ?? null,
             nombre,
             email,
             telefono,
@@ -70,8 +84,6 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
     };
 
     const backHref = `/nuevos/${vehicle.slug ?? vehicle.id}`;
-    // Versión por defecto: la primera disponible
-    const activeVersion = vehicle.versions?.[0];
     const titleDisplay = activeVersion?.name || vehicle.full_name || vehicle.name;
     const pricingRows = activeVersion?.pricing ?? [];
 
