@@ -13,6 +13,7 @@ class Branch extends Model
         'latitude', 'longitude',
         'phone', 'phone_sucursal', 'phone_repuestos',
         'phones_servicio_tecnico', 'image_path',
+        'salesforce_dealer_id',
         'is_active', 'display_order',
     ];
 

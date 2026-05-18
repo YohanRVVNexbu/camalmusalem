@@ -104,6 +104,7 @@ class BranchController extends Controller
             'phones_servicio_tecnico' => ['nullable', 'array'],
             'phones_servicio_tecnico.*' => ['string', 'max:50'],
             'image' => ['nullable', 'image', 'max:5120'],
+            'salesforce_dealer_id' => ['nullable', 'string', 'max:32'],
             'is_active' => ['boolean'],
             'display_order' => ['integer'],
         ]);

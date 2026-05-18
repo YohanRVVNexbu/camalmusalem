@@ -39,6 +39,8 @@ type VersionPayload = {
     bono_financiamiento_r9: number | null;
     bono_financiamiento_tradicional: number | null;
     sales_code: string | null;
+    material_code: string | null;
+    option_code: string | null;
     description: string | null;
     is_active: boolean;
     display_order: number;
@@ -105,6 +107,8 @@ const empty = (): VersionPayload => ({
     bono_financiamiento_r9: null,
     bono_financiamiento_tradicional: null,
     sales_code: null,
+    material_code: null,
+    option_code: null,
     description: null,
     is_active: true,
     display_order: 0,
@@ -180,6 +184,8 @@ export default function VehicleVersionForm({ version, models, features, enums, s
         if (data.bono_financiamiento_r9) fd.append('bono_financiamiento_r9', String(data.bono_financiamiento_r9));
         if (data.bono_financiamiento_tradicional) fd.append('bono_financiamiento_tradicional', String(data.bono_financiamiento_tradicional));
         if (data.sales_code) fd.append('sales_code', data.sales_code);
+        if (data.material_code) fd.append('material_code', data.material_code);
+        if (data.option_code) fd.append('option_code', data.option_code);
         if (data.description) fd.append('description', data.description);
         fd.append('is_active', data.is_active ? '1' : '0');
         fd.append('display_order', String(data.display_order));
@@ -305,6 +311,16 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                                 <div className="grid gap-1.5">
                                     <Label>Código ventas</Label>
                                     <Input value={data.sales_code ?? ''} onChange={(e) => setData({ ...data, sales_code: e.target.value || null })} placeholder="Opcional" />
+                                </div>
+                                <div className="grid gap-1.5">
+                                    <Label>Material (key import)</Label>
+                                    <Input value={data.material_code ?? ''} onChange={(e) => setData({ ...data, material_code: e.target.value || null })} placeholder="Ej: 70002066" />
+                                    <p className="text-xs text-muted-foreground">Código numérico SAP. Key única del import masivo del Excel.</p>
+                                </div>
+                                <div className="grid gap-1.5">
+                                    <Label>Opción (Salesforce)</Label>
+                                    <Input value={data.option_code ?? ''} onChange={(e) => setData({ ...data, option_code: e.target.value || null })} placeholder="Ej: BZ4XLTD42-25PC" />
+                                    <p className="text-xs text-muted-foreground">Código alfanumérico ("número antiguo de material") que viaja a Salesforce en cada cotización. Sin esto, la sincronización falla.</p>
                                 </div>
                                 <div className="grid gap-1.5">
                                     <Label>Propulsión *</Label>

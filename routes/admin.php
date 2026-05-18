@@ -165,6 +165,7 @@ Route::middleware('admin')->group(function () {
     // Cotizaciones de vehículos (nuevos + seminuevos)
     Route::get('cotizaciones-vehiculos', [CotizacionVehiculoController::class, 'index'])->name('admin.cotizaciones-vehiculos');
     Route::patch('cotizaciones-vehiculos/{cotizacion}/leido', [CotizacionVehiculoController::class, 'marcarLeido'])->name('admin.cotizaciones-vehiculos.leido');
+    Route::post('cotizaciones-vehiculos/{cotizacion}/reintentar-sync', [CotizacionVehiculoController::class, 'reintentarSync'])->name('admin.cotizaciones-vehiculos.reintentar-sync');
     Route::delete('cotizaciones-vehiculos/{cotizacion}', [CotizacionVehiculoController::class, 'destroy'])->name('admin.cotizaciones-vehiculos.destroy');
 
     // Cotizaciones de accesorios

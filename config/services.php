@@ -40,4 +40,22 @@ return [
         'channel_id' => env('YOUTUBE_CHANNEL_ID', 'UCJbpxwdBAxYBxyWMvz2LvBg'),
     ],
 
+    /*
+     * Integración Salesforce Toyota (Mulesoft Dealer Experience API).
+     * Crea oportunidades en Salesforce cuando un cliente cotiza un vehículo
+     * nuevo desde la web. Documentación: "Documentos de Integración - PATCH
+     * Create Opportunities WEB Dealer" + Postman collection UAT.
+     *
+     * UAT (qas): host *-qas-eh5zuw.na8zri.usa-e1.cloudhub.io
+     * PRD: cuando se entregue, solo cambiar las URLs y credenciales en .env.
+     */
+    'salesforce_dealer' => [
+        'oauth_url'     => env('SALESFORCE_OAUTH_URL', 'https://oauth-provider-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/v1/token'),
+        'api_base_url'  => env('SALESFORCE_API_BASE_URL', 'https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers'),
+        'client_id'     => env('SALESFORCE_CLIENT_ID'),
+        'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
+        'scope'         => env('SALESFORCE_SCOPE', 'DEALER'),
+        'enabled'       => env('SALESFORCE_ENABLED', false),
+    ],
+
 ];

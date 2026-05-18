@@ -8,6 +8,7 @@ use App\Models\Seminuevo;
 use App\Models\VehicleModel;
 use App\Models\VehicleVersion;
 use App\Rules\Rut;
+use App\Services\Salesforce\CotizacionSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -32,6 +33,7 @@ class CotizacionVehiculoController extends Controller
             'tipo'        => ['required', 'in:nuevo,seminuevo'],
             'vehicle_id'  => ['required', 'integer'],
             'version_id'  => ['nullable', 'integer', 'exists:vehicle_versions,id'],
+            'branch_id'   => ['nullable', 'integer', 'exists:branches,id'],
             'nombre'      => ['required', 'string', 'max:255'],
             'email'       => ['required', 'email', 'max:255'],
             'telefono'    => ['required', 'string', 'max:50'],
@@ -61,6 +63,8 @@ class CotizacionVehiculoController extends Controller
         $cotizacion = CotizacionVehiculo::create([
             'tipo'           => $request->tipo,
             'vehicle_id'     => $request->vehicle_id,
+            'branch_id'      => $request->integer('branch_id') ?: null,
+            'version_id'     => $request->integer('version_id') ?: null,
             'vehicle_nombre' => $nombre,
             'vehicle_precio' => $precio,
             'nombre'         => $request->nombre,
@@ -74,6 +78,23 @@ class CotizacionVehiculoController extends Controller
             Mail::to($cotizacion->email)->send(new CotizacionVehiculoMail($cotizacion));
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de cotización vehículo: '.$e->getMessage());
+        }
+
+        // Cotizaciones de vehículo NUEVO se sincronizan a Salesforce vía
+        // Mulesoft de forma SÍNCRONA inmediatamente después del email. Si
+        // falla por cualquier motivo, la cotización queda con sync_status
+        // `pending` o `failed` y el comando `salesforce:sync-pending` la
+        // reintenta automáticamente cada cierto tiempo. No bloqueamos la
+        // respuesta al usuario por errores de Salesforce.
+        if ($cotizacion->tipo === 'nuevo') {
+            try {
+                app(CotizacionSyncService::class)->syncOne($cotizacion);
+            } catch (\Throwable $e) {
+                Log::warning('Salesforce sync inicial falló (se reintentará por scheduler)', [
+                    'cotizacion_id' => $cotizacion->id,
+                    'error'         => $e->getMessage(),
+                ]);
+            }
         }
 
         return back()->with('success', 'true');

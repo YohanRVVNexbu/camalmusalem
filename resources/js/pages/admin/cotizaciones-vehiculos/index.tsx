@@ -1,5 +1,5 @@
 import { Head, router, usePage } from '@inertiajs/react';
-import { Trash2, MailOpen, Mail } from 'lucide-react';
+import { Trash2, MailOpen, Mail, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
@@ -17,6 +17,14 @@ type Cotizacion = {
     comentarios: string | null;
     leido: boolean;
     created_at: string;
+    branch?: { id: number; name: string } | null;
+    version?: { id: number; trim_name: string; material_code: string | null; option_code: string | null } | null;
+    sync_status: 'pending' | 'synced' | 'failed';
+    synced_at: string | null;
+    salesforce_opportunity_id: string | null;
+    salesforce_quote_id: string | null;
+    sync_last_error: string | null;
+    sync_attempts: number;
 };
 
 export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizaciones: Cotizacion[] }) {
@@ -27,6 +35,30 @@ export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizacio
         if (confirm('¿Eliminar esta cotización?')) {
             router.delete(`/admin/cotizaciones-vehiculos/${id}`);
         }
+    };
+    const reintentarSync = (id: number) => router.post(`/admin/cotizaciones-vehiculos/${id}/reintentar-sync`);
+
+    const renderSyncBadge = (c: Cotizacion) => {
+        if (c.tipo !== 'nuevo') return null;
+        if (c.sync_status === 'synced') {
+            return (
+                <Badge className="gap-1 bg-green-600 text-white hover:bg-green-600" title={`Sincronizado a Salesforce${c.synced_at ? ' el '+new Date(c.synced_at).toLocaleString('es-CL') : ''}`}>
+                    <CheckCircle2 className="size-3" />SF sincronizado
+                </Badge>
+            );
+        }
+        if (c.sync_status === 'failed') {
+            return (
+                <Badge variant="destructive" className="gap-1" title={c.sync_last_error ?? 'Falló sincronización'}>
+                    <XCircle className="size-3" />SF falló{c.sync_attempts > 0 ? ` (${c.sync_attempts}x)` : ''}
+                </Badge>
+            );
+        }
+        return (
+            <Badge variant="outline" className="gap-1">
+                <Clock className="size-3" />SF pendiente
+            </Badge>
+        );
     };
 
     const noLeidos = cotizaciones.filter((c) => !c.leido).length;
@@ -72,14 +104,32 @@ export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizacio
                                                 </>
                                             )}
                                             <Badge variant="outline" className="ml-1">{c.tipo === 'nuevo' ? 'Nuevo' : 'Seminuevo'}</Badge>
+                                            {renderSyncBadge(c)}
                                             <span className="text-muted-foreground text-sm ml-auto">
                                                 {new Date(c.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
                                         <p className="font-medium">{c.vehicle_nombre}{c.vehicle_precio ? ` — ${c.vehicle_precio}` : ''}</p>
+                                        {(c.branch || c.version?.option_code || c.version?.material_code) && (
+                                            <p className="text-xs text-muted-foreground">
+                                                {c.branch && <>Sucursal: <strong>{c.branch.name}</strong></>}
+                                                {c.branch && (c.version?.option_code || c.version?.material_code) && ' · '}
+                                                {c.version?.option_code && <>Opción (SF): <code>{c.version.option_code}</code></>}
+                                                {c.version?.option_code && c.version?.material_code && ' · '}
+                                                {c.version?.material_code && <>Material: <code>{c.version.material_code}</code></>}
+                                            </p>
+                                        )}
+                                        {c.sync_status === 'failed' && c.sync_last_error && (
+                                            <p className="text-xs text-red-600">⚠ {c.sync_last_error}</p>
+                                        )}
                                         {c.comentarios && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{c.comentarios}</p>}
                                     </div>
                                     <div className="flex items-center gap-2 shrink-0">
+                                        {c.tipo === 'nuevo' && c.sync_status === 'failed' && (
+                                            <Button variant="outline" size="sm" onClick={() => reintentarSync(c.id)} title="Reintentar sincronización Salesforce">
+                                                <RefreshCw className="size-4" />
+                                            </Button>
+                                        )}
                                         {!c.leido && (
                                             <Button variant="outline" size="sm" onClick={() => marcarLeido(c.id)} title="Marcar como leído">
                                                 <MailOpen className="size-4" />

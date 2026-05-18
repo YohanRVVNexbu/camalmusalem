@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
@@ -25,12 +25,18 @@ type Vehicle = {
     versions?: Version[];
 };
 
+type BranchOption = { id: number; name: string; city?: string | null };
+
 export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; footer: any | null }) {
+    const { branchesShared } = usePage<{ branchesShared: BranchOption[] }>().props;
+    const branches = branchesShared ?? [];
+
     const [nombre, setNombre] = useState('');
     const [telefono, setTelefono] = useState('');
     const [email, setEmail] = useState('');
     const [rut, setRut] = useState('');
     const [comentarios, setComentarios] = useState('');
+    const [branchId, setBranchId] = useState<number | ''>(branches.length === 1 ? branches[0].id : '');
     const [acepta, setAcepta] = useState(false);
     const [enviado, setEnviado] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -59,11 +65,16 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (submitting) return;
+        if (branches.length > 1 && !branchId) {
+            toast.error('Selecciona la sucursal de tu interés.');
+            return;
+        }
         setSubmitting(true);
         router.post('/cotizaciones/vehiculo', {
             tipo: 'nuevo',
             vehicle_id: vehicle.id,
             version_id: activeVersion?.id ?? null,
+            branch_id: branchId || null,
             nombre,
             email,
             telefono,
@@ -128,6 +139,32 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                         </h1>
 
                                         <div className="flex flex-col items-start justify-start gap-5 self-stretch">
+                                            {/* Sucursal de interés */}
+                                            {branches.length > 1 && (
+                                                <div className="flex w-full flex-col items-start gap-2.5">
+                                                    <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                        Sucursal de interés
+                                                    </label>
+                                                    <div className="flex w-full flex-wrap gap-2.5">
+                                                        {branches.map((b) => (
+                                                            <button
+                                                                key={b.id}
+                                                                type="button"
+                                                                onClick={() => setBranchId(b.id)}
+                                                                className={`flex h-10 cursor-pointer items-center rounded-[60px] border px-5 text-sm leading-none transition ${
+                                                                    branchId === b.id
+                                                                        ? 'border-black bg-black text-white'
+                                                                        : 'border-transparent bg-white text-black hover:border-black/20'
+                                                                }`}
+                                                                style={{ fontFamily: '"Toyota Type"' }}
+                                                            >
+                                                                {b.name}{b.city ? ` · ${b.city}` : ''}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            )}
+
                                             {/* Nombre completo */}
                                             <div className="flex flex-col items-start justify-start gap-2.5 self-stretch">
                                                 <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>

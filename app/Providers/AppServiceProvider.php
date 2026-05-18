@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\Salesforce\DealerExpApiClient;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
@@ -16,7 +17,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Cliente Salesforce — usa credenciales del .env vía config/services.
+        // Singleton para que el token OAuth en caché se comparta entre llamadas
+        // dentro del mismo request.
+        $this->app->singleton(DealerExpApiClient::class, fn () => DealerExpApiClient::fromConfig());
     }
 
     /**

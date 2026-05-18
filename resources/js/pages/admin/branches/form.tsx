@@ -25,6 +25,7 @@ type Branch = {
     phone_repuestos: string | null;
     phones_servicio_tecnico: string[] | null;
     image_path: string | null;
+    salesforce_dealer_id: string | null;
     is_active: boolean;
     display_order: number;
 };
@@ -38,6 +39,7 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
         latitude: null, longitude: null,
         phone: null, phone_sucursal: null, phone_repuestos: null,
         phones_servicio_tecnico: [], image_path: null,
+        salesforce_dealer_id: null,
         is_active: true, display_order: 0,
     });
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -205,6 +207,23 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
                         })()}
                         <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
                         <p className="text-xs text-muted-foreground">Aparece en la sección "Visítanos en nuestras sucursales" del sitio público. Si no subes una imagen, se mostrará la imagen default.</p>
+                    </div>
+
+                    <div className="grid gap-2 rounded-lg border p-4">
+                        <Label>Salesforce Dealer ID</Label>
+                        <Input
+                            type="text"
+                            value={data.salesforce_dealer_id ?? ''}
+                            onChange={(e) => set('salesforce_dealer_id', e.target.value || null)}
+                            placeholder="Ej: 100068"
+                        />
+                        <p className="text-xs text-muted-foreground">
+                            ID SAP Toyota que identifica esta sucursal en Salesforce. Es el valor del
+                            parámetro <code>id-seller</code> en el endpoint{' '}
+                            <code>/dealers/&#123;id-seller&#125;/quote</code>. Si lo dejas vacío, las
+                            cotizaciones para esta sucursal no se sincronizarán automáticamente con
+                            Salesforce (se guardan localmente igual).
+                        </p>
                     </div>
 
                     <div className="grid gap-2">

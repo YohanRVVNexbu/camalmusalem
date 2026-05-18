@@ -77,6 +77,7 @@ class ListaPreciosMayo2026Importer
             $clasif = trim((string) $sheet->getCell('B'.$row)->getValue());
             $linea = trim((string) $sheet->getCell('C'.$row)->getValue());
             $versionD = trim((string) $sheet->getCell('D'.$row)->getValue());
+            $opcion = trim((string) $sheet->getCell('E'.$row)->getValue());
             $material = trim((string) $sheet->getCell('AQ'.$row)->getValue());
 
             if ($linea === '' && $material === '' && $versionD === '') {
@@ -113,12 +114,19 @@ class ListaPreciosMayo2026Importer
             ];
 
             DB::transaction(function () use (
-                $material, $linea, $clasif, $versionD, $priceData, $brandId, $validBranchIds, $result
+                $material, $opcion, $linea, $clasif, $versionD, $priceData, $brandId, $validBranchIds, $result
             ) {
                 $existing = VehicleVersion::query()->where('material_code', $material)->first();
 
                 if ($existing) {
-                    $existing->update($priceData);
+                    // Actualiza precios + el option_code (por si en futuras
+                    // listas Toyota lo modificó). NO toca trim_name, slug,
+                    // year, etc. — eso lo manejamos para no pisar ediciones
+                    // manuales del cliente.
+                    $existing->update([
+                        ...$priceData,
+                        'option_code' => $opcion !== '' ? $opcion : $existing->option_code,
+                    ]);
                     $version = $existing;
                     $result->updated++;
                 } else {
@@ -136,6 +144,7 @@ class ListaPreciosMayo2026Importer
                     $version = VehicleVersion::create([
                         ...$priceData,
                         'material_code' => $material,
+                        'option_code' => $opcion !== '' ? $opcion : null,
                         'vehicle_model_id' => $model->id,
                         'trim_name' => $trim,
                         'slug' => Str::slug($trim.'-'.$material),

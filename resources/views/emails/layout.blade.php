@@ -60,8 +60,17 @@
 <body>
     <div class="wrap">
         <div class="card">
+            @php
+                // Embed inline en base64 para que el logo aparezca tanto en
+                // entornos locales (Mailtrap no resuelve camalmusalem.test)
+                // como en producción y todos los clientes de correo.
+                $logoPath = public_path('images/logo_blanco.png');
+                $logoSrc = file_exists($logoPath)
+                    ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath))
+                    : asset('images/logo_blanco.png');
+            @endphp
             <div class="header">
-                <img src="{{ asset('images/logo_blanco.png') }}" alt="Toyota Musalem" />
+                <img src="{{ $logoSrc }}" alt="Toyota Musalem" />
             </div>
             <div class="accent-bar"></div>
             <div class="body">
