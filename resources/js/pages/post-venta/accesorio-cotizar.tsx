@@ -35,6 +35,10 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (submitting) return;
+        if (!acepta) {
+            toast.error('Debes aceptar la política de privacidad para continuar.');
+            return;
+        }
         setSubmitting(true);
         router.post(`/post-venta/accesorios/${accesorio.id}/cotizar`, {
             nombre,
@@ -42,6 +46,7 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
             telefono,
             sucursal,
             comentarios,
+            privacidad: acepta,
             _website: website,
         }, {
             preserveScroll: true,

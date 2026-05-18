@@ -69,6 +69,10 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
             toast.error('Selecciona la sucursal de tu interés.');
             return;
         }
+        if (!acepta) {
+            toast.error('Debes aceptar la política de privacidad para continuar.');
+            return;
+        }
         setSubmitting(true);
         router.post('/cotizaciones/vehiculo', {
             tipo: 'nuevo',
@@ -80,6 +84,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
             telefono,
             rut,
             comentarios,
+            privacidad: acepta,
             _website: website,
         }, {
             preserveScroll: true,

@@ -47,6 +47,7 @@ class MantencionController extends Controller
             'rut'        => ['required', 'string', 'max:20'],
             'telefono'   => ['required', 'string', 'max:50'],
             'correo'     => ['required', 'email', 'max:255'],
+            'privacidad' => ['accepted'],
         ]);
 
         // Race-condition guard: si otro usuario tomó el slot mientras éste

@@ -43,6 +43,7 @@ class PrevencionDelitoController extends Controller
             'telefono' => ['nullable', 'string', 'max:50'],
             'rut'      => ['required', 'string', 'max:20', new Rut],
             'mensaje'  => ['required', 'string'],
+            'privacidad' => ['accepted'],
         ]);
 
         $denuncia = PrevencionDelito::create($request->only('nombre', 'asunto', 'email', 'telefono', 'rut', 'mensaje'));

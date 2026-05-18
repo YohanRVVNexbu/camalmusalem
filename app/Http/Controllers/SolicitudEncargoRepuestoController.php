@@ -33,6 +33,7 @@ class SolicitudEncargoRepuestoController extends Controller
             'marca'           => ['nullable', 'string', 'max:100'],
             'vin'             => ['nullable', 'string', 'max:50'],
             'lista_repuestos' => ['required', 'string'],
+            'privacidad'      => ['accepted'],
         ]);
 
         $solicitud = SolicitudEncargoRepuesto::create($request->only(

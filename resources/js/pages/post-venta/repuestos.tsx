@@ -75,6 +75,10 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
     function submitEncargo(e: React.FormEvent) {
         e.preventDefault();
         if (encargoSubmitting) return;
+        if (!encargoAcepta) {
+            toast.error('Debes aceptar la política de privacidad para continuar.');
+            return;
+        }
         setEncargoSubmitting(true);
         router.post('/post-venta/repuestos/encargo', {
             nombre: encargoNombre,
@@ -85,6 +89,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
             marca: encargoMarca,
             vin: encargoVin,
             lista_repuestos: encargoLista,
+            privacidad: encargoAcepta,
             _website: encargoWebsite,
         }, {
             preserveScroll: true,

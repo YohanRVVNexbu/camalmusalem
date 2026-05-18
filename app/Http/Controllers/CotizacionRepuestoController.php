@@ -33,6 +33,7 @@ class CotizacionRepuestoController extends Controller
             'telefono'    => ['required', 'string', 'max:50'],
             'sucursal'    => ['required', 'string', 'max:100'],
             'comentarios' => ['nullable', 'string'],
+            'privacidad'  => ['accepted'],
         ]);
 
         $cotizacion = CotizacionRepuesto::create([

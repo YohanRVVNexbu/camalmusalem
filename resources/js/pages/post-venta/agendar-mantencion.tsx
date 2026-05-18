@@ -783,6 +783,10 @@ export default function AgendarMantencion({
                                                 if (formStep < 3) {
                                                     changeStep(formStep + 1);
                                                 } else {
+                                                    if (!aceptaPrivacidad) {
+                                                        toast.error('Debes aceptar la política de privacidad para continuar.');
+                                                        return;
+                                                    }
                                                     setSubmitting(true);
                                                     router.post('/post-venta/agendar-mantencion', {
                                                         servicio, taller,
@@ -790,6 +794,7 @@ export default function AgendarMantencion({
                                                         hora: selectedTime,
                                                         modelo, anio, patente, comentario,
                                                         nombre, rut, telefono, correo,
+                                                        privacidad: aceptaPrivacidad,
                                                         _website: '',
                                                     }, {
                                                         preserveState: true,

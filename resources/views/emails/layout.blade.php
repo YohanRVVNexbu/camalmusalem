@@ -77,10 +77,6 @@
                 @yield('content')
             </div>
         </div>
-        <div class="footer">
-            <p>Este correo fue generado automáticamente, por favor no respondas a esta dirección.</p>
-            <p><a href="https://camalmusalem.cl">camalmusalem.cl</a> · Concesionario Toyota en la Región de Coquimbo</p>
-        </div>
     </div>
 </body>
 </html>

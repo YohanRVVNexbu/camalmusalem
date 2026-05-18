@@ -45,6 +45,10 @@ export default function SeminuevoCotizar({ seminuevo, footer }: { seminuevo: Sem
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (submitting) return;
+        if (!acepta) {
+            toast.error('Debes aceptar la política de privacidad para continuar.');
+            return;
+        }
         setSubmitting(true);
         router.post('/cotizaciones/vehiculo', {
             tipo: 'seminuevo',
@@ -54,6 +58,7 @@ export default function SeminuevoCotizar({ seminuevo, footer }: { seminuevo: Sem
             telefono,
             rut,
             comentarios,
+            privacidad: acepta,
             _website: website,
         }, {
             preserveScroll: true,

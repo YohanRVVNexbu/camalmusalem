@@ -154,6 +154,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
     const [formTelefono, setFormTelefono] = useState('+569');
     const [formCorreo, setFormCorreo] = useState('');
     const [formLicencia, setFormLicencia] = useState(false);
+    const [formPrivacidad, setFormPrivacidad] = useState(false);
     const [formSent, setFormSent] = useState(false);
     const [submitting, setSubmitting] = useState(false);
 
@@ -868,9 +869,25 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                 ))}
                                             </div>
 
+                                            <label className="flex items-center gap-2.5 cursor-pointer">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={formPrivacidad}
+                                                    onChange={(e) => setFormPrivacidad(e.target.checked)}
+                                                    className="size-4.5 shrink-0 appearance-none rounded border border-black/80 bg-white checked:bg-black checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2012%2012%22%3E%3Cpath%20d%3D%22M2%206l3%203%205-5%22%20stroke%3D%22%23fff%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20fill%3D%22none%22%2F%3E%3C%2Fsvg%3E')] checked:bg-center checked:bg-no-repeat"
+                                                />
+                                                <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                    He leído y acepto la política de privacidad de mis datos personales.
+                                                </span>
+                                            </label>
+
                                             <button
-                                                disabled={submitting}
+                                                disabled={submitting || !formPrivacidad}
                                                 onClick={() => {
+                                                    if (!formPrivacidad) {
+                                                        toast.error('Debes aceptar la política de privacidad para continuar.');
+                                                        return;
+                                                    }
                                                     setSubmitting(true);
                                                     router.post('/kinto/solicitud', {
                                                         sucursal: formSucursal,
@@ -882,6 +899,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                         rut: formRut,
                                                         telefono: formTelefono,
                                                         correo: formCorreo,
+                                                        privacidad: formPrivacidad,
                                                         _website: '',
                                                     }, {
                                                         preserveState: true,

@@ -34,6 +34,10 @@ export default function RepuestoCotizar({ repuesto, footer }: { repuesto: Repues
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (submitting) return;
+        if (!acepta) {
+            toast.error('Debes aceptar la política de privacidad para continuar.');
+            return;
+        }
         setSubmitting(true);
         router.post(`/post-venta/repuestos/${repuesto.id}/cotizar`, {
             nombre,
@@ -41,6 +45,7 @@ export default function RepuestoCotizar({ repuesto, footer }: { repuesto: Repues
             telefono,
             sucursal,
             comentarios,
+            privacidad: acepta,
             _website: website,
         }, {
             preserveScroll: true,

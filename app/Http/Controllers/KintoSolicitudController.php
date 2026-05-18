@@ -34,6 +34,7 @@ class KintoSolicitudController extends Controller
             'rut'          => ['required', 'string', 'max:20'],
             'telefono'     => ['required', 'string', 'max:50'],
             'correo'       => ['required', 'email', 'max:255'],
+            'privacidad'   => ['accepted'],
         ]);
 
         $solicitud = KintoSolicitud::create($request->only(

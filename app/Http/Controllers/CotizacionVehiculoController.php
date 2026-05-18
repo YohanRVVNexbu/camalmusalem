@@ -39,6 +39,7 @@ class CotizacionVehiculoController extends Controller
             'telefono'    => ['required', 'string', 'max:50'],
             'rut'         => ['required', 'string', 'max:20', new Rut],
             'comentarios' => ['nullable', 'string'],
+            'privacidad'  => ['accepted'],
         ]);
 
         // Snapshot del vehículo. Cuando viene version_id, usamos esa versión
