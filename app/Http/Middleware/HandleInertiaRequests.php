@@ -58,7 +58,15 @@ class HandleInertiaRequests extends Middleware
                 ]),
             'contactCtaBanner' => fn () => $this->contactCtaBanner(),
             'whatsappButton'   => fn () => $this->whatsappButton(),
+            'maintenanceActive' => fn () => $this->maintenanceActive(),
         ];
+    }
+
+    private function maintenanceActive(): bool
+    {
+        $section = SiteSection::where('section', 'maintenance_mode')->first();
+
+        return $section ? (bool) $section->is_visible : false;
     }
 
     private function contactCtaBanner(): ?array

@@ -40,7 +40,7 @@ const GROUPS: Group[] = [
         description: 'Mensajes y cotizaciones enviadas desde los formularios del sitio.',
         items: [
             { title: 'Contactos',                href: '/admin/contactos',               description: 'Formulario de contacto general',  icon: Mail },
-            { title: 'Prevención del Delito',    href: '/admin/prevencion-delito',       description: 'Denuncias del modelo MPD',        icon: Shield },
+            { title: 'Denuncias (Compliance)',   href: '/admin/compliance/denuncias',    description: 'Ley 20.393 + Ley Karin',          icon: Shield },
             { title: 'Mantenciones',             href: '/admin/mantenciones',            description: 'Agendamientos de mantención',     icon: MessageSquare },
             { title: 'Solicitudes Kinto',        href: '/admin/kinto-solicitudes',       description: 'Reservas de arriendo KINTO',      icon: KeySquare },
             { title: 'Cotizaciones vehículos',   href: '/admin/cotizaciones-vehiculos',  description: 'Cotizaciones de nuevos y seminuevos', icon: Receipt },

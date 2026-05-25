@@ -25,21 +25,6 @@ const calendarStyles = `
     .rdp-chevron { fill: #000; }
     .rdp-button_next, .rdp-button_previous { border: 1px solid rgba(0,0,0,0.2); border-radius: 50%; width: 32px; height: 32px; }
     .rdp-day_button:hover:not(.rdp-selected) { background: rgba(0,0,0,0.08); }
-
-    /* Día con al menos una hora ocupada — pequeño punto rojo Toyota debajo */
-    .rdp-day.has-partial { position: relative; }
-    .rdp-day.has-partial .rdp-day_button::after {
-        content: '';
-        position: absolute;
-        bottom: 4px;
-        left: 50%;
-        transform: translateX(-50%);
-        width: 4px;
-        height: 4px;
-        border-radius: 50%;
-        background: #EB0A1E;
-    }
-    .rdp-day.has-partial.rdp-selected .rdp-day_button::after { background: #fff; }
 `;
 import { useCallback, useEffect, useRef, useState } from 'react';
 import heroImg from '@images/mantencion/hero-imagen.png?format=webp';
@@ -129,55 +114,6 @@ export default function AgendarMantencion({
     const [showCalendar, setShowCalendar] = useState(false);
     const calendarRef = useRef<HTMLDivElement>(null);
 
-    // Slots ocupados por taller (se recarga cuando cambia el taller).
-    //   bookedSlots: { 'YYYY-MM-DD': ['09:00', '10:30', ...] }
-    //   fullDays:    ['YYYY-MM-DD', ...]  (días completos sin disponibilidad)
-    //   partialDays: ['YYYY-MM-DD', ...]  (días con al menos 1 hora ocupada)
-    const [bookedSlots, setBookedSlots] = useState<Record<string, string[]>>({});
-    const [fullDays, setFullDays] = useState<string[]>([]);
-
-    useEffect(() => {
-        if (!taller) {
-            setBookedSlots({});
-            setFullDays([]);
-            return;
-        }
-        const controller = new AbortController();
-        fetch(`/post-venta/agendar-mantencion/slots?taller=${encodeURIComponent(taller)}`, {
-            signal: controller.signal,
-            headers: { 'Accept': 'application/json' },
-        })
-            .then((r) => r.ok ? r.json() : null)
-            .then((data) => {
-                if (!data) return;
-                setBookedSlots(data.bookedSlots ?? {});
-                setFullDays(data.fullDays ?? []);
-            })
-            .catch(() => { /* silenciar abort y errores de red */ });
-        return () => controller.abort();
-    }, [taller]);
-
-    const dateKey = (d: Date) => format(d, 'yyyy-MM-dd');
-    const fullDaySet = new Set(fullDays);
-    const partialDates = Object.entries(bookedSlots)
-        .filter(([d, slots]) => slots.length > 0 && !fullDaySet.has(d))
-        .map(([d]) => {
-            const [y, m, day] = d.split('-').map(Number);
-            return new Date(y, m - 1, day);
-        });
-    const fullDates = fullDays.map((d) => {
-        const [y, m, day] = d.split('-').map(Number);
-        return new Date(y, m - 1, day);
-    });
-
-    // Si la hora seleccionada queda ocupada al cambiar la fecha o taller, limpiar.
-    useEffect(() => {
-        if (!selectedDate || !selectedTime) return;
-        const key = dateKey(selectedDate);
-        if ((bookedSlots[key] ?? []).includes(selectedTime)) {
-            setSelectedTime('');
-        }
-    }, [selectedDate, bookedSlots, selectedTime]);
     // Step 1
     const [modelo, setModelo] = useState('');
     const [anio, setAnio] = useState('');
@@ -561,21 +497,12 @@ export default function AgendarMantencion({
                                                                     onSelect={(date) => {
                                                                         if (!date) return;
                                                                         setSelectedDate(date);
-                                                                        // No autopopular: si la hora actual está ocupada se borrará vía effect.
-                                                                        const key = format(date, 'yyyy-MM-dd');
-                                                                        const taken = bookedSlots[key] ?? [];
-                                                                        if (!selectedTime || taken.includes(selectedTime)) {
-                                                                            const firstFree = allTimeSlots.find((t) => !taken.includes(t)) ?? '';
-                                                                            setSelectedTime(firstFree);
+                                                                        if (!selectedTime) {
+                                                                            setSelectedTime(allTimeSlots[0] ?? '');
                                                                         }
                                                                     }}
                                                                     locale={es}
-                                                                    disabled={[
-                                                                        { before: new Date() },
-                                                                        ...fullDates,
-                                                                    ]}
-                                                                    modifiers={{ partial: partialDates }}
-                                                                    modifiersClassNames={{ partial: 'has-partial' }}
+                                                                    disabled={{ before: new Date() }}
                                                                 />
                                                                 <div className="mt-3 flex flex-col gap-2 border-t border-black/10 pt-3">
                                                                     <div className="flex items-center justify-between">
@@ -586,47 +513,26 @@ export default function AgendarMantencion({
                                                                     </div>
                                                                     <div className="grid max-h-40 grid-cols-3 gap-1.5 overflow-y-auto">
                                                                         {allTimeSlots.map(t => {
-                                                                            const dayKey = selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '';
-                                                                            const taken = (bookedSlots[dayKey] ?? []).includes(t);
                                                                             const isSelected = selectedTime === t;
                                                                             return (
                                                                                 <button
                                                                                     key={t}
                                                                                     type="button"
-                                                                                    disabled={taken || !taller || !selectedDate}
+                                                                                    disabled={!taller || !selectedDate}
                                                                                     onClick={() => setSelectedTime(t)}
                                                                                     className={`relative rounded-[60px] py-2 text-center text-xs transition ${
-                                                                                        taken
-                                                                                            ? 'cursor-not-allowed bg-black/5 text-black/30 line-through'
-                                                                                            : !taller || !selectedDate
-                                                                                                ? 'cursor-not-allowed bg-black/5 text-black/30'
-                                                                                                : isSelected
-                                                                                                    ? 'cursor-pointer bg-black text-white'
-                                                                                                    : 'cursor-pointer bg-black/5 text-black hover:bg-black/10'
+                                                                                        !taller || !selectedDate
+                                                                                            ? 'cursor-not-allowed bg-black/5 text-black/30'
+                                                                                            : isSelected
+                                                                                                ? 'cursor-pointer bg-black text-white'
+                                                                                                : 'cursor-pointer bg-black/5 text-black hover:bg-black/10'
                                                                                     }`}
-                                                                                    title={taken ? 'Hora ya reservada' : undefined}
                                                                                 >
                                                                                     {t}
                                                                                 </button>
                                                                             );
                                                                         })}
                                                                     </div>
-                                                                    {(fullDays.length > 0 || partialDates.length > 0) && (
-                                                                        <div className="mt-1 flex items-center gap-3 text-[11px] text-black/60">
-                                                                            {partialDates.length > 0 && (
-                                                                                <span className="inline-flex items-center gap-1">
-                                                                                    <span className="size-1.5 rounded-full bg-[#EB0A1E]" />
-                                                                                    Con reservas
-                                                                                </span>
-                                                                            )}
-                                                                            {fullDays.length > 0 && (
-                                                                                <span className="inline-flex items-center gap-1">
-                                                                                    <span className="size-1.5 rounded-full bg-black/30" />
-                                                                                    Día completo
-                                                                                </span>
-                                                                            )}
-                                                                        </div>
-                                                                    )}
                                                                 </div>
                                                                 <button
                                                                     onClick={() => setShowCalendar(false)}
@@ -737,20 +643,32 @@ export default function AgendarMantencion({
                                                 <div className="flex w-full flex-col gap-5 rounded-[20px] bg-white p-5 lg:p-10">
                                                     <div className="flex flex-col gap-2.5">
                                                         <span className="text-sm font-semibold text-black">Servicio:</span>
-                                                        <span className="text-sm font-normal text-black">{servicio || '—'}</span>
-                                                    </div>
-                                                    <div className="flex flex-col gap-2.5">
-                                                        <span className="text-sm font-semibold text-black">Taller:</span>
                                                         <span className="text-sm font-normal text-black">
-                                                            {taller === 'la-serena' ? 'Musalem La Serena' : taller === 'ovalle' ? 'Musalem Ovalle' : '—'}
+                                                            {services.find((s) => s.slug === servicio)?.name || servicio || '—'}
                                                         </span>
                                                     </div>
-                                                    <div className="flex flex-col gap-2.5">
-                                                        <span className="text-sm font-semibold text-black">Dirección:</span>
-                                                        <span className="text-sm font-normal text-black">
-                                                            {taller === 'la-serena' ? 'Av. Francisco de Aguirre #070, La Serena, Chile' : taller === 'ovalle' ? 'Ariztía Oriente #358, Ovalle, Chile' : '—'}
-                                                        </span>
-                                                    </div>
+                                                    {(() => {
+                                                        const selectedBranch = branches.find((b) => String(b.id) === taller);
+                                                        const direccion = selectedBranch
+                                                            ? [selectedBranch.address, selectedBranch.city].filter(Boolean).join(', ')
+                                                            : '';
+                                                        return (
+                                                            <>
+                                                                <div className="flex flex-col gap-2.5">
+                                                                    <span className="text-sm font-semibold text-black">Taller:</span>
+                                                                    <span className="text-sm font-normal text-black">
+                                                                        {selectedBranch?.name || '—'}
+                                                                    </span>
+                                                                </div>
+                                                                <div className="flex flex-col gap-2.5">
+                                                                    <span className="text-sm font-semibold text-black">Dirección:</span>
+                                                                    <span className="text-sm font-normal text-black">
+                                                                        {direccion || '—'}
+                                                                    </span>
+                                                                </div>
+                                                            </>
+                                                        );
+                                                    })()}
                                                     <div className="flex flex-col gap-2.5">
                                                         <span className="text-sm font-semibold text-black">Fecha:</span>
                                                         <span className="text-sm font-normal text-black">
@@ -769,7 +687,7 @@ export default function AgendarMantencion({
                                                         type="checkbox"
                                                         checked={aceptaPrivacidad}
                                                         onChange={(e) => setAceptaPrivacidad(e.target.checked)}
-                                                        className="size-4.5 shrink-0 cursor-pointer appearance-none rounded border border-black/80 bg-[#EAEAF1] checked:border-black checked:bg-black"
+                                                        className="size-4.5 shrink-0 cursor-pointer appearance-none rounded border border-black/80 bg-[#EAEAF1] checked:border-black checked:bg-black checked:bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20viewBox%3D%220%200%2012%2010%22%20fill%3D%22none%22%3E%3Cpath%20d%3D%22M1%205l3.5%203.5L11%201%22%20stroke%3D%22%23fff%22%20stroke-width%3D%221.5%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22/%3E%3C/svg%3E')] checked:bg-center checked:bg-no-repeat"
                                                     />
                                                     <span className="text-sm leading-none font-normal text-black">
                                                         He leído y acepto la política de privacidad de mis datos personales.

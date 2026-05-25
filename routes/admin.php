@@ -10,13 +10,14 @@ use App\Http\Controllers\Admin\MerchController;
 use App\Http\Controllers\Admin\RentalController;
 use App\Http\Controllers\Admin\VehicleModelController;
 use App\Http\Controllers\Admin\VehicleVersionController;
+use App\Http\Controllers\Admin\ComplianceController as AdminComplianceController;
 use App\Http\Controllers\Admin\ContactoController;
-use App\Http\Controllers\Admin\PrevencionDelitoController;
 use App\Http\Controllers\Admin\CotizacionAccesorioController;
 use App\Http\Controllers\Admin\CotizacionRepuestoController;
 use App\Http\Controllers\Admin\CotizacionVehiculoController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\KintoSolicitudController;
+use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\MantencionController;
 use App\Http\Controllers\Admin\SolicitudEncargoRepuestoController;
 use App\Http\Controllers\Admin\HomeContentController;
@@ -93,11 +94,10 @@ Route::middleware('admin')->group(function () {
         ->names('admin.rentals');
 
     // Catálogo técnico — Versiones (ficha técnica)
-    Route::post('vehicle-versions/import', [VehicleVersionController::class, 'import'])->name('admin.vehicle-versions.import');
-    Route::get('vehicle-versions/export', [VehicleVersionController::class, 'export'])->name('admin.vehicle-versions.export');
-    Route::get('vehicle-versions/template', [VehicleVersionController::class, 'template'])->name('admin.vehicle-versions.template');
-    Route::get('vehicle-versions/precios/export', [VehicleVersionController::class, 'preciosExport'])->name('admin.vehicle-versions.precios.export');
-    Route::post('vehicle-versions/precios/import', [VehicleVersionController::class, 'preciosImport'])->name('admin.vehicle-versions.precios.import');
+    // Import masivo unificado: subir el Excel de Toyota mensual carga modelos,
+    // versiones, precios y bonos en una sola pasada. Las rutas separadas de
+    // import/export (catálogo y precios por separado) se retiraron junto con
+    // sus servicios viejos cuando se introdujo el `bulkImport`.
     Route::get('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImport'])->name('admin.vehicle-versions.bulk-import');
     Route::post('vehicle-versions/bulk-import/preview', [VehicleVersionController::class, 'bulkImportPreview'])->name('admin.vehicle-versions.bulk-import.preview');
     Route::post('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImportStore'])->name('admin.vehicle-versions.bulk-import.store');
@@ -148,9 +148,13 @@ Route::middleware('admin')->group(function () {
     Route::patch('contactos/{contacto}/leido', [ContactoController::class, 'marcarLeido'])->name('admin.contactos.leido');
     Route::delete('contactos/{contacto}', [ContactoController::class, 'destroy'])->name('admin.contactos.destroy');
 
-    Route::get('prevencion-delito', [PrevencionDelitoController::class, 'index'])->name('admin.prevencion-delito');
-    Route::patch('prevencion-delito/{denuncia}/leido', [PrevencionDelitoController::class, 'marcarLeido'])->name('admin.prevencion-delito.leido');
-    Route::delete('prevencion-delito/{denuncia}', [PrevencionDelitoController::class, 'destroy'])->name('admin.prevencion-delito.destroy');
+    // Compliance — bandeja unificada Ley 20.393 + Ley Karin.
+    Route::get('compliance/denuncias', [AdminComplianceController::class, 'index'])->name('admin.compliance.denuncias');
+    Route::get('compliance/denuncias/{denuncia}', [AdminComplianceController::class, 'show'])->name('admin.compliance.denuncias.show');
+    Route::patch('compliance/denuncias/{denuncia}/leido', [AdminComplianceController::class, 'marcarLeido'])->name('admin.compliance.denuncias.leido');
+    Route::patch('compliance/denuncias/{denuncia}/estado', [AdminComplianceController::class, 'updateEstado'])->name('admin.compliance.denuncias.estado');
+    Route::get('compliance/denuncias/{denuncia}/adjuntos/{adjunto}', [AdminComplianceController::class, 'downloadAdjunto'])->name('admin.compliance.denuncias.adjuntos.download');
+    Route::delete('compliance/denuncias/{denuncia}', [AdminComplianceController::class, 'destroy'])->name('admin.compliance.denuncias.destroy');
 
     // Agendamientos de mantención
     Route::get('mantenciones', [MantencionController::class, 'index'])->name('admin.mantenciones');
@@ -182,6 +186,10 @@ Route::middleware('admin')->group(function () {
     Route::get('solicitudes-encargo', [SolicitudEncargoRepuestoController::class, 'index'])->name('admin.solicitudes-encargo');
     Route::patch('solicitudes-encargo/{solicitud}/leido', [SolicitudEncargoRepuestoController::class, 'marcarLeido'])->name('admin.solicitudes-encargo.leido');
     Route::delete('solicitudes-encargo/{solicitud}', [SolicitudEncargoRepuestoController::class, 'destroy'])->name('admin.solicitudes-encargo.destroy');
+
+    // Modo mantenimiento (toggle global del sitio público)
+    Route::get('mantenimiento', [MaintenanceController::class, 'index'])->name('admin.mantenimiento');
+    Route::post('mantenimiento', [MaintenanceController::class, 'update'])->name('admin.mantenimiento.update');
 
     // Páginas estáticas (CMS por sección)
     Route::get('paginas', [PageContentController::class, 'index'])->name('admin.paginas');

@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Layers, Pencil, Plus, Trash2 } from 'lucide-react';
+import { FileSpreadsheet, Layers, Pencil, Plus, Trash2 } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -9,7 +9,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { ImportExportBar } from '@/components/admin/import-export-bar';
 import AdminLayout from '@/layouts/admin-layout';
 
 type VehicleModel = {
@@ -57,20 +56,11 @@ export default function VehicleModelsIndex({
                         <p className="text-sm text-muted-foreground">Modelos del catálogo. Haz clic en <strong>Versiones</strong> de cada modelo para editar fichas técnicas y precios.</p>
                     </div>
                     <div className="flex gap-2">
-                        <ImportExportBar
-                            entityLabel="lista de precios"
-                            exportUrl="/admin/vehicle-versions/precios/export"
-                            importUrl="/admin/vehicle-versions/precios/import"
-                            templateUrl="/admin/vehicle-versions/precios/export"
-                            label="Precios"
-                        />
-                        <ImportExportBar
-                            entityLabel="catálogo completo"
-                            exportUrl="/admin/vehicle-versions/export"
-                            importUrl="/admin/vehicle-versions/import"
-                            templateUrl="/admin/vehicle-versions/template"
-                            label="Catálogo"
-                        />
+                        <Button asChild variant="secondary">
+                            <Link href="/admin/vehicle-versions/bulk-import">
+                                <FileSpreadsheet className="mr-1 size-4" />Importar lista de precios
+                            </Link>
+                        </Button>
                         <Button asChild>
                             <Link href="/admin/vehicle-models/create"><Plus className="mr-1 size-4" />Nuevo modelo</Link>
                         </Button>

@@ -118,7 +118,11 @@ class CotizacionSyncService
             'client' => [
                 'fullName'      => $cot->nombre,
                 'email'         => $cot->email,
-                'rut'           => $cot->rut,
+                // Salesforce espera el RUT SIN puntos y CON guión:
+                //   "26.256.475-4"  →  "26256475-4"
+                // Lo guardamos formateado en BD para mostrarlo lindo al
+                // admin, pero al API lo mandamos limpio.
+                'rut'           => $this->normalizeRutForSalesforce($cot->rut),
                 'phone'         => $cot->telefono,
                 'originAccount' => 'Web concesionario',
             ],
@@ -142,6 +146,34 @@ class CotizacionSyncService
                 ],
             ],
         ];
+    }
+
+    /**
+     * Normaliza el RUT para Salesforce: saca puntos y conserva el guión y
+     * el dígito verificador (que puede ser número o letra "K").
+     *
+     * Entradas y salidas:
+     *   "26.256.475-4"  →  "26256475-4"
+     *   "12345678-K"    →  "12345678-K"
+     *   "12.345.678-k"  →  "12345678-K"   (mayúscula del DV)
+     *   "  26.256.475-4  "  →  "26256475-4" (trim)
+     */
+    private function normalizeRutForSalesforce(?string $rut): string
+    {
+        if (! $rut) {
+            return '';
+        }
+        $clean = strtoupper(trim($rut));
+        // Saca todo excepto dígitos, guión y la letra K (dígito verificador).
+        $clean = preg_replace('/[^0-9K\-]/', '', $clean);
+        // Si tiene guión, conserva el formato cuerpo-DV. Si no tiene, lo arma.
+        if (str_contains($clean, '-')) {
+            return $clean;
+        }
+        if (strlen($clean) < 2) {
+            return $clean;
+        }
+        return substr($clean, 0, -1).'-'.substr($clean, -1);
     }
 
     private function markSynced(CotizacionVehiculo $cot, array $response): void

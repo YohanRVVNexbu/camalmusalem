@@ -37,7 +37,10 @@ class GenerateSampleExcels extends Command
 
     private function generateCatalogo(): void
     {
-        // Cabeceras idénticas al VehicleVersionsExporter (79 columnas, índices 0-78)
+        // Cabeceras del catálogo histórico (79 columnas, índices 0-78). Hoy
+        // el catálogo se importa desde el Excel mensual de Toyota usando
+        // ListaPreciosMayo2026Importer — este comando queda como referencia
+        // del formato anterior.
         $headers = [
             'ID', 'Marca', 'Modelo', 'Tipo carrocería', 'Segmento', 'Generación',
             'Trim / Versión', 'Año', 'Código ventas', 'Activo',

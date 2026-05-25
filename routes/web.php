@@ -1,7 +1,7 @@
 <?php
 
+use App\Http\Controllers\ComplianceController;
 use App\Http\Controllers\ContactoController;
-use App\Http\Controllers\PrevencionDelitoController;
 use App\Http\Controllers\CotizacionAccesorioController;
 use App\Http\Controllers\CotizacionRepuestoController;
 use App\Http\Controllers\CotizacionVehiculoController;
@@ -28,7 +28,6 @@ Route::get('/seminuevos/{id}', [SeminuevosController::class, 'show'])->name('sem
 
 Route::get('/post-venta/agendar-mantencion', [PostVentaController::class, 'agendarMantencion'])->name('post-venta.agendar-mantencion');
 Route::post('/post-venta/agendar-mantencion', [MantencionController::class, 'store'])->name('mantencion.store');
-Route::get('/post-venta/agendar-mantencion/slots', [MantencionController::class, 'bookedSlots'])->name('mantencion.slots');
 Route::get('/post-venta/accesorios', [PostVentaController::class, 'accesorios'])->name('post-venta.accesorios');
 Route::get('/post-venta/accesorios/{id}', [PostVentaController::class, 'accesorioShow'])->name('post-venta.accesorios.show');
 Route::get('/post-venta/accesorios/{id}/cotizar', [PostVentaController::class, 'accesorioCotizar'])->name('post-venta.accesorios.cotizar');
@@ -46,8 +45,17 @@ Route::get('/noticias/{slug}', [PagesController::class, 'noticiaShow'])->name('n
 Route::get('/contacto', [PagesController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [ContactoController::class, 'store'])->name('contacto.store');
 
-Route::get('/prevencion-delito', [PrevencionDelitoController::class, 'show'])->name('prevencion-delito');
-Route::post('/prevencion-delito', [PrevencionDelitoController::class, 'store'])->name('prevencion-delito.store');
+// Compliance — Ley 20.393 (Prevención del Delito) y Ley 21.643 (Ley Karin).
+// La ruta vieja /prevencion-delito hace 301 a la nueva porque el cliente
+// ya tenía esa URL impresa en folletos y enviada por mail.
+Route::get('/compliance', [ComplianceController::class, 'index'])->name('compliance');
+Route::get('/compliance/denuncia-prevencion-delito', [ComplianceController::class, 'denunciaPrevencionDelito'])->name('compliance.prevencion-delito');
+Route::post('/compliance/denuncia-prevencion-delito', [ComplianceController::class, 'denunciaPrevencionDelitoStore'])->name('compliance.prevencion-delito.store');
+Route::get('/compliance/denuncia-ley-karin', [ComplianceController::class, 'denunciaLeyKarin'])->name('compliance.ley-karin');
+Route::post('/compliance/denuncia-ley-karin', [ComplianceController::class, 'denunciaLeyKarinStore'])->name('compliance.ley-karin.store');
+Route::get('/compliance/seguimiento', [ComplianceController::class, 'seguimiento'])->name('compliance.seguimiento');
+Route::get('/prevencion-delito', [ComplianceController::class, 'redirectLegacyPrevencionDelito']);
+
 Route::get('/nosotros', [PagesController::class, 'nosotros'])->name('nosotros');
 Route::get('/kinto', [PagesController::class, 'kinto'])->name('kinto');
 Route::post('/kinto/solicitud', [KintoSolicitudController::class, 'store'])->name('kinto.solicitud.store');

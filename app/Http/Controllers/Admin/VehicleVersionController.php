@@ -3,11 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Services\CatalogExport\ListaPreciosExporter;
-use App\Services\CatalogExport\VehicleVersionsExporter;
-use App\Services\CatalogImport\ListaPreciosImporter;
 use App\Services\CatalogImport\ListaPreciosMayo2026Importer;
-use App\Services\CatalogImport\VehicleVersionsImporter;
 use App\Models\Branch;
 use App\Models\ColorType;
 use App\Models\Drivetrain;
@@ -159,37 +155,6 @@ class VehicleVersionController extends Controller
         $vehicleVersion->delete();
 
         return redirect('/admin/vehicle-versions')->with('success', 'Versión eliminada.');
-    }
-
-    public function import(Request $request)
-    {
-        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
-        $result = (new VehicleVersionsImporter)->import($request->file('file'));
-
-        return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());
-    }
-
-    public function export()
-    {
-        return (new VehicleVersionsExporter)->download('vehiculos_nuevos_'.date('Y-m-d').'.xlsx');
-    }
-
-    public function template()
-    {
-        return (new VehicleVersionsExporter(templateOnly: true))->download('plantilla_vehiculos_nuevos.xlsx');
-    }
-
-    public function preciosExport()
-    {
-        return (new ListaPreciosExporter)->download('lista_precios_'.date('Y-m-d').'.xlsx');
-    }
-
-    public function preciosImport(Request $request)
-    {
-        $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
-        $result = (new ListaPreciosImporter)->import($request->file('file'));
-
-        return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());
     }
 
     /**

@@ -1,5 +1,5 @@
 import { Link, router, usePage } from '@inertiajs/react';
-import { Car, ChevronDown, ChevronsUpDown, ClipboardList, FileText, Key, KeySquare, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MapPin, MessageSquare, Newspaper, Package, Receipt, RefreshCw, Shield, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
+import { Car, ChevronDown, ChevronsUpDown, ClipboardList, FileText, Key, KeySquare, LayoutGrid, ListChecks, ListTree, LogOut, Mail, MapPin, MessageSquare, Newspaper, Package, Power, Receipt, RefreshCw, Shield, Shirt, Tag, UserCog, Users, Wrench } from 'lucide-react';
 import { useState } from 'react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
@@ -50,7 +50,7 @@ const mantenedoresItems: NavItem[] = [
 
 const solicitudesItems: NavItem[] = [
     { title: 'Contactos',                  href: '/admin/contactos',                 icon: Mail },
-    { title: 'Prevención del Delito',      href: '/admin/prevencion-delito',         icon: Shield },
+    { title: 'Denuncias (Compliance)',     href: '/admin/compliance/denuncias',      icon: Shield },
     { title: 'Mantenciones',               href: '/admin/mantenciones',              icon: MessageSquare },
     { title: 'Solicitudes Kinto',          href: '/admin/kinto-solicitudes',         icon: KeySquare },
     { title: 'Cotizaciones vehículos',     href: '/admin/cotizaciones-vehiculos',    icon: Receipt },
@@ -60,8 +60,9 @@ const solicitudesItems: NavItem[] = [
 ];
 
 const sistemaItems: NavItem[] = [
-    { title: 'Páginas',  href: '/admin/paginas', icon: FileText },
-    { title: 'Usuarios', href: '/admin/users',   icon: Users },
+    { title: 'Páginas',             href: '/admin/paginas',       icon: FileText },
+    { title: 'Modo mantenimiento',  href: '/admin/mantenimiento', icon: Power },
+    { title: 'Usuarios',            href: '/admin/users',         icon: Users },
 ];
 
 type GroupProps = {

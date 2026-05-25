@@ -61,12 +61,18 @@ class ListaPreciosMayo2026Importer
             return $result;
         }
 
+        // Toyota es la marca por defecto del importador (el Excel es del
+        // catálogo Toyota Chile). Si no existe en BD, la creamos al vuelo
+        // para que el import funcione en instalaciones limpias sin requerir
+        // que el operador la cree a mano antes.
         $brandId = Brand::query()->where('slug', 'toyota')->value('id')
             ?? Brand::query()->where('name', 'Toyota')->value('id');
         if (! $brandId) {
-            $result->addError(0, 'No se encontró la marca Toyota en BD.');
-
-            return $result;
+            $brandId = Brand::create([
+                'name' => 'Toyota',
+                'slug' => 'toyota',
+                'is_active' => true,
+            ])->id;
         }
 
         $sheet = IOFactory::load($file->getPathname())->getActiveSheet();

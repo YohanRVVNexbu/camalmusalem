@@ -58,4 +58,38 @@ return [
         'enabled'       => env('SALESFORCE_ENABLED', false),
     ],
 
+    /*
+     * Canal de denuncias / Compliance.
+     *
+     * Las denuncias de Ley 20.393 (Prevención del Delito) y Ley 21.643
+     * (Ley Karin) las recibe internamente el Encargado de Prevención del
+     * Delito de Toyota Musalem. El correo se configura en .env y NO se
+     * commitea — es información sensible que solo la administración
+     * conoce y suele cambiar cuando rota el cargo.
+     *
+     * Si la abogada define recipientes distintos por ley (p. ej. Karin a
+     * un Comité de Convivencia), se agregan más entradas y los mailables
+     * eligen según `tipo` de la denuncia.
+     */
+    'compliance' => [
+        'encargado_email'      => env('COMPLIANCE_ENCARGADO_EMAIL'),
+        'encargado_email_karin' => env('COMPLIANCE_ENCARGADO_EMAIL_KARIN'), // opcional, default = encargado_email
+    ],
+
+    /*
+     * SendGrid (API HTTP, no SMTP).
+     *
+     * Usamos la API HTTP en vez de SMTP porque muchos hostings compartidos
+     * (incluyendo Nexbu / CloudLinux) interceptan las conexiones SMTP
+     * salientes y las redirigen a su propio MTA, lo que rompe el handshake
+     * TLS contra smtp.sendgrid.net.
+     *
+     * Para activar en .env:
+     *   MAIL_MAILER=sendgrid
+     *   SENDGRID_API_KEY=SG.xxxxxx
+     */
+    'sendgrid' => [
+        'api_key' => env('SENDGRID_API_KEY'),
+    ],
+
 ];

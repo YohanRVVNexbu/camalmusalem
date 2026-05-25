@@ -61,14 +61,32 @@ export default function VehicleVersionsBulkImport() {
 
         const fd = new FormData();
         fd.append('file', file);
-        const csrf = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+
+        // Para CSRF Laravel acepta:
+        //   - `X-CSRF-TOKEN` con el token del meta tag (renderizado en app.blade.php)
+        //   - `X-XSRF-TOKEN` con el valor URL-decoded de la cookie XSRF-TOKEN
+        // Probamos meta primero y caemos a la cookie como fallback. Así nunca
+        // más nos quedamos con un token vacío que dispara 419.
+        const metaCsrf = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+        const cookieCsrf = (() => {
+            const m = document.cookie.match(/(?:^|;\s*)XSRF-TOKEN=([^;]+)/);
+            return m ? decodeURIComponent(m[1]) : '';
+        })();
+
+        const headers: Record<string, string> = { Accept: 'application/json' };
+        if (metaCsrf) headers['X-CSRF-TOKEN'] = metaCsrf;
+        if (cookieCsrf) headers['X-XSRF-TOKEN'] = cookieCsrf;
 
         try {
             const res = await fetch('/admin/vehicle-versions/bulk-import/preview', {
                 method: 'POST',
                 body: fd,
-                headers: { 'X-CSRF-TOKEN': csrf, Accept: 'application/json' },
+                headers,
+                credentials: 'same-origin',
             });
+            if (res.status === 419) {
+                throw new Error('La sesión expiró. Recarga la página y volvé a intentar.');
+            }
             if (!res.ok) throw new Error(`Error ${res.status}`);
             const data = (await res.json()) as PreviewData;
             setPreview(data);

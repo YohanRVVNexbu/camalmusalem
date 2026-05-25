@@ -20,7 +20,7 @@ class DatabaseSeeder extends Seeder
             LookupsSeeder::class,
             BranchesSeeder::class,
             FeaturesSeeder::class,
-            VehicleCatalogSeeder::class,
+           // VehicleCatalogSeeder::class,
             RepuestosSeeder::class,
             AccesoriosSeeder::class,
             SeminuevosSeeder::class,

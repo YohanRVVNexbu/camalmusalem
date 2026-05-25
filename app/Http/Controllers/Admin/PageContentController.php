@@ -25,6 +25,7 @@ class PageContentController extends Controller
         'repuestos'    => ['repuestos_hero'],
         'accesorios'   => ['accesorios_hero'],
         'mantencion'   => ['mantencion_hero'],
+        'compliance'   => ['compliance_hero', 'compliance_descargas', 'compliance_canales'],
         'banner-cta'   => ['contact_cta_banner'],
         'whatsapp'     => ['whatsapp_button'],
     ];
@@ -45,6 +46,7 @@ class PageContentController extends Controller
             ['slug' => 'repuestos',  'title' => 'Repuestos',           'icon' => '🔧'],
             ['slug' => 'accesorios', 'title' => 'Accesorios y Merch',  'icon' => '👕'],
             ['slug' => 'mantencion', 'title' => 'Agendar Mantención',  'icon' => '🛠️'],
+            ['slug' => 'compliance', 'title' => 'Compliance (legales)', 'icon' => '⚖️'],
             ['slug' => 'banner-cta', 'title' => 'Banner Contáctanos (global)', 'icon' => '📣'],
             ['slug' => 'whatsapp',   'title' => 'Botón WhatsApp (flotante)',   'icon' => '💬'],
         ];
