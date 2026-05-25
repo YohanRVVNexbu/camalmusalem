@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\SolicitudEncargoRepuestoMail;
 use App\Models\SolicitudEncargoRepuesto;
+use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -42,7 +43,13 @@ class SolicitudEncargoRepuestoController extends Controller
         ));
 
         try {
+            // Acuse de recibo al cliente
             Mail::to($solicitud->email)->send(new SolicitudEncargoRepuestoMail($solicitud));
+
+            // Notificación al equipo de repuestos según sucursal
+            if ($team = NotificationRouter::for('repuestos', $solicitud->sucursal)) {
+                Mail::to($team)->send(new SolicitudEncargoRepuestoMail($solicitud));
+            }
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de solicitud encargo repuestos: '.$e->getMessage());
         }

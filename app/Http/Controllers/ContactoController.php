@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\ContactoMail;
 use App\Models\Contacto;
 use App\Rules\Rut;
+use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -40,7 +41,13 @@ class ContactoController extends Controller
         $contacto = Contacto::create($request->only('nombre', 'asunto', 'email', 'telefono', 'rut', 'mensaje'));
 
         try {
+            // Acuse de recibo al cliente
             Mail::to($contacto->email)->send(new ContactoMail($contacto));
+
+            // Notificación al equipo interno (info@camalmusalem.cl)
+            if ($team = NotificationRouter::for('contacto')) {
+                Mail::to($team)->send(new ContactoMail($contacto));
+            }
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de contacto: '.$e->getMessage());
         }

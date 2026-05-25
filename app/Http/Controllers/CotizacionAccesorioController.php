@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\CotizacionAccesorioMail;
 use App\Models\Accesorio;
 use App\Models\CotizacionAccesorio;
+use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -48,7 +49,14 @@ class CotizacionAccesorioController extends Controller
         ]);
 
         try {
+            // Acuse de recibo al cliente
             Mail::to($cotizacion->email)->send(new CotizacionAccesorioMail($cotizacion));
+
+            // Notificación al equipo (Accesorios y Merch comparten correo con
+            // Repuestos según el PDF del cliente, separado por sucursal).
+            if ($team = NotificationRouter::for('accesorios', $cotizacion->sucursal)) {
+                Mail::to($team)->send(new CotizacionAccesorioMail($cotizacion));
+            }
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de cotización accesorio: '.$e->getMessage());
         }

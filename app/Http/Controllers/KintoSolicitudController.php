@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\KintoSolicitudMail;
 use App\Models\KintoSolicitud;
+use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -43,7 +44,14 @@ class KintoSolicitudController extends Controller
         ));
 
         try {
+            // Acuse de recibo al cliente
             Mail::to($solicitud->correo)->send(new KintoSolicitudMail($solicitud));
+
+            // Notificación al equipo (default info@camalmusalem.cl —
+            // el PDF de correos no especifica un correo dedicado para Kinto).
+            if ($team = NotificationRouter::for('kinto')) {
+                Mail::to($team)->send(new KintoSolicitudMail($solicitud));
+            }
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de Kinto: '.$e->getMessage());
         }

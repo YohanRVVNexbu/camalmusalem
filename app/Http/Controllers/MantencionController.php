@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\MantencionMail;
 use App\Models\MantencionAgendamiento;
+use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -60,7 +61,13 @@ class MantencionController extends Controller
         ));
 
         try {
+            // Acuse de recibo al cliente
             Mail::to($mantencion->correo)->send(new MantencionMail($mantencion));
+
+            // Notificación al servicio técnico según el taller seleccionado
+            if ($team = NotificationRouter::for('mantencion', $mantencion->taller)) {
+                Mail::to($team)->send(new MantencionMail($mantencion));
+            }
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de mantención: '.$e->getMessage());
         }

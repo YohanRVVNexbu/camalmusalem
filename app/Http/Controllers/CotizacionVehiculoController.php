@@ -8,6 +8,7 @@ use App\Models\Seminuevo;
 use App\Models\VehicleModel;
 use App\Models\VehicleVersion;
 use App\Rules\Rut;
+use App\Services\NotificationRouter;
 use App\Services\Salesforce\CotizacionSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -76,7 +77,14 @@ class CotizacionVehiculoController extends Controller
         ]);
 
         try {
+            // Acuse de recibo al cliente
             Mail::to($cotizacion->email)->send(new CotizacionVehiculoMail($cotizacion));
+
+            // Notificación al equipo interno: nuevos → info@..., seminuevos → seminuevos@...
+            $teamKey = $cotizacion->tipo === 'nuevo' ? 'vehiculos_nuevos' : 'vehiculos_seminuevos';
+            if ($team = NotificationRouter::for($teamKey)) {
+                Mail::to($team)->send(new CotizacionVehiculoMail($cotizacion));
+            }
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de cotización vehículo: '.$e->getMessage());
         }

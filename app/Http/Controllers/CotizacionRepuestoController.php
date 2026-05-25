@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\CotizacionRepuestoMail;
 use App\Models\CotizacionRepuesto;
 use App\Models\Repuesto;
+use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -48,7 +49,13 @@ class CotizacionRepuestoController extends Controller
         ]);
 
         try {
+            // Acuse de recibo al cliente
             Mail::to($cotizacion->email)->send(new CotizacionRepuestoMail($cotizacion));
+
+            // Notificación al equipo de repuestos según sucursal (LS u Ovalle)
+            if ($team = NotificationRouter::for('repuestos', $cotizacion->sucursal)) {
+                Mail::to($team)->send(new CotizacionRepuestoMail($cotizacion));
+            }
         } catch (\Throwable $e) {
             Log::warning('No se pudo enviar el correo de cotización repuesto: '.$e->getMessage());
         }
