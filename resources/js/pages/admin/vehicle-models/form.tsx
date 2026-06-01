@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea';
 import AdminLayout from '@/layouts/admin-layout';
 import { dotToBracket } from '@/lib/form-data';
 import { compressUntilUnder } from '@/lib/image-compress';
+import { uploadImageBase64 } from '@/lib/image-upload';
 
 type BrandLite = { id: number; name: string };
 
@@ -249,101 +250,45 @@ export default function VehicleModelForm({
         let failed = 0;
         setPhotoUploadProgress({ colorIdx, done, total, failed });
 
-        // CSRF token: Laravel lo busca en el meta tag (renderizado por
-        // resources/views/app.blade.php). Lo metemos en el header.
-        const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
-
-        // Target conservador: 1.5 MB por foto. Margen amplio bajo cualquier
-        // MaxReqBodySize de LSWS (default 10 MB, hostings más restrictivos
-        // 2-5 MB). Con FormData overhead el body real queda ≤ 2 MB —
-        // imposible que rebote contra el límite.
-        const COMPRESS_TARGET = 1.5 * 1024 * 1024;
-        // Pausa entre uploads consecutivos. Le da aire a WAFs / rate
-        // limiters (Imunify360, Cloudflare, etc.) para que no clasifiquen
-        // los uploads en serie como tráfico abusivo.
-        const DELAY_BETWEEN_UPLOADS_MS = 200;
-        // Reintentos por foto con backoff exponencial. Cubre cortes
-        // transitorios (network glitch, lock fugaz, WAF cooldown).
-        const MAX_ATTEMPTS = 3;
-        const BACKOFF_MS = [0, 800, 2000]; // antes del intento N
+        // Pausa entre uploads (700ms) para no gatillar rate-limit del WAF/LSWS.
+        // El patrón "7 de 8 falla la #8" típicamente es el WAF throttleando
+        // tras varios uploads rápidos.
+        const DELAY_BETWEEN_UPLOADS_MS = 700;
+        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
         // Detalle por foto que falló — lo mostramos al final si hay errores.
         const failures: Array<{ index: number; name: string; reason: string }> = [];
 
-        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
-
         const uploadOne = async (file: File, fileIdx: number): Promise<boolean> => {
-            const compressed = await compressUntilUnder(file, COMPRESS_TARGET);
-            const sizeKb = Math.round(compressed.size / 1024);
-
-            for (let attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
-                if (BACKOFF_MS[attempt - 1] > 0) {
-                    await sleep(BACKOFF_MS[attempt - 1]);
-                }
-
-                try {
-                    const formData = new FormData();
-                    formData.append('file', compressed);
-
-                    const response = await fetch(
-                        `/admin/vehicle-models/${model!.id}/photos-360`,
-                        {
-                            method: 'POST',
-                            body: formData,
-                            headers: {
-                                'X-CSRF-TOKEN': csrfToken,
-                                'Accept': 'application/json',
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            credentials: 'same-origin',
-                        },
-                    );
-
-                    if (! response.ok) {
-                        // Si el server devolvió HTML (e.g. la página 403 de
-                        // LiteSpeed) en vez de JSON, el request ni siquiera
-                        // llegó a Laravel. Lo dejamos claro en consola.
-                        const contentType = response.headers.get('content-type') ?? '';
-                        const blockedByServer = contentType.includes('text/html');
-                        const reason = blockedByServer
-                            ? `HTTP ${response.status} (bloqueado por servidor web, no llegó a Laravel)`
-                            : `HTTP ${response.status}`;
-                        throw new Error(reason);
-                    }
-
-                    const json = await response.json();
-                    if (! json.url) throw new Error('Respuesta sin URL');
-
-                    setData((current) => {
-                        const newDetail = current.detail_content ?? defaultDetail();
-                        const colors = [...newDetail.viewer_360.colors];
-                        if (! colors[colorIdx]) return current;
-                        colors[colorIdx] = {
-                            ...colors[colorIdx],
-                            photos: [...colors[colorIdx].photos, json.url],
-                        };
-                        return {
-                            ...current,
-                            detail_content: { ...newDetail, viewer_360: { ...newDetail.viewer_360, colors } },
-                        };
-                    });
-
-                    console.info(`[360] OK foto #${fileIdx + 1}/${total} "${file.name}" (${sizeKb} KB) intento ${attempt}`);
-                    return true;
-                } catch (err) {
-                    const msg = err instanceof Error ? err.message : String(err);
-                    const lastAttempt = attempt === MAX_ATTEMPTS;
-                    console.warn(
-                        `[360] ${lastAttempt ? 'FALLO FINAL' : `intento ${attempt}/${MAX_ATTEMPTS} falló`} ` +
-                        `foto #${fileIdx + 1}/${total} "${file.name}" (${sizeKb} KB): ${msg}`,
-                    );
-                    if (lastAttempt) {
-                        failures.push({ index: fileIdx + 1, name: file.name, reason: msg });
-                        return false;
-                    }
-                }
+            try {
+                // Base64 (JSON, no multipart) → sortea la regla OWASP 930110
+                // del ModSecurity (path-traversal) que matchea los bytes "../"
+                // en cualquier binario. El helper internamente: comprime con
+                // calidad decreciente por intento (0.85/0.65/0.45) + 3 reintentos
+                // con backoff, así cada intento manda bytes garantizadamente
+                // distintos y más livianos.
+                const url = await uploadImageBase64(file, `vehicle-models/${model!.id}`);
+                setData((current) => {
+                    const newDetail = current.detail_content ?? defaultDetail();
+                    const colors = [...newDetail.viewer_360.colors];
+                    if (! colors[colorIdx]) return current;
+                    colors[colorIdx] = {
+                        ...colors[colorIdx],
+                        photos: [...colors[colorIdx].photos, url],
+                    };
+                    return {
+                        ...current,
+                        detail_content: { ...newDetail, viewer_360: { ...newDetail.viewer_360, colors } },
+                    };
+                });
+                console.info(`[360] OK foto #${fileIdx + 1}/${total} "${file.name}"`);
+                return true;
+            } catch (err) {
+                const msg = err instanceof Error ? err.message : String(err);
+                console.warn(`[360] FALLO foto #${fileIdx + 1}/${total} "${file.name}": ${msg}`);
+                failures.push({ index: fileIdx + 1, name: file.name, reason: msg });
+                return false;
             }
-            return false;
         };
 
         for (let i = 0; i < rawFiles.length; i++) {
