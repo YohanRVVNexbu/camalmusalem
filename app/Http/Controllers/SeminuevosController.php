@@ -22,7 +22,11 @@ class SeminuevosController extends Controller
 
     public function index()
     {
-        $section = SiteSection::where('section', 'seminuevos_page')->first();
+        // El admin edita esta sección desde /admin/paginas/seminuevos
+        // (registrada en PageContentController::PAGE_SECTIONS['seminuevos']).
+        // Antes esto leía 'seminuevos_page' que no existía → el público nunca
+        // veía los cambios del admin.
+        $section = SiteSection::where('section', 'seminuevos_hero')->first();
 
         return Inertia::render('seminuevos', [
             'data'       => $section && $section->is_visible ? ($section->data ?? []) : null,

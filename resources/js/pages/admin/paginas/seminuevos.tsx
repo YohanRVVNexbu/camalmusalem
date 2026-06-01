@@ -42,8 +42,9 @@ export default function SeminuevosPage({ sections }: { sections: Record<string, 
                         onChangeDesktop={setDesktopFile}
                         onChangeMobile={setMobileFile}
                     />
-                    <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
-                    <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={3} />
+                    <TextField label="Título sobre el banner (opcional)" value={data.title ?? ''} onChange={(v) => set('title', v)} />
+                    <TextField label="Título de la sección (debajo del banner)" value={data.section_title ?? ''} onChange={(v) => set('section_title', v)} placeholder='Ej: Seminuevos certificados por Musalem' />
+                    <TextareaField label="Descripción (debajo del título)" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={3} />
                 </SectionCard>
             </div>
         </AdminLayout>

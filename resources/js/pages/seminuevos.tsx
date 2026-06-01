@@ -142,7 +142,13 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
             <div className="min-h-screen bg-[#EAEAF1]">
                 <Navbar variant="white" />
                 <div className="px-5 pt-25 pb-20 lg:px-15 lg:pt-15 lg:pb-50">
-                    <Hero />
+                    <Hero
+                        image={data?.banner_image}
+                        imageMobile={data?.banner_image_mobile}
+                        sectionTitle={data?.section_title}
+                        title={data?.title}
+                        description={data?.description}
+                    />
                     <Categories active={activeCategory} onChange={setActiveCategory} />
 
                     {/* Botones mobile: Filtros + Comparar */}
