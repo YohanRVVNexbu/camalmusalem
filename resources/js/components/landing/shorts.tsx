@@ -1,7 +1,85 @@
 import { useCallback, useEffect, useState } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
-import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { useInView } from '@/hooks/use-in-view';
+import { type ShortItem, detectPlatform, embedSrc, shortThumbnail } from '@/lib/video-embed';
+import { SOCIAL_NETWORKS } from '@/lib/social-networks';
+
+// Logo de plataforma derivado de la URL del short (no se sube manual).
+const PLATFORM_ICON = {
+    youtube: SOCIAL_NETWORKS.find((s) => s.key === 'youtube')!.Icon,
+    instagram: SOCIAL_NETWORKS.find((s) => s.key === 'instagram')!.Icon,
+    tiktok: SOCIAL_NETWORKS.find((s) => s.key === 'tiktok')!.Icon,
+};
+
+function PlatformLogo({ url, className }: { url: string; className?: string }) {
+    const platform = detectPlatform(url);
+    const Icon = platform in PLATFORM_ICON ? PLATFORM_ICON[platform as keyof typeof PLATFORM_ICON] : null;
+    if (!Icon) return null;
+    return (
+        <span className={`inline-flex text-white [&>svg]:h-full [&>svg]:w-full ${className ?? ''}`}>
+            <Icon />
+        </span>
+    );
+}
+
+// Modal que reproduce el short embebido al hacer click. Le da espacio al
+// video (en vez de meterlo dentro del card chico). Instagram se ve como su
+// tarjeta-post (IG controla ese layout); YouTube/TikTok en vertical 9:16.
+function ShortModal({ url, onClose }: { url: string; onClose: () => void }) {
+    const embed = embedSrc(url);
+    const platform = detectPlatform(url);
+
+    useEffect(() => {
+        const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
+        document.addEventListener('keydown', onKey);
+        const prev = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prev;
+        };
+    }, [onClose]);
+
+    if (!embed) return null;
+
+    return (
+        <div
+            className="fixed inset-0 z-100 flex items-center justify-center bg-black/80 p-4 animate-in fade-in"
+            onClick={onClose}
+        >
+            <button
+                onClick={onClose}
+                aria-label="Cerrar"
+                className="absolute right-4 top-4 z-10 flex size-11 cursor-pointer items-center justify-center rounded-full bg-white/15 backdrop-blur transition hover:bg-white/25"
+            >
+                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M6 6l12 12M18 6L6 18" stroke="white" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+            </button>
+            <div onClick={(e) => e.stopPropagation()}>
+                {platform === 'instagram' ? (
+                    <iframe
+                        src={embed}
+                        className="h-[88vh] max-h-175 w-[min(92vw,420px)] rounded-2xl border-0 bg-white"
+                        title="Instagram"
+                        allow="autoplay; encrypted-media; clipboard-write; picture-in-picture"
+                        allowFullScreen
+                    />
+                ) : (
+                    <div className="aspect-9/16 h-[88vh] max-h-200 w-auto overflow-hidden rounded-2xl bg-black">
+                        <iframe
+                            src={embed}
+                            className="h-full w-full border-0"
+                            title="Short"
+                            allow="autoplay; encrypted-media; picture-in-picture"
+                            allowFullScreen
+                        />
+                    </div>
+                )}
+            </div>
+        </div>
+    );
+}
 
 function ChevronIcon({ className }: { className?: string }) {
     return (
@@ -34,15 +112,8 @@ type ShortsData = {
     images: string[];
 };
 
-type YouTubeShort = {
-    id: string;
-    title: string;
-    thumbnail: string;
-    url: string;
-};
-
-export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: ShortsData; videos: YouTubeShort[]; variant?: 'dark' | 'light' }) {
-    const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+export function ShortsCarousel({ data, shorts, variant = 'dark' }: { data: ShortsData; shorts: ShortItem[]; variant?: 'dark' | 'light' }) {
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: 'start',
@@ -63,7 +134,7 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
     const onSelect = useCallback(() => {
         if (!emblaApi) return;
         setSelectedIndex(emblaApi.selectedScrollSnap());
-        setActiveVideoId(null);
+        setActiveIndex(null);
     }, [emblaApi]);
 
     useEffect(() => {
@@ -76,45 +147,38 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
         };
     }, [emblaApi, onSelect]);
 
-    const hasVideos = videos && videos.length > 0;
+    const hasShorts = shorts && shorts.length > 0;
 
     return (
         <div className="flex flex-col gap-10">
             <div className="overflow-hidden" ref={emblaRef}>
                 <div className="flex gap-5">
-                    {hasVideos
-                        ? videos.map((video) => {
-                              const isActive = activeVideoId === video.id;
+                    {hasShorts
+                        ? shorts.map((short, i) => {
+                              const embed = embedSrc(short.url);
+                              const thumb = shortThumbnail(short);
                               return (
                                   <button
-                                      key={video.id}
-                                      onClick={() => setActiveVideoId(isActive ? null : video.id)}
+                                      key={i}
+                                      onClick={() => {
+                                          if (embed) setActiveIndex(i);
+                                          else window.open(short.url, '_blank', 'noopener,noreferrer');
+                                      }}
                                       className="relative flex w-75 shrink-0 cursor-pointer flex-col items-end justify-end overflow-hidden rounded-[30px] pt-42.5 pr-[110.875px] pl-[17.5px] md:h-150.5 md:w-auto md:min-w-0 md:basis-[calc(25%-15px)] md:p-0"
                                       style={{
-                                          backgroundImage: isActive
-                                              ? 'none'
-                                              : `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${video.thumbnail})`,
+                                          backgroundImage: thumb
+                                              ? `linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2)), url(${thumb})`
+                                              : 'linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.2))',
                                           backgroundSize: 'cover',
                                           backgroundPosition: 'center',
                                           backgroundColor: '#000',
                                           gap: '257.75px',
                                       }}
                                   >
-                                      {isActive ? (
-                                          <iframe
-                                              src={`https://www.youtube.com/embed/${video.id}?autoplay=1&loop=1&playlist=${video.id}`}
-                                              className="absolute inset-0 h-full w-full"
-                                              allow="autoplay; encrypted-media"
-                                              allowFullScreen
-                                          />
-                                      ) : (
-                                          <>
-                                              <img src={data.logo} alt="YouTube Shorts" className="w-14 md:hidden" />
-                                              <div className="absolute inset-0 hidden items-center justify-center md:flex">
-                                                  <img src={data.logo} alt="YouTube Shorts" className="w-17" />
-                                              </div>
-                                          </>
-                                      )}
+                                      <PlatformLogo url={short.url} className="size-14 md:hidden" />
+                                      <div className="absolute inset-0 hidden items-center justify-center md:flex">
+                                          <PlatformLogo url={short.url} className="size-17" />
+                                      </div>
                                   </button>
                               );
                           })
@@ -175,12 +239,16 @@ export function ShortsCarousel({ data, videos, variant = 'dark' }: { data: Short
                     <ChevronIcon className={variant === 'light' ? 'text-black' : 'text-white'} />
                 </button>
             </div>
+
+            {activeIndex !== null && shorts[activeIndex] && (
+                <ShortModal url={shorts[activeIndex].url} onClose={() => setActiveIndex(null)} />
+            )}
         </div>
     );
 }
 
-export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShort[] }) {
-    const [activeVideoId, setActiveVideoId] = useState<string | null>(null);
+export function Shorts({ data, shorts }: { data: ShortsData; shorts: ShortItem[] }) {
+    const [activeIndex, setActiveIndex] = useState<number | null>(null);
 
     const [emblaRef, emblaApi] = useEmblaCarousel({
         align: 'start',
@@ -201,7 +269,7 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
     const onSelect = useCallback(() => {
         if (!emblaApi) return;
         setSelectedIndex(emblaApi.selectedScrollSnap());
-        setActiveVideoId(null);
+        setActiveIndex(null);
     }, [emblaApi]);
 
     useEffect(() => {
@@ -214,8 +282,8 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
         };
     }, [emblaApi, onSelect]);
 
-    // Usar videos de YouTube si hay, sino fallback a imágenes estáticas
-    const hasVideos = videos && videos.length > 0;
+    // Usar shorts cargados si hay, sino fallback a imágenes estáticas
+    const hasShorts = shorts && shorts.length > 0;
     const { ref: sectionRef, visible } = useInView(0.1);
 
     return (
@@ -240,59 +308,41 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
                         {data.description}
                     </p>
                 </div>
-                <a
-                    href={data.button_href}
-                    className="flex items-center gap-2.5 rounded-full bg-white p-1 transition hover:bg-white/90"
-                >
-                    <span className="pl-2.5 text-base leading-none text-black">
-                        {data.button_text}
-                    </span>
-                    <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black">
-                        <ArrowIcon className="text-white" />
-                    </span>
-                </a>
             </div>
 
             {/* Carousel */}
             <div className={`flex flex-col gap-10 transition-all duration-700 delay-200 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                 <div className="overflow-hidden" ref={emblaRef}>
                     <div className="flex gap-5">
-                        {hasVideos
-                            ? videos.map((video) => {
-                                  const isActive = activeVideoId === video.id;
+                        {hasShorts
+                            ? shorts.map((short, i) => {
+                                  const embed = embedSrc(short.url);
+                                  const thumb = shortThumbnail(short);
                                   return (
                                       <button
-                                          key={video.id}
-                                          onClick={() => setActiveVideoId(isActive ? null : video.id)}
+                                          key={i}
+                                          onClick={() => {
+                                              if (embed) setActiveIndex(i);
+                                              else window.open(short.url, '_blank', 'noopener,noreferrer');
+                                          }}
                                           className="relative shrink-0 cursor-pointer overflow-hidden rounded-[30px] w-75 h-125 md:h-150.5 md:min-w-0 md:basis-[calc(25%-15px)] md:w-auto"
                                           style={{
-                                              backgroundImage: isActive
-                                                  ? 'none'
-                                                  : `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${video.thumbnail})`,
+                                              backgroundImage: thumb
+                                                  ? `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), url(${thumb})`
+                                                  : 'linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%)',
                                               backgroundSize: 'cover',
                                               backgroundPosition: 'center',
                                               backgroundColor: '#000',
                                           }}
                                       >
-                                          {isActive ? (
-                                              <iframe
-                                                  src={`https://www.youtube.com/embed/${video.id}?autoplay=1&loop=1&playlist=${video.id}`}
-                                                  className="absolute inset-0 h-full w-full"
-                                                  allow="autoplay; encrypted-media"
-                                                  allowFullScreen
-                                              />
-                                          ) : (
-                                              <>
-                                                  {/* Mobile: logo bottom-right */}
-                                                  <div className="absolute inset-0 flex flex-col items-end justify-end p-[17.5px] md:hidden">
-                                                      <img src={data.logo} alt="YouTube Shorts" className="w-14" />
-                                                  </div>
-                                                  {/* Desktop: logo centered */}
-                                                  <div className="absolute inset-0 hidden items-center justify-center md:flex">
-                                                      <img src={data.logo} alt="YouTube Shorts" className="w-17" />
-                                                  </div>
-                                              </>
-                                          )}
+                                          {/* Mobile: logo bottom-right */}
+                                          <div className="absolute inset-0 flex flex-col items-end justify-end p-[17.5px] md:hidden">
+                                              <PlatformLogo url={short.url} className="size-14" />
+                                          </div>
+                                          {/* Desktop: logo centered */}
+                                          <div className="absolute inset-0 hidden items-center justify-center md:flex">
+                                              <PlatformLogo url={short.url} className="size-17" />
+                                          </div>
                                       </button>
                                   );
                               })
@@ -351,6 +401,10 @@ export function Shorts({ data, videos }: { data: ShortsData; videos: YouTubeShor
                     </button>
                 </div>
             </div>
+
+            {activeIndex !== null && shorts[activeIndex] && (
+                <ShortModal url={shorts[activeIndex].url} onClose={() => setActiveIndex(null)} />
+            )}
         </section>
     );
 }

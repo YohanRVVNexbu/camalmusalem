@@ -9,7 +9,10 @@ class VersionColor extends Model
 {
     protected $guarded = ['id'];
 
-    protected $casts = ['is_available' => 'boolean'];
+    protected $casts = [
+        'is_available' => 'boolean',
+        'photos_360'   => 'array',
+    ];
 
     public function version(): BelongsTo
     {

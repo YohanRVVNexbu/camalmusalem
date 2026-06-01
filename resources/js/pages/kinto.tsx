@@ -118,18 +118,23 @@ function SelectField({ label, placeholder, options, value, onChange, disabled, h
     );
 }
 
-export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos, rentals = [], branches = [] }: {
+export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos, kinto_formulario, rentals = [], branches = [] }: {
     footer: any | null;
     kinto_hero?: any | null;
     kinto_pasos?: any | null;
     kinto_vehiculos?: any | null;
+    kinto_formulario?: any | null;
     rentals?: Rental[];
     branches?: BranchLite[];
 }) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const heroData = kinto_hero ?? {};
+    const formData = kinto_formulario ?? {};
     const isMobile = useIsMobile();
     const heroImg = pickResponsiveImage(heroData.hero_image, heroData.hero_image_mobile, isMobile) || heroImgDefault;
+    const solicitarImg = pickResponsiveImage(formData.image, formData.image_mobile, isMobile) || formImg;
+    const step2ImgSrc = pickResponsiveImage(formData.step2_image, formData.step2_image_mobile, isMobile) || formStep2Img;
+    const step3ImgSrc = pickResponsiveImage(formData.step3_image, formData.step3_image_mobile, isMobile) || formStep3Img;
     const pasos = kinto_pasos?.pasos ?? DEFAULT_PASOS;
     const heroInView = useInView(0.1);
     const comoFuncionaInView = useInView(0.1);
@@ -453,27 +458,27 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                 <div className="order-2 flex flex-col items-start justify-center gap-5 lg:order-1 lg:gap-10">
                                     <h2
                                         className="text-[28px] font-semibold leading-[120%] text-black lg:text-[40px]"
-                                        style={{ fontFamily: '"Toyota Type"' }}
+                                        style={{ fontFamily: '"Toyota Type"', whiteSpace: 'pre-line' }}
                                     >
-                                        Solicita tu arriendo<br />Kinto en Musalem
+                                        {formData.title || "Solicita tu arriendo\nKinto en Musalem"}
                                     </h2>
                                     <p
                                         className="text-sm leading-[120%] text-black lg:w-115.5 lg:text-base"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
-                                        Conoce la opción de arriendo disponible a través de KINTO y déjanos tu solicitud para que un asesor de Musalem te contacte y te ayude a gestionar el proceso según sucursal, disponibilidad y fecha estimada.
+                                        {formData.description || 'Conoce la opción de arriendo disponible a través de KINTO y déjanos tu solicitud para que un asesor de Musalem te contacte y te ayude a gestionar el proceso según sucursal, disponibilidad y fecha estimada.'}
                                     </p>
                                     <button
                                         onClick={() => { setShowForm(true); setFormStep(1); }}
                                         className="w-full cursor-pointer rounded-[60px] border border-transparent bg-black px-8 py-4 text-base leading-none text-white transition-opacity hover:opacity-80 lg:w-auto lg:px-15 lg:py-4.75"
                                         style={{ fontFamily: '"Toyota Type"' }}
                                     >
-                                        Solicitar arriendo Kinto
+                                        {formData.button_text || 'Solicitar arriendo Kinto'}
                                     </button>
                                 </div>
                                 <img
-                                    src={formImg}
-                                    alt="Solicitar arriendo Kinto"
+                                    src={solicitarImg}
+                                    alt={formData.title || 'Solicitar arriendo Kinto'}
                                     className="order-1 h-65 w-full shrink-0 rounded-[30px] object-cover lg:order-2 lg:h-140 lg:w-140"
                                     style={{ objectPosition: 'center top' }}
                                 />
@@ -716,7 +721,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                         {/* Imagen izquierda */}
                                         <div className="aspect-square w-full shrink-0 overflow-hidden rounded-[30px] lg:h-140 lg:w-140">
                                             <img
-                                                src={formStep2Img}
+                                                src={step2ImgSrc}
                                                 alt="Datos de contacto"
                                                 className="w-full h-full object-cover"
                                             />
@@ -818,7 +823,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                         {/* Imagen izquierda */}
                                         <div className="aspect-square w-full shrink-0 overflow-hidden rounded-[30px] lg:h-140 lg:w-140">
                                             <img
-                                                src={formStep3Img}
+                                                src={step3ImgSrc}
                                                 alt="Confirmar solicitud"
                                                 className="w-full h-full object-cover"
                                             />

@@ -1,0 +1,482 @@
+{
+	"info": {
+		"_postman_id": "4e87e22a-5105-449d-8cde-8103c94ded89",
+		"name": "Musalem UAT La SERENA",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "23356376"
+	},
+	"item": [
+		{
+			"name": "Create Lead Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer ORp3FuV9nnoRX4g68neSQsC9fbBzjagF_yaqw25cZT3Sx6HFJzEwlV1v_OZt0_vuu3y0jbN84Rt8RsgDSesMiA"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"rut\": \"14359607-9\",\n    \"firstName\": \"Hebert\",\n    \"lastName\": \"Andrade\",\n    \"gender\": \"M\",\n    \"notContactMe\": false,\n    \"vehicle\": \"Vehículo de interés: Yaris\",\n    \"email\": \"h.andrade@gmail.com\",\n    \"phone\": \"+56 (9)8888 1111\",\n    \"source\": \"Whatsapp Dealer\",\n    \"ownerInformation\": {\n      \"rut\": \"18357494-9\",\n      \"nameSalesman\": \"Juanito Perez\"\n    }\n}\n"
+				},
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/0000100068/lead",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"0000100068",
+						"lead"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Opportunities Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer xXwuqboKtgDFX33fxJRxJ5dw-MavhwD67UqXkbFpOw3z8Zj4CdxOA0pI8t718g61-tHnwsfpihwNM0TgBrLGGw"
+					},
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "",
+						"value": ""
+					}
+				],
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/sales?sucursal=0000100068",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"sales"
+					],
+					"query": [
+						{
+							"key": "sucursal",
+							"value": "0000100068"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Token Authorization Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "grant_type",
+						"value": "CLIENT_CREDENTIALS"
+					},
+					{
+						"key": "scope",
+						"value": "DEALER"
+					},
+					{
+						"key": "",
+						"value": "",
+						"disabled": true
+					}
+				],
+				"url": {
+					"raw": "https://oauth-provider-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/v1/token",
+					"protocol": "https",
+					"host": [
+						"oauth-provider-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"v1",
+						"token"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Stock in Quote Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"disabled": true
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer "
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \t\"idStock\": \"0000911470\"\n}"
+				},
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/0000100068/quote/0Q0RK000000uZj30AE/update/stockassigned",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"0000100068",
+						"quote",
+						"0Q0RK000000uZj30AE",
+						"update",
+						"stockassigned"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Close Opportunity - Update Win Opp Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer "
+					},
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \t\"opportunityId\": \"006E100000NLpbmIAD\",\n  \t\"sucursal\": \"0000100068\",\n  \t\"statusOpportunity\": \"Entregado\",\n  \t\"stock\": \"0000861904\",\n  \t\"rut\": \"12980621-4\",\n  \t\"deliveredDate\":  \"2025-05-05\",\n  \t\"licensePlate\":  \"AAVB12\",\n  \t\"observations\": \"Esto es un observación de entrega\",\n\t\"creditInformation\": {\n    \t\"paymentType\": \"R9\",\n      \t\"observations\": \"Esto es una observacion del credito\",\n       \"paymentTerm\": 36,\n       \"financingAmount\": 31000000 \n  \t}\n\n}\n"
+				},
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/opportunity/invoice",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"opportunity",
+						"invoice"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Close Lost - Opportunity Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer "
+					},
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"opportunityId\": \"006DS00000KsZiAYAV\",\n  \"statusOpportunity\": \"Cerrada Perdida\",\n  \"sucursal\": \"0000100068\",\n  \"reasonStatus\": \"OPPERSF01\",\n  \"description\": \"Nota de credito: asdasd 1239\",\n  \"urlCreditNote\": \"http://notacredito.cl/venta/toyota\"\n\n}\n"
+				},
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/opportunity/invoice",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"opportunity",
+						"invoice"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Close Opportunity - Natural Person Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Authorization",
+						"value": "Bearer "
+					},
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"opportunityId\": \"006RM00000YaEXAYA3\",\n    \"statusOpportunity\": \"Facturada\",\n    \"opportunityInformation\": {\n        \"opportunityId\": \"006RM00000YaEXAYA3\",\n        \"sucursal\": \"0000100068\",\n        \"invoice\": {\n            \"buyingType\": \"Para\",\n            \"insurance\": {\n                \"insuranceCode\": \"\",\n                \"insuranceReason\": \"\",\n                \"creditCode\": \"\",\n                \"carPrevious\": false,\n                \"maintenance\": false\n            },\n            \"buyerRut\": \"15685263-5\",\n            \"invoiceUrl\": \"\",\n            \"sellerRut\": \"\",\n            \"userInformation\": {\n                \"personalPhone\": \"+56995054435\",\n                \"address\": \"PAPA ANASTASIO PRIMERO 2696 LA CANTERA\",\n                \"birthdate\": \"1983-11-04\",\n                \"secondSureName\": \"MUÑOZ\",\n                \"city\": \"Coquimbo\",\n                \"commune\": \"04102\",\n                \"sex\": \"Masculino\",\n                \"firstName\": \"MARCOS ANTONIO\",\n                \"commercialPhone\": \"\",\n                \"sureName\": \"MONTECINOS\",\n                \"email\": \"marco.montecinos9@gmail.com\",\n                \"cellPhone\": \"+56995054435\",\n                \"secondName\": \"\"\n            },\n            \"sellerName\": \"Adolfo Diaz Barraza\",\n            \"stock\": \"917665\",\n            \"userRut\": \"79528950-K\",\n            \"userFinal\": {\n                \"firstName\": \"VN\",\n                \"personalPhone\": \"+56995054435\",\n                \"address\": \"AVENIDA BALMACEDA 3681\",\n                \"birthdate\": \"1900-01-01\",\n                \"sureName\": \"\",\n                \"secondSureName\": \"\",\n                \"city\": \"La Serena\",\n                \"commune\": \"04101\",\n                \"commercialPhone\": \"\",\n                \"sex\": \"\",\n                \"email\": \"\",\n                \"cellPhone\": \"+56900000000\",\n                \"secondName\": \"\"\n            },\n            \"invoiceCode\": \"-\"\n        },\n        \"products\": [\n            {\n                \"oldMaterialNumber\": \"15MTGSLEY SEDAN\",\n                \"price\": 1609000000,\n                \"typeMaterial\": \"vehicle\",\n                \"currency\": \"CLP\"\n            }\n        ]\n    },\n    \"typePerson\": \"N\"\n}\n"
+				},
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/opportunity/invoice",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"opportunity",
+						"invoice"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Close Opportunity - Juridical Person Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer VpEkUES462nxv-uOIXmPCSbThQrFQUW-lOkBabOAQPyzIuPIGmnf9GKA4MSINaslCSavqHPRQ-tqdn88eFspcQ"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"opportunityId\": \"006RM00000Ok7GnYAJ\",\n    \"statusOpportunity\": \"Facturada\",\n    \"opportunityInformation\": {\n        \"opportunityId\": \"006RM00000Ok7GnYAJ\",\n        \"sucursal\": \"0000100068\",\n        \"invoice\": {\n            \"rut\": \"76681908-7\",\n            \"insurance\": {\n                \"insuranceCode\": \"\",\n                \"insuranceReason\": \"\",\n                \"creditCode\": \"\",\n                \"carPrevious\": false,\n                \"maintenance\": false\n            },\n            \"invoiceUrl\": \"\",\n            \"sellerRut\": \"\",\n            \"sellerName\": \"Adolfo Diaz Barraza\",\n            \"name\": \"DAVAROS INGENIERIA Y CONSTRUCCION LIMITADA\",\n            \"stock\": \"898534\",\n            \"userFinal\": {\n                \"rut\": \"76681908-7\",\n                \"firstName\": \"DAVAROS INGENIERIA Y CONSTRUCCION LIMITADA\",\n                \"address\": \"BALMACEDA 2885 300 308 \",\n                \"secondSureName\": \"\",\n\n                \"sureName\": \"\",\n                \"city\": \"PROVIDENCIA\",\n                \"commune\": \"13123\",\n                \"email\": \"\",\n\n                \"commercialPhone\": \"973324371\",\n                \"secondName\": \"\",\n                \"buyer\": \"77855\"\n            },\n            \"invoiceCode\": \"-\"\n        },\n        \"products\": [\n            {\n                \"oldMaterialNumber\": \"DX44MT24R-23PC\",\n                \"price\": 3551781000,\n                \"typeMaterial\": \"vehicle\",\n                \"currency\": \"CLP\"\n            }\n        ]\n    },\n    \"typePerson\": \"J\"\n}\n"
+				},
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/opportunity/invoice",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"opportunity",
+						"invoice"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Quote - Dealer Copy",
+			"protocolProfileBehavior": {
+				"followRedirects": false,
+				"followOriginalHttpMethod": false,
+				"followAuthorizationHeader": false
+			},
+			"request": {
+				"method": "PATCH",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					},
+					{
+						"key": "client_id",
+						"value": "986223326cb541f3ab21f506456d6695"
+					},
+					{
+						"key": "client_secret",
+						"value": "8cC2B8F2C9be41f9ACD3270D0Bfbd1d2"
+					},
+					{
+						"key": "Authorization",
+						"value": "Bearer Mv8CtO1H_F2fkr73BH5L3ubA3HxB7cTt52MyIVI9eaA7chHJzV-ymsiLmPG9sg9eHAzWZbR74WlS7fkYToSd8w"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n   \"client\":{\n      \"fullName\":\"Juan\",\n      \"email\":\"falso@falso.cl\",\n      \"rut\":\"28903761-6\",\n      \"phone\":\"+56 (9)999 888 888\",\n      \"originAccount\":\"Web concesionario\"\n   },\n   \"opportunity\":{\n      \"source\":\"Web concesionario\",\n      \"buyIntention\": \"ENTREGA INMEDIATA\"\n   },\n   \"quote\":{\n      \"name\":\"Cotizacion Maritano\",\n      \"paymentType\":\"Otros Creditos\",\n      \"description\":\"Cotizacion generada en sitio web Maritano\"\n   },\n   \"products\":[\n      {\n         \"version\":\"X20CVTGASSEG-01\",\n         \"price\":20000000,\n         \"typeMaterial\":\"vehicle\"\n      }\n   ]\n}"
+				},
+				"url": {
+					"raw": "https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers/100068/quote",
+					"protocol": "https",
+					"host": [
+						"dealer-exp-api-qas-eh5zuw",
+						"na8zri",
+						"usa-e1",
+						"cloudhub",
+						"io"
+					],
+					"path": [
+						"api",
+						"dealers",
+						"100068",
+						"quote"
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}

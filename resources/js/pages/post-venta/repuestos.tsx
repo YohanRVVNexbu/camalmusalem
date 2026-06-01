@@ -1,4 +1,4 @@
-import { Head, Link, router } from '@inertiajs/react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
 import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
@@ -31,10 +31,15 @@ const modelos = ['Hilux', 'Land Cruiser', 'Corolla', 'Yaris', 'RAV4', 'Fortuner'
 const marcas = ['Toyota', 'Lexus', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Nissan', 'Volkswagen', 'Mazda', 'Honda'];
 const sucursales = ['La Serena — Av. Francisco de Aguirre #070', 'Ovalle — Aristía #358'];
 
-export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { footer: any | null; repuestos_hero?: any | null; repuestos: Repuesto[] }) {
+export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, repuestos = [] }: { footer: any | null; repuestos_hero?: any | null; repuestos_seccion?: any | null; repuestos: Repuesto[] }) {
     const hero = repuestos_hero ?? {};
+    const seccion = repuestos_seccion ?? {};
+    const { horariosAtencion: horariosShared } = usePage<{ horariosAtencion?: { label: string; value: string }[] }>().props;
+    const horariosAtencion = horariosShared ?? [];
     const isMobile = useIsMobile();
     const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
+    const seccionImg = pickResponsiveImage(seccion.image, seccion.image_mobile, isMobile) || section2Img;
+    const seccionFormImg = pickResponsiveImage(seccion.form_image, seccion.form_image_mobile, isMobile) || section3Img;
     const [step, setStep] = useState<SolicitudStep>('default');
     const [visible, setVisible] = useState(true);
     const [formKey, setFormKey] = useState(0);
@@ -160,19 +165,15 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                     <div className="flex w-full flex-col items-start gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-0">
                         <h2
                             className="text-[28px] font-semibold leading-[120%] text-black lg:w-115.25 lg:text-[40px]"
-                            style={{ fontFamily: '"Toyota Type"' }}
+                            style={{ fontFamily: '"Toyota Type"', whiteSpace: 'pre-line' }}
                         >
-                            Repuestos
-                            <br />
-                            Camal Musalem
+                            {seccion.title || "Repuestos\nCamal Musalem"}
                         </h2>
                         <p
                             className="text-sm leading-[120%] text-black lg:w-130 lg:text-base"
                             style={{ fontFamily: '"Toyota Type"' }}
                         >
-                            Disponemos de repuestos, accesorios y equipamiento para mantener y
-                            mejorar su vehículo, con opciones en seguridad, conectividad, audio y
-                            soluciones certificadas para faenas industriales y mineras.
+                            {seccion.description || 'Disponemos de repuestos, accesorios y equipamiento para mantener y mejorar su vehículo, con opciones en seguridad, conectividad, audio y soluciones certificadas para faenas industriales y mineras.'}
                         </p>
                     </div>
 
@@ -279,33 +280,22 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                         <div
                             className="flex aspect-3/2 flex-1 flex-col items-start justify-end rounded-[30px] p-5 lg:aspect-auto lg:p-7.5"
                             style={{
-                                background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${section2Img}) lightgray 50% / cover no-repeat`,
+                                background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${seccionImg}) lightgray 50% / cover no-repeat`,
                                 minHeight: '0',
                             }}
                         />
                         <div className="flex flex-1 flex-col items-start gap-5 rounded-[30px] bg-[#EAEAF1] px-5 py-7.5 lg:h-120.75 lg:gap-10 lg:px-10 lg:py-15">
                             <h3
                                 className="text-2xl font-semibold leading-[120%] text-black lg:text-[32px]"
-                                style={{ fontFamily: '"Toyota Type"' }}
+                                style={{ fontFamily: '"Toyota Type"', whiteSpace: 'pre-line' }}
                             >
-                                Encargo
-                                <br />
-                                de repuestos
+                                {seccion.card_title || "Encargo\nde repuestos"}
                             </h3>
-                            <div className="self-stretch text-sm leading-[120%] text-black lg:text-base">
-                                Solicitamos el repuesto que necesites
-                                <br />
-                                <br />
-                                Si el repuesto no se encuentra disponible en nuestras dependencias,
-                                lo gestionamos directamente con las bodegas centrales de Toyota.
-                                El plazo de llegada es de 24 horas hábiles, con un abono mínimo del
-                                50% del valor del repuesto.
-                                También ofrecemos despacho a domicilio o a la oficina de transportes
-                                que el cliente indique.
+                            <div className="self-stretch text-sm leading-[120%] text-black whitespace-pre-line lg:text-base">
+                                {seccion.card_text || "Solicitamos el repuesto que necesites\n\nSi el repuesto no se encuentra disponible en nuestras dependencias, lo gestionamos directamente con las bodegas centrales de Toyota. El plazo de llegada es de 24 horas hábiles, con un abono mínimo del 50% del valor del repuesto.\nTambién ofrecemos despacho a domicilio o a la oficina de transportes que el cliente indique."}
                             </div>
                             <p className="text-xs leading-[120%] text-black">
-                                Pedidos después de las 16:00 horas se consideran para la solicitud del
-                                día siguiente.
+                                {seccion.card_subtext || 'Pedidos después de las 16:00 horas se consideran para la solicitud del día siguiente.'}
                             </p>
                         </div>
                     </div>
@@ -324,26 +314,23 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                     <div className="flex shrink-0 flex-col items-start justify-center gap-5 lg:gap-10">
                                         <h2
                                             className="text-[28px] font-semibold leading-[120%] text-black lg:text-[40px]"
-                                            style={{ fontFamily: '"Toyota Type"' }}
+                                            style={{ fontFamily: '"Toyota Type"', whiteSpace: 'pre-line' }}
                                         >
-                                            Solicitud de encargo
-                                            <br />
-                                            de repuestos
+                                            {seccion.form_title || "Solicitud de encargo\nde repuestos"}
                                         </h2>
                                         <p className="text-sm leading-[120%] text-black lg:w-130 lg:text-base">
-                                            Ahorra tiempo cotizando sus repuestos aquí mismo. Después de enviar el
-                                            formulario, nos pondremos en contacto para entregarle información.
+                                            {seccion.form_description || 'Ahorra tiempo cotizando sus repuestos aquí mismo. Después de enviar el formulario, nos pondremos en contacto para entregarle información.'}
                                         </p>
                                         <button
                                             onClick={() => goTo('form')}
                                             className="flex h-12 w-full cursor-pointer items-center justify-center gap-2.5 rounded-[60px] bg-black px-8 text-base leading-[120%] text-white lg:w-auto lg:px-5"
                                         >
-                                            Solicitar repuestos
+                                            {seccion.form_button_text || 'Solicitar repuestos'}
                                         </button>
                                     </div>
                                     <div
                                         className="relative flex aspect-square w-full shrink-0 flex-col items-start justify-end overflow-hidden rounded-[30px] p-3 lg:size-140 lg:aspect-auto lg:p-7.5"
-                                        style={{ background: `url(${section3Img}) center / cover no-repeat` }}
+                                        style={{ background: `url(${seccionFormImg}) center / cover no-repeat` }}
                                     >
                                         <div
                                             className="flex w-full flex-col gap-4 rounded-2xl p-5 lg:w-92.25"
@@ -355,14 +342,12 @@ export default function Repuestos({ footer, repuestos_hero, repuestos = [] }: { 
                                             <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                                 Horario de atención
                                             </span>
-                                            <div className="flex h-3.5 items-center justify-between self-stretch text-sm leading-none text-white">
-                                                <span>Lunes a Viernes</span>
-                                                <span>09:00 a 13:30 - 14:45 a 18:30</span>
-                                            </div>
-                                            <div className="flex h-3.5 items-center justify-between self-stretch text-sm leading-none text-white">
-                                                <span>Domingo</span>
-                                                <span>Cerrado</span>
-                                            </div>
+                                            {horariosAtencion.map((h, i) => (
+                                                <div key={i} className="flex items-center justify-between gap-3 self-stretch text-sm leading-none text-white">
+                                                    <span>{h.label}</span>
+                                                    <span className="text-right">{h.value}</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>

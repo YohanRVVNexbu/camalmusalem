@@ -11,7 +11,7 @@ import { formatCLP } from '@/lib/format';
 import AdminLayout from '@/layouts/admin-layout';
 
 type Repuesto = {
-    id?: number; name: string; sku: string | null; description: string | null;
+    id?: number; name: string; sku: string | null; description: string | null; comentarios: string | null;
     price: string | null; category: string; images: string[];
     stock_la_serena: boolean; stock_ovalle: boolean; is_visible: boolean; order: number;
 };
@@ -21,7 +21,7 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
     const isEdit = !!repuesto?.id;
 
     const [data, setData] = useState<Repuesto>(repuesto ?? {
-        name: '', sku: null, description: null, price: null, category: 'General',
+        name: '', sku: null, description: null, comentarios: null, price: null, category: 'General',
         images: [], stock_la_serena: true, stock_ovalle: true, is_visible: true, order: 0,
     });
     const [newImages, setNewImages] = useState<File[]>([]);
@@ -35,6 +35,7 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
         formData.append('name', data.name);
         formData.append('sku', data.sku ?? '');
         formData.append('description', data.description ?? '');
+        formData.append('comentarios', data.comentarios ?? '');
         formData.append('price', data.price ?? '');
         formData.append('category', data.category);
         formData.append('stock_la_serena', data.stock_la_serena ? '1' : '0');
@@ -98,6 +99,10 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
                         <div className="grid gap-2 col-span-4">
                             <Label>Descripción</Label>
                             <Textarea value={data.description ?? ''} onChange={(e) => setData({ ...data, description: e.target.value })} rows={4} />
+                        </div>
+                        <div className="grid gap-2 col-span-4">
+                            <Label>Comentarios <span className="text-muted-foreground text-xs">(nota manual; aparece en la ficha del producto)</span></Label>
+                            <Textarea value={data.comentarios ?? ''} onChange={(e) => setData({ ...data, comentarios: e.target.value })} rows={3} placeholder="Ej: Disponible solo por encargo, consultar tiempos de entrega…" />
                         </div>
                     </div>
                     <div className="flex gap-6">

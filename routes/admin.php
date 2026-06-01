@@ -14,6 +14,7 @@ use App\Http\Controllers\Admin\ComplianceController as AdminComplianceController
 use App\Http\Controllers\Admin\ContactoController;
 use App\Http\Controllers\Admin\CotizacionAccesorioController;
 use App\Http\Controllers\Admin\CotizacionRepuestoController;
+use App\Http\Controllers\Admin\CrossReferenceImportController;
 use App\Http\Controllers\Admin\CotizacionVehiculoController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\KintoSolicitudController;
@@ -39,6 +40,11 @@ Route::middleware('guest')->group(function () {
 Route::middleware('admin')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('admin.logout');
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Subida de imágenes vía Base64 (JSON) — esquiva el falso positivo 403
+    // de ModSecurity (path-traversal) que afecta a los uploads multipart.
+    Route::post('upload-image', [\App\Http\Controllers\Admin\ImageUploadController::class, 'store'])
+        ->name('admin.upload-image');
 
     // Página de inicio
     Route::get('home', [HomeContentController::class, 'index'])->name('admin.home');
@@ -88,6 +94,16 @@ Route::middleware('admin')->group(function () {
         ->parameters(['vehicle-models' => 'vehicleModel'])
         ->names('admin.vehicle-models');
 
+    // Subida UNITARIA de fotos del visor 360 (una foto por request) para
+    // evitar el límite MaxReqBodySize del LiteSpeed con batches grandes.
+    Route::post('vehicle-models/{vehicleModel}/photos-360', [VehicleModelController::class, 'uploadPhoto360'])
+        ->name('admin.vehicle-models.photos-360.upload');
+
+    // Subida UNITARIA de media (video o imagen) de la sección Multimedia.
+    // Mismo patrón que photos-360: archivo por request, devuelve la URL.
+    Route::post('vehicle-models/{vehicleModel}/media', [VehicleModelController::class, 'uploadMedia'])
+        ->name('admin.vehicle-models.media.upload');
+
     // Arriendos KINTO
     Route::resource('rentals', RentalController::class)
         ->except(['show'])
@@ -101,10 +117,23 @@ Route::middleware('admin')->group(function () {
     Route::get('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImport'])->name('admin.vehicle-versions.bulk-import');
     Route::post('vehicle-versions/bulk-import/preview', [VehicleVersionController::class, 'bulkImportPreview'])->name('admin.vehicle-versions.bulk-import.preview');
     Route::post('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImportStore'])->name('admin.vehicle-versions.bulk-import.store');
+    // Subida UNITARIA de fotos del visor 360 por versión (una por request),
+    // mismo patrón que el de modelos para esquivar el MaxReqBodySize de LSWS.
+    Route::post('vehicle-versions/{vehicleVersion}/photos-360', [VehicleVersionController::class, 'uploadPhoto360'])
+        ->name('admin.vehicle-versions.photos-360.upload');
+    // Subida de media (imagen o video) de la sección Multimedia por versión.
+    Route::post('vehicle-versions/{vehicleVersion}/media', [VehicleVersionController::class, 'uploadMedia'])
+        ->name('admin.vehicle-versions.media.upload');
+    // Replicar los colores (con fotos 360) de esta versión a otras del mismo modelo.
+    Route::post('vehicle-versions/{vehicleVersion}/replicate-colors', [VehicleVersionController::class, 'replicateColors'])
+        ->name('admin.vehicle-versions.replicate-colors');
     Route::resource('vehicle-versions', VehicleVersionController::class)
         ->except(['show'])
         ->parameters(['vehicle-versions' => 'vehicleVersion'])
         ->names('admin.vehicle-versions');
+
+    // Sincronización de precios desde el Cross Reference de Toyota (pestaña "Data")
+    Route::post('cross-reference/import', [CrossReferenceImportController::class, 'store'])->name('admin.cross-reference.import');
 
     // Repuestos
     Route::post('repuestos/import', [RepuestoController::class, 'import'])->name('admin.repuestos.import');

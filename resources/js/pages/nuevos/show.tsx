@@ -5,17 +5,10 @@ import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { formatCLP } from '@/lib/format';
 import { ShortsCarousel } from '@/components/landing/shorts';
-import { Modal360, frames360 } from '@/components/nuevos/modal-360';
+import { Modal360 } from '@/components/nuevos/modal-360';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
 
-import destacado1 from '@images/nuevos/detalle/destacado_1.png?format=webp';
-import destacado2 from '@images/nuevos/detalle/destacado_2.png?format=webp';
-import destacado3 from '@images/nuevos/detalle/destacado_3.png?format=webp';
-import destacado4 from '@images/nuevos/detalle/destacado_4.png?format=webp';
-import bz4xVideo from '@images/nuevos/detalle/bz4x_video.mp4';
-import galeria1 from '@images/nuevos/detalle/galeria_1.png?format=webp';
-import galeria2 from '@images/nuevos/detalle/galeria_2.png?format=webp';
 import heroDetail from '@images/nuevos/detalle/hero_detail.png?format=webp';
 import logoCard1 from '@images/nuevos/logo_card_1.png?format=webp';
 
@@ -195,30 +188,27 @@ const VERSION_TABS: { key: VersionTab; label: string }[] = [
     { key: 'rendimiento', label: 'Rendimiento' },
 ];
 
-const highlights = [
-    {
-        image: destacado1,
-        title: 'Diseño SUV 100% eléctrico',
-        subtitle: 'Toyota bZ4X: estilo SUV y 200 mm de altura al suelo, con maletero de 452 L para tu día a día. Un 100% eléctrico listo para ciudad y escapadas.',
-    },
-    {
-        image: destacado2,
-        title: 'Tecnología intuitiva que se siente familiar',
-        subtitle: 'Aunque es 100% eléctrico, el bZ4X conserva esa experiencia funcional y cercana que distingue a Toyota. Su tecnología está diseñada para simplificar cada trayecto, con pantallas claras, comandos accesibles y botones físicos para las funciones principales, para que todo sea rápido, preciso y familiar.',
-    },
-    {
-        image: destacado3,
-        title: 'Cargador',
-        subtitle: 'Incluye cargador de viaje/emergencia. Incluye cable tipo 2. Incluye wallbox con instalación domiciliaria de 7.4KW* *Sujeto a factibilidad técnica.',
-    },
-    {
-        image: destacado4,
-        title: 'Apertura con manos libres',
-        subtitle: 'El bZ4X facilita cada carga gracias a su Kick Sensor, que permite abrir el portalón trasero con un simple movimiento del pie bajo el parachoques. Una función práctica y cómoda para esos momentos en que llevas las manos ocupadas, haciendo cada uso del maletero más fácil y fluido.',
-    },
-];
-
 type HighlightSlide = { image: string; title: string; subtitle: string };
+type MediaItem = { type: 'image' | 'video' | 'youtube'; url: string };
+
+// Extrae el ID de video de una URL de YouTube (watch, youtu.be, shorts, embed).
+function youtubeId(url: string): string | null {
+    const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
+    return m ? m[1] : null;
+}
+
+// URL de embed para el <iframe>. Null si no se reconoce el ID.
+function youtubeEmbedUrl(url: string): string | null {
+    const id = youtubeId(url);
+    return id ? `https://www.youtube.com/embed/${id}` : null;
+}
+
+// Miniatura del video de YouTube (la sirve YouTube en img.youtube.com).
+// hqdefault siempre existe (a diferencia de maxresdefault). Null si no hay ID.
+function youtubeThumb(url: string): string | null {
+    const id = youtubeId(url);
+    return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
+}
 
 function HighlightsCarousel({ slides }: { slides: HighlightSlide[] }) {
     const { ref: animRef, visible } = useInView(0.1);
@@ -497,8 +487,13 @@ function VersionsSection({
     return (
         <div ref={sectionRef} className="bg-[#EAEAF1] lg:-mt-15">
 
+            {/* Título de la sección de versiones */}
+            <h2 className="px-5 pt-12 text-center text-2xl leading-[120%] text-black lg:px-15 lg:pt-24 lg:text-[32px] lg:leading-none">
+                Elige tu versión
+            </h2>
+
             {/* ── Mobile: horizontal card carousel ── */}
-            <div className="flex w-full flex-col items-center gap-5 py-10 lg:hidden">
+            <div className="flex w-full flex-col items-center gap-5 pt-6 pb-10 lg:hidden">
                 <div
                     className="w-full touch-pan-y overflow-hidden"
                     onPointerDown={handleCarouselPointerDown}
@@ -635,9 +630,12 @@ function VersionsSection({
                 )}
             </div>
 
-            {/* ── Desktop: multi-card grid ── */}
-            <div className="hidden items-center justify-center bg-[#EAEAF1] lg:flex" style={{ padding: '80px 60px' }}>
-                <div className="flex gap-5">
+            {/* ── Desktop: multi-card grid (pt reducido: el heading ya da aire arriba) ── */}
+            {/* El contenedor interno tiene overflow-x-auto + max-w-full: con
+                pocas versiones queda centrado (sized al contenido), con muchas
+                (ej. Hilux con 11) hace scroll horizontal en vez de desbordar. */}
+            <div className="hidden justify-center bg-[#EAEAF1] lg:flex" style={{ padding: '40px 60px 80px' }}>
+                <div className="flex max-w-full snap-x gap-5 overflow-x-auto pb-4" style={{ scrollbarWidth: 'thin' }}>
                     {versions.map((ver, i) => {
                         const isSelected = selectedVersion === i;
                         const rows = getTabRows(ver);
@@ -645,7 +643,7 @@ function VersionsSection({
                             <div
                                 key={ver.name}
                                 onClick={() => setSelectedVersion(i)}
-                                className={`flex w-115 cursor-pointer flex-col rounded-[20px] bg-white px-5 pt-10 pb-10 text-left transition-all duration-700 ease-out ${
+                                className={`flex w-115 shrink-0 snap-start cursor-pointer flex-col rounded-[20px] bg-white px-5 pt-10 pb-10 text-left transition-all duration-700 ease-out ${
                                     isSelected
                                         ? 'border-2 border-black shadow-[2px_2px_10px_0_rgba(0,0,0,0.15)]'
                                         : 'border-2 border-transparent'
@@ -767,14 +765,15 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
     const [frameIndex, setFrameIndex] = useState(0);
     const [selectedColor, setSelectedColor] = useState(0);
     const [selectedMedia, setSelectedMedia] = useState(0);
-    const galeriaItems = [bz4xVideo, galeria1, galeria2, galeria1, galeria2];
     const [isDragging, setIsDragging] = useState(false);
     const dragStartX = useRef(0);
     const dragStartFrame = useRef(0);
 
     const vehicle: any = vehicleProp ?? vehicleData;
 
-    // Fuentes dinámicas del detail_content (con fallback a los valores legacy)
+    // Fuentes dinámicas del detail_content. SIN fallback al ejemplo BZ4X:
+    // si el vehículo no tiene highlights/360 propios, mostramos vacío en vez
+    // de data de otro auto (era confuso ver siempre el bZ4X hardcodeado).
     const detail = (vehicle as any).detail_content ?? {};
     const dynamicHighlights: HighlightSlide[] = (detail.highlights ?? []).length > 0
         ? detail.highlights.map((h: any) => ({
@@ -782,22 +781,38 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
             title: h.title ?? '',
             subtitle: h.text ?? '',
         }))
-        : highlights;
+        : [];
 
+    // El 360 ahora es por VERSIÓN: cada versión trae sus colores con fotos
+    // (colors_360 desde el backend). El visor depende de selectedVersion +
+    // selectedColor. Antes era a nivel modelo (detail.viewer_360.colors).
     const dynamicColors: { name: string; hex: string | null; photos: string[] }[] =
-        (detail.viewer_360?.colors ?? []).length > 0
-            ? detail.viewer_360.colors
-            : [];
-    const dynamicFrames = dynamicColors[selectedColor]?.photos?.length >= 2
-        ? dynamicColors[selectedColor].photos
-        : frames360;
+        (vehicle.versions?.[selectedVersion]?.colors_360 ?? []) as { name: string; hex: string | null; photos: string[] }[];
+    // Solo hay visor 360 real si el color seleccionado tiene ≥2 fotos
+    // (1 sola no permite rotar).
+    const has360Frames = (dynamicColors[selectedColor]?.photos?.length ?? 0) >= 2;
+    const dynamicFrames = has360Frames ? dynamicColors[selectedColor].photos : [];
 
     const dynamicTextBlocks: { key: string; title: string; text: string }[] =
         detail.viewer_360?.text_blocks ?? [];
 
+    // Título de la sección 360, editable por vehículo desde el admin. Si está
+    // vacío cae al nombre del modelo (antes era el eslogan eléctrico fijo).
+    const section360Title: string = (detail.viewer_360?.heading || '').trim() || vehicle.name;
+
+    // Multimedia ahora es por VERSIÓN: lista mixta [{type, url}] con
+    // type image | video (archivo) | youtube. Sin nada → sección oculta.
+    const mediaItems = ((vehicle.versions?.[selectedVersion]?.multimedia ?? []) as MediaItem[])
+        .filter((m) => m && m.url);
+    const hasMultimedia = mediaItems.length > 0;
+
     const heroDescription: string = rentalContext?.description || detail.hero?.description || vehicle.description || 'Descubre las características únicas de este vehículo Toyota.';
     const showElectricBadge: boolean = !!(vehicle.versions ?? []).find((v: any) => v.electric);
-    const heroBgImage: string = vehicle.hero_image || heroDetail;
+    // El hero del detalle usa `detail_hero_image` (foto escenográfica
+    // panorámica) si el admin la subió. Si está vacío, cae al
+    // `hero_image` (la foto del card del listado) como fallback, y
+    // luego al fallback estático del bundle.
+    const heroBgImage: string = vehicle.detail_hero_image || vehicle.hero_image || heroDetail;
 
     // Rental context overrides ─────────────────────────────────────────────
     // When the visitor lands here via the KINTO flow, we swap the "Desde"
@@ -838,6 +853,23 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
     const ctaBanner = useInView(0.15);
     const branches = useInView(0.1);
 
+    // Al cambiar de versión, reseteamos color y frame: cada versión tiene su
+    // propio set de colores/fotos 360, así que el índice anterior podría
+    // quedar fuera de rango (versión A con 3 colores → versión B con 1).
+    useEffect(() => {
+        setSelectedColor(0);
+        setFrameIndex(0);
+        setSelectedMedia(0);
+    }, [selectedVersion]);
+
+    // Centra el thumbnail seleccionado en la tira de multimedia cuando se
+    // navega con las flechas (la tira scrollea horizontalmente).
+    const thumbsRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const el = thumbsRef.current?.children[selectedMedia] as HTMLElement | undefined;
+        el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    }, [selectedMedia]);
+
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
         setIsDragging(true);
         dragStartX.current = e.clientX;
@@ -846,14 +878,14 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
     }, [frameIndex]);
 
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDragging) return;
+        if (!isDragging || dynamicFrames.length === 0) return;
         const dx = e.clientX - dragStartX.current;
         const sensitivity = 30;
         const frameDelta = Math.round(dx / sensitivity);
         let newIndex = (dragStartFrame.current + frameDelta) % dynamicFrames.length;
         if (newIndex < 0) newIndex += dynamicFrames.length;
         setFrameIndex(newIndex);
-    }, [isDragging]);
+    }, [isDragging, dynamicFrames.length]);
 
     const handlePointerUp = useCallback(() => {
         setIsDragging(false);
@@ -970,9 +1002,11 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     <div
                         className="relative hidden flex-col justify-between lg:flex"
                         style={{
-                            background: `linear-gradient(270deg, rgba(0, 0, 0, 0.00) 60.73%, rgba(0, 0, 0, 0.40) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.00) 60.06%, rgba(0, 0, 0, 0.50) 94.55%), url(${heroBgImage}) center / cover no-repeat`,
+                            background: `linear-gradient(270deg, rgba(0, 0, 0, 0.00) 60.73%, rgba(0, 0, 0, 0.40) 100%), linear-gradient(180deg, rgba(0, 0, 0, 0.00) 60.06%, rgba(0, 0, 0, 0.50) 94.55%), url(${heroBgImage}) center bottom / cover no-repeat`,
                             padding: '0 65px 83px 65px',
-                            height: '920px',
+                            height: '80vh',
+                            minHeight: '620px',
+                            maxHeight: '920px',
                         }}
                     >
                         {/* Left content */}
@@ -1061,11 +1095,14 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     }}
                 >
                     <h2 className={`text-center text-2xl leading-[120%] text-black lg:text-[32px] lg:leading-none transition-all duration-700 ease-out ${section360.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                        {vehicle.name}, más que un eléctrico, un eléctrico Toyota.
+                        {section360Title}
                     </h2>
 
-                    {/* Version tabs: vertical stack on mobile, horizontal on desktop */}
-                    <div className="flex w-full flex-col items-stretch gap-2.5 lg:w-auto lg:flex-row lg:items-center">
+                    {/* Version tabs: ahora SÍ controlan el visor 360 (cada versión
+                        tiene su propio set de colores/fotos). flex-wrap para que
+                        con muchas versiones (ej. Hilux 11) envuelvan en varias
+                        filas centradas en vez de amontonarse. */}
+                    <div className="flex w-full flex-col items-stretch gap-2.5 lg:w-auto lg:max-w-4xl lg:flex-row lg:flex-wrap lg:items-center lg:justify-center">
                         {vehicle.versions.map((ver, i) => (
                             <button
                                 key={ver.name}
@@ -1095,22 +1132,36 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                         </svg>
                     </div>
 
-                    {/* 360 viewer */}
-                    <div
-                        className={`relative -mt-5 touch-none select-none transition-all duration-700 delay-200 ease-out lg:mt-0 ${section360.visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
-                        style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
-                        onPointerDown={handlePointerDown}
-                        onPointerMove={handlePointerMove}
-                        onPointerUp={handlePointerUp}
-                        onPointerCancel={handlePointerUp}
-                    >
-                        <img
-                            src={dynamicFrames[frameIndex % dynamicFrames.length]}
-                            alt={`${vehicle.name} 360° vista`}
-                            className="pointer-events-none h-auto w-full max-w-175 object-contain"
-                            draggable={false}
-                        />
-                    </div>
+                    {/* 360 viewer — o estado vacío si no hay fotos 360 cargadas */}
+                    {has360Frames ? (
+                        <div
+                            className={`relative -mt-5 touch-none select-none transition-all duration-700 delay-200 ease-out lg:mt-0 ${section360.visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}
+                            style={{ cursor: isDragging ? 'grabbing' : 'grab' }}
+                            onPointerDown={handlePointerDown}
+                            onPointerMove={handlePointerMove}
+                            onPointerUp={handlePointerUp}
+                            onPointerCancel={handlePointerUp}
+                        >
+                            <img
+                                src={dynamicFrames[frameIndex % dynamicFrames.length]}
+                                alt={`${vehicle.name} 360° vista`}
+                                className="pointer-events-none h-auto w-full max-w-175 object-contain"
+                                draggable={false}
+                            />
+                            <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs leading-none text-white backdrop-blur-[6px]">
+                                Imagen Referencial
+                            </span>
+                        </div>
+                    ) : (
+                        <div className={`flex min-h-50 w-full max-w-175 flex-col items-center justify-center gap-3 rounded-[20px] border border-dashed border-black/15 bg-white/40 px-5 py-16 transition-all duration-700 delay-200 ease-out ${section360.visible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-black/30">
+                                <path d="M3 16.5L9 10.5L13 14.5L16 11.5L21 16.5M3 4.5H21V19.5H3V4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                            <p className="text-center text-base leading-[140%] text-black/60">
+                                Este vehículo no posee imágenes 360° por el momento.
+                            </p>
+                        </div>
+                    )}
 
                     {/* Specs + colors */}
                     <div className={`flex w-full flex-col items-center gap-10 p-2.5 transition-all duration-700 delay-400 ease-out lg:flex-row lg:items-start lg:gap-15 ${section360.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
@@ -1173,34 +1224,46 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                 {/* Aspectos destacados */}
                 <HighlightsCarousel slides={dynamicHighlights} />
 
-                {/* Multimedia */}
+                {/* Multimedia — solo si el vehículo tiene video o imágenes cargadas */}
+                {hasMultimedia && (
                 <div
                     ref={multimedia.ref}
                     className="flex flex-col items-center gap-7.5 rounded-b-[30px] bg-[#EAEAF1] px-5 py-15 lg:gap-10 lg:px-15 lg:pt-15 lg:pb-30"
                 >
                     <h2 className={`text-2xl leading-[120%] text-black lg:text-[32px] lg:leading-none transition-all duration-700 ease-out ${multimedia.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>Multimedia</h2>
-                    <div className={`flex w-full flex-col gap-5 transition-all duration-700 delay-200 ease-out ${multimedia.visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                        {/* Main media */}
-                        {selectedMedia === 0 ? (
+                    <div className={`flex w-full flex-col gap-5 lg:mx-auto lg:max-w-5xl transition-all duration-700 delay-200 ease-out ${multimedia.visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                        {/* Main media — según el tipo del item seleccionado */}
+                        {mediaItems[selectedMedia]?.type === 'youtube' ? (
+                            <div className="aspect-video w-full overflow-hidden rounded-[20px] lg:aspect-auto lg:h-125 lg:rounded-[30px]">
+                                <iframe
+                                    key={mediaItems[selectedMedia].url}
+                                    src={youtubeEmbedUrl(mediaItems[selectedMedia].url) ?? mediaItems[selectedMedia].url}
+                                    className="h-full w-full"
+                                    title={`${vehicle.name} video`}
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                    allowFullScreen
+                                />
+                            </div>
+                        ) : mediaItems[selectedMedia]?.type === 'video' ? (
                             <video
-                                key="main-video"
-                                className="aspect-video w-full rounded-[20px] object-cover lg:aspect-auto lg:h-185.5 lg:rounded-[30px]"
+                                key={mediaItems[selectedMedia].url}
+                                src={mediaItems[selectedMedia].url}
+                                className="aspect-video w-full rounded-[20px] object-cover lg:aspect-auto lg:h-125 lg:rounded-[30px]"
                                 controls
                                 playsInline
-                            >
-                                <source src={bz4xVideo} type="video/mp4" />
-                            </video>
+                            />
                         ) : (
                             <div
-                                className="aspect-video w-full rounded-[20px] lg:aspect-auto lg:h-185.5 lg:rounded-[30px]"
-                                style={{ background: `url(${galeriaItems[selectedMedia]}) lightgray 50% / cover no-repeat` }}
+                                className="aspect-video w-full rounded-[20px] lg:aspect-auto lg:h-125 lg:rounded-[30px]"
+                                style={{ background: `url(${mediaItems[selectedMedia]?.url}) lightgray 50% / cover no-repeat` }}
                             />
                         )}
 
                         {/* Gallery thumbnails — horizontal scroll on mobile, fixed grid on desktop */}
+                        {mediaItems.length > 1 && (
                         <div className="flex items-center gap-5">
                             <button
-                                onClick={() => setSelectedMedia((prev) => (prev === 0 ? galeriaItems.length - 1 : prev - 1))}
+                                onClick={() => setSelectedMedia((prev) => (prev === 0 ? mediaItems.length - 1 : prev - 1))}
                                 className="hidden size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black/60 transition hover:bg-black/80 lg:flex"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 8 13" fill="none">
@@ -1208,30 +1271,51 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                                 </svg>
                             </button>
                             <div
-                                className="-mx-5 flex flex-1 gap-2.5 overflow-x-auto px-5 pb-1 lg:mx-0 lg:gap-5 lg:overflow-visible lg:p-0"
+                                ref={thumbsRef}
+                                className="-mx-5 flex min-w-0 flex-1 gap-2.5 overflow-x-auto px-5 pb-1 lg:mx-0 lg:gap-5 lg:px-0"
                                 style={{ scrollbarWidth: 'none' }}
                             >
-                                {galeriaItems.map((item, i) => (
+                                {mediaItems.map((item, i) => (
                                     <button
                                         key={i}
                                         onClick={() => setSelectedMedia(i)}
-                                        className={`relative aspect-3/2 h-25 shrink-0 cursor-pointer overflow-hidden rounded-xl transition-all duration-200 lg:h-40 lg:flex-1 lg:rounded-[20px] ${
+                                        className={`relative aspect-3/2 h-25 shrink-0 cursor-pointer overflow-hidden rounded-xl transition-all duration-200 lg:h-32 lg:rounded-[20px] ${
                                             selectedMedia === i ? 'ring-2 ring-black' : 'opacity-60 hover:opacity-100'
                                         }`}
-                                        style={i === 0 ? { background: '#000' } : { background: `url(${item}) lightgray 50% / cover no-repeat` }}
+                                        style={item.type === 'image'
+                                            ? { background: `url(${item.url}) lightgray 50% / cover no-repeat` }
+                                            : item.type === 'youtube' && youtubeThumb(item.url)
+                                                ? { background: `url(${youtubeThumb(item.url)}) #000 50% / cover no-repeat` }
+                                                : { background: '#000' }}
                                     >
-                                        {i === 0 && (
-                                            <div className="flex size-full items-center justify-center">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="white">
-                                                    <path d="M8 5v14l11-7z"/>
-                                                </svg>
+                                        {/* Video subido: mostramos un frame real como miniatura.
+                                            #t=0.5 hace que el browser cargue el frame a los 0.5s
+                                            (evita el frame negro inicial). preload=metadata: no
+                                            descarga el video entero, solo lo necesario para el frame. */}
+                                        {item.type === 'video' && (
+                                            <video
+                                                src={`${item.url}#t=0.5`}
+                                                muted
+                                                playsInline
+                                                preload="metadata"
+                                                className="absolute inset-0 size-full object-cover"
+                                            />
+                                        )}
+                                        {/* Ícono play sobre la miniatura (video subido y YouTube) */}
+                                        {item.type !== 'image' && (
+                                            <div className="relative flex size-full items-center justify-center">
+                                                <span className="flex size-8 items-center justify-center rounded-full bg-black/40 backdrop-blur-sm">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="white">
+                                                        <path d="M8 5v14l11-7z"/>
+                                                    </svg>
+                                                </span>
                                             </div>
                                         )}
                                     </button>
                                 ))}
                             </div>
                             <button
-                                onClick={() => setSelectedMedia((prev) => (prev === galeriaItems.length - 1 ? 0 : prev + 1))}
+                                onClick={() => setSelectedMedia((prev) => (prev === mediaItems.length - 1 ? 0 : prev + 1))}
                                 className="hidden size-10 shrink-0 cursor-pointer items-center justify-center rounded-full bg-black/60 transition hover:bg-black/80 lg:flex"
                             >
                                 <svg xmlns="http://www.w3.org/2000/svg" width="8" height="13" viewBox="0 0 8 13" fill="none">
@@ -1239,15 +1323,19 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                                 </svg>
                             </button>
                         </div>
+                        )}
                     </div>
                 </div>
+                )}
 
-                {/* Shorts */}
-                {shorts && (
+                {/* Shorts ESPECÍFICOS de este vehículo. Se muestra solo si el
+                    modelo tiene shorts cargados y existe la config de la sección
+                    (label/logo) en site_sections. */}
+                {shorts && (vehicle.shorts?.length ?? 0) > 0 && (
                     <section ref={shortsSection.ref} className="flex w-full flex-col items-center gap-7.5 bg-[#EAEAF1] px-5 pt-15 pb-15 lg:gap-10 lg:px-15 lg:pb-25">
                         <h2 className={`text-center text-2xl leading-[120%] text-black lg:text-[32px] lg:leading-none transition-all duration-700 ease-out ${shortsSection.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>Shorts y reviews</h2>
                         <div className={`w-full transition-all duration-700 delay-200 ease-out ${shortsSection.visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-                            <ShortsCarousel data={shorts} videos={youtubeShorts || []} variant="light" />
+                            <ShortsCarousel data={shorts} shorts={vehicle.shorts ?? []} variant="light" />
                         </div>
                     </section>
                 )}

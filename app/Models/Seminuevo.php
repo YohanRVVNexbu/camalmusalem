@@ -8,10 +8,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Seminuevo extends Model
 {
     protected $fillable = [
-        'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'down_payment',
+        'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'price_offer', 'down_payment',
         'fuel', 'transmission', 'traction', 'doors', 'seats',
         'color', 'description', 'gallery', 'featured_gallery', 'specs',
-        'is_visible', 'order', 'branch_id',
+        'is_visible', 'certified', 'order', 'branch_id',
     ];
 
     protected $casts = [
@@ -19,6 +19,7 @@ class Seminuevo extends Model
         'featured_gallery' => 'array',
         'specs'            => 'array',
         'is_visible'       => 'boolean',
+        'certified'        => 'boolean',
         'year'             => 'integer',
         'km'               => 'integer',
         'doors'            => 'integer',

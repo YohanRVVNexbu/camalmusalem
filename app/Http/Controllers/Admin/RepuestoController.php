@@ -104,6 +104,7 @@ class RepuestoController extends Controller
             'name'            => ['required', 'string', 'max:255'],
             'sku'             => ['nullable', 'string', 'max:100'],
             'description'     => ['nullable', 'string'],
+            'comentarios'     => ['nullable', 'string'],
             'price'           => ['nullable', 'string', 'max:100'],
             'category'        => ['required', 'string', 'max:100'],
             'stock_la_serena' => ['boolean'],

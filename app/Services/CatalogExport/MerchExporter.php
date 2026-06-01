@@ -16,9 +16,7 @@ class MerchExporter extends BaseExporter
     protected function headers(): array
     {
         return [
-            'Codigo Interno', 'Nombre Merch', 'Descripcion corta', 'Descripcion tecnica',
-            'Categoria principal', 'Compatibilidad', 'Subcategoria', 'Talla',
-            'Precio', 'Precio Oferta', 'Estado', 'Disponible en', 'Fotografia',
+            'SKU', 'Categoría', 'Imagen (URL)', 'Descripción', 'Precio', 'Comentarios',
         ];
     }
 
@@ -31,18 +29,11 @@ class MerchExporter extends BaseExporter
         return Merch::orderBy('order')->orderBy('name')->get()->map(function (Merch $m) {
             return [
                 $m->sku,
-                $m->name,
-                $m->description,
-                $m->description_tech,
                 $m->category,
-                null,
-                $m->subcategory,
-                $m->size,
+                $m->images[0] ?? null,
+                $m->name,
                 $m->price,
-                $m->price_offer,
-                $m->status,
-                $m->branch,
-                null,
+                $m->comentarios,
             ];
         })->values()->toArray();
     }

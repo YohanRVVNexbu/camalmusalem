@@ -1,8 +1,11 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Plus, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Plus, Trash2, X } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
+import {
+    Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
@@ -10,7 +13,9 @@ import {
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { toast } from 'sonner';
 import AdminLayout from '@/layouts/admin-layout';
+import { uploadImageBase64 } from '@/lib/image-upload';
 
 type ModelLite = { id: number; name: string; brand_name: string };
 
@@ -23,6 +28,8 @@ type Color = {
     hex: string | null;
     type: string;
     is_available: boolean;
+    // Fotos del visor 360 de este color (URLs ya subidas vía endpoint).
+    photos_360?: string[];
 };
 
 type VersionPayload = {
@@ -53,7 +60,10 @@ type VersionPayload = {
     chassis: Record<string, any> | null;
     feature_ids: number[];
     colors: Color[];
+    multimedia: MediaItem[];
 };
+
+type MediaItem = { type: 'image' | 'video' | 'youtube'; url: string };
 
 type Enums = {
     powertrain: Record<string, string>;
@@ -71,16 +81,19 @@ type Suggestions = {
     colors: Record<string, string[]>;
 };
 
+type Sibling = { id: number; label: string; colors_count: number };
+
 type Props = {
     version: VersionPayload | null;
     models: ModelLite[];
     features: FeaturesByCategory;
     enums: Enums;
     suggestions: Suggestions;
+    siblings?: Sibling[];
     prefill_model_id?: number | null;
 };
 
-type SectionKey = 'basico' | 'motor' | 'electrico' | 'dimensiones' | 'capacidades' | 'rendimiento' | 'chasis' | 'equipamiento' | 'colores';
+type SectionKey = 'basico' | 'motor' | 'electrico' | 'dimensiones' | 'capacidades' | 'rendimiento' | 'chasis' | 'equipamiento' | 'colores' | 'multimedia';
 
 const SECTIONS: { key: SectionKey; label: string }[] = [
     { key: 'basico', label: 'Datos básicos' },
@@ -92,6 +105,7 @@ const SECTIONS: { key: SectionKey; label: string }[] = [
     { key: 'chasis', label: 'Chasis' },
     { key: 'equipamiento', label: 'Equipamiento' },
     { key: 'colores', label: 'Colores' },
+    { key: 'multimedia', label: 'Multimedia' },
 ];
 
 const empty = (): VersionPayload => ({
@@ -117,9 +131,10 @@ const empty = (): VersionPayload => ({
     performance: {}, chassis: {},
     feature_ids: [],
     colors: [],
+    multimedia: [],
 });
 
-export default function VehicleVersionForm({ version, models, features, enums, suggestions, prefill_model_id }: Props) {
+export default function VehicleVersionForm({ version, models, features, enums, suggestions, siblings = [], prefill_model_id }: Props) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!version?.id;
 
@@ -142,6 +157,7 @@ export default function VehicleVersionForm({ version, models, features, enums, s
             chassis: version.chassis ?? {},
             feature_ids: version.feature_ids ?? [],
             colors: version.colors ?? [],
+            multimedia: version.multimedia ?? [],
         };
     });
     const [heroFile, setHeroFile] = useState<File | null>(null);
@@ -165,6 +181,169 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                 ? data.feature_ids.filter((i) => i !== id)
                 : [...data.feature_ids, id],
         });
+    };
+
+    // ── Fotos 360 por color ──────────────────────────────────────────────
+    const [colorPhotoUploading, setColorPhotoUploading] = useState<number | null>(null);
+
+    const addColorPhotos = async (colorIdx: number, files: File[]) => {
+        if (files.length === 0) return;
+        if (! isEdit) { toast.error('Primero guardá la versión, después podés subir fotos 360.'); return; }
+        setColorPhotoUploading(colorIdx);
+        let done = 0;
+        let failed = 0;
+        for (const raw of files) {
+            try {
+                // Base64 (no multipart): evita el 403 de ModSecurity 930110 que
+                // bloquea binarios cuyos bytes contienen la secuencia "../".
+                const url = await uploadImageBase64(raw, `vehiculos/${version!.id}/360`);
+                if (url) {
+                    setData((current) => {
+                        const colors = [...current.colors];
+                        if (! colors[colorIdx]) return current;
+                        const photos = [...(colors[colorIdx].photos_360 ?? []), url];
+                        colors[colorIdx] = { ...colors[colorIdx], photos_360: photos };
+                        return { ...current, colors };
+                    });
+                    done++;
+                }
+            } catch (err) {
+                failed++;
+                console.error('Falló subir foto 360 de color:', err);
+            }
+        }
+        setColorPhotoUploading(null);
+        if (failed === 0) toast.success(`${done} foto${done === 1 ? '' : 's'} subida${done === 1 ? '' : 's'}.`);
+        else if (done === 0) toast.error('No se pudo subir ninguna foto. Revisá consola.');
+        else toast.warning(`${done} de ${files.length} subidas, ${failed} fallaron.`);
+    };
+
+    const removeColorPhoto = (colorIdx: number, photoIdx: number) => {
+        const colors = [...data.colors];
+        const photos = (colors[colorIdx].photos_360 ?? []).filter((_, j) => j !== photoIdx);
+        colors[colorIdx] = { ...colors[colorIdx], photos_360: photos };
+        setData({ ...data, colors });
+    };
+
+    // Reordena una foto del 360 dentro de su color (dir -1 = izquierda,
+    // +1 = derecha). El orden define la secuencia de rotación del visor.
+    // ── Replicar colores a otras versiones del mismo modelo ───────────────
+    const [replicateOpen, setReplicateOpen] = useState(false);
+    const [replicateTargets, setReplicateTargets] = useState<number[]>([]);
+    const [replicating, setReplicating] = useState(false);
+
+    const toggleTarget = (id: number) =>
+        setReplicateTargets((ts) => (ts.includes(id) ? ts.filter((t) => t !== id) : [...ts, id]));
+
+    const runReplicate = () => {
+        if (!isEdit || replicateTargets.length === 0) return;
+        setReplicating(true);
+        router.post(`/admin/vehicle-versions/${version!.id}/replicate-colors`, { targets: replicateTargets }, {
+            preserveScroll: true,
+            onFinish: () => { setReplicating(false); setReplicateOpen(false); setReplicateTargets([]); },
+        });
+    };
+
+    const moveColorPhoto = (colorIdx: number, photoIdx: number, dir: -1 | 1) => {
+        const to = photoIdx + dir;
+        const colors = [...data.colors];
+        const photos = [...(colors[colorIdx].photos_360 ?? [])];
+        if (to < 0 || to >= photos.length) return;
+        [photos[photoIdx], photos[to]] = [photos[to], photos[photoIdx]];
+        colors[colorIdx] = { ...colors[colorIdx], photos_360: photos };
+        setData({ ...data, colors });
+    };
+
+    // ── Multimedia (imagen / video archivo / YouTube) ───────────────────
+    const [mediaUploading, setMediaUploading] = useState(false);
+    const [youtubeUrl, setYoutubeUrl] = useState('');
+
+    // Sube UN archivo al endpoint de media de la versión (con retry para el
+    // 403 ocasional de LSWS/ModSecurity).
+    const uploadVersionMedia = async (file: File): Promise<string | null> => {
+        const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
+        const BACKOFF_MS = [0, 800, 2000];
+        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+        let lastError = 'razón desconocida';
+        for (let attempt = 1; attempt <= 3; attempt++) {
+            if (BACKOFF_MS[attempt - 1] > 0) await sleep(BACKOFF_MS[attempt - 1]);
+            try {
+                const fd = new FormData();
+                fd.append('file', file);
+                const res = await fetch(`/admin/vehicle-versions/${version!.id}/media`, {
+                    method: 'POST',
+                    body: fd,
+                    headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    credentials: 'same-origin',
+                });
+                if (! res.ok) {
+                    const ct = res.headers.get('content-type') ?? '';
+                    throw new Error(ct.includes('text/html') ? `HTTP ${res.status} (bloqueado por servidor web)` : `HTTP ${res.status}`);
+                }
+                const json = await res.json();
+                return json.url ?? null;
+            } catch (err) {
+                lastError = err instanceof Error ? err.message : String(err);
+                if (attempt === 3) throw new Error(lastError);
+            }
+        }
+        return null;
+    };
+
+    const addMediaImages = async (files: File[]) => {
+        if (files.length === 0) return;
+        if (! isEdit) { toast.error('Guardá la versión primero para subir multimedia.'); return; }
+        setMediaUploading(true);
+        let done = 0;
+        let failed = 0;
+        // Secuencial (no en paralelo) para no saturar el WAF/MaxReqBodySize.
+        // Imágenes vía Base64 para evitar el 403 de ModSecurity 930110.
+        for (const file of files) {
+            try {
+                const url = await uploadImageBase64(file, `vehiculos/${version!.id}/media`);
+                if (url) {
+                    setData((c) => ({ ...c, multimedia: [...c.multimedia, { type: 'image', url }] }));
+                    done++;
+                }
+            } catch (err) {
+                failed++;
+                console.error('Falló subir imagen multimedia:', err);
+            }
+        }
+        setMediaUploading(false);
+        if (failed === 0) toast.success(`${done} imagen${done === 1 ? '' : 'es'} agregada${done === 1 ? '' : 's'}.`);
+        else if (done === 0) toast.error('No se pudo subir ninguna imagen. Revisá consola.');
+        else toast.warning(`${done} de ${files.length} subidas, ${failed} fallaron.`);
+    };
+
+    const addMediaVideo = async (file: File) => {
+        if (! isEdit) { toast.error('Guardá la versión primero para subir multimedia.'); return; }
+        setMediaUploading(true);
+        try {
+            const url = await uploadVersionMedia(file); // video sin comprimir
+            if (url) setData((c) => ({ ...c, multimedia: [...c.multimedia, { type: 'video', url }] }));
+            toast.success('Video agregado.');
+        } catch (err) {
+            toast.error(`No se pudo subir el video. ${err instanceof Error ? err.message : ''}`);
+        } finally { setMediaUploading(false); }
+    };
+
+    const addMediaYoutube = () => {
+        const url = youtubeUrl.trim();
+        if (! url) return;
+        setData((c) => ({ ...c, multimedia: [...c.multimedia, { type: 'youtube', url }] }));
+        setYoutubeUrl('');
+    };
+
+    const removeMedia = (idx: number) =>
+        setData((c) => ({ ...c, multimedia: c.multimedia.filter((_, j) => j !== idx) }));
+
+    const moveMedia = (idx: number, dir: -1 | 1) => {
+        const to = idx + dir;
+        if (to < 0 || to >= data.multimedia.length) return;
+        const mm = [...data.multimedia];
+        [mm[idx], mm[to]] = [mm[to], mm[idx]];
+        setData({ ...data, multimedia: mm });
     };
 
     const submit = (e: React.FormEvent) => {
@@ -207,6 +386,17 @@ export default function VehicleVersionForm({ version, models, features, enums, s
             if (c.hex) fd.append(`colors[${i}][hex]`, c.hex);
             fd.append(`colors[${i}][type]`, c.type);
             fd.append(`colors[${i}][is_available]`, c.is_available ? '1' : '0');
+            // Fotos 360 del color (solo URLs, ya subidas vía endpoint).
+            (c.photos_360 ?? []).forEach((url, j) => {
+                if (url) fd.append(`colors[${i}][photos_360][${j}]`, url);
+            });
+        });
+
+        // Multimedia: lista mixta [{type, url}] — solo texto/URLs (archivos
+        // ya subidos vía endpoint, YouTube es URL directa).
+        data.multimedia.forEach((m, i) => {
+            fd.append(`multimedia[${i}][type]`, m.type);
+            fd.append(`multimedia[${i}][url]`, m.url);
         });
 
         if (heroFile) fd.append('hero_image', heroFile);
@@ -570,17 +760,28 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                         <div className="grid gap-3">
                             <div className="flex items-center justify-between">
                                 <Label className="font-semibold">Colores disponibles ({data.colors.length})</Label>
-                                <Button type="button" variant="outline" size="sm" onClick={() => setData({ ...data, colors: [...data.colors, { name: '', hex: '#FFFFFF', type: 'solid', is_available: true }] })}>
-                                    <Plus className="size-3 mr-1" /> Agregar color
-                                </Button>
+                                <div className="flex gap-2">
+                                    {isEdit && siblings.length > 0 && (
+                                        <Button type="button" variant="outline" size="sm" onClick={() => setReplicateOpen(true)} title="Copia los colores (con sus fotos 360) a otras versiones del mismo modelo">
+                                            Replicar a otras versiones
+                                        </Button>
+                                    )}
+                                    <Button type="button" variant="outline" size="sm" onClick={() => setData({ ...data, colors: [...data.colors, { name: '', hex: '#FFFFFF', type: 'solid', is_available: true }] })}>
+                                        <Plus className="size-3 mr-1" /> Agregar color
+                                    </Button>
+                                </div>
                             </div>
+                            {isEdit && siblings.length > 0 && (
+                                <p className="text-xs text-muted-foreground">Tip: si la marca no entregó fotos por versión, guardá los colores en una versión y luego usa <strong>Replicar a otras versiones</strong> para copiar las mismas fotos al resto sin volver a subirlas.</p>
+                            )}
                             {data.colors.length === 0 && (
                                 <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">
                                     Sin colores. Agrega al menos uno.
                                 </div>
                             )}
                             {data.colors.map((c, i) => (
-                                <div key={i} className="grid grid-cols-[1fr_160px_160px_100px_40px] gap-2 items-end">
+                                <div key={i} className="flex flex-col gap-3 rounded-md border p-3">
+                                    <div className="grid grid-cols-[1fr_160px_160px_100px_40px] gap-2 items-end">
                                     <div className="grid gap-1.5">
                                         <Label className="text-xs">Nombre</Label>
                                         <Input
@@ -658,8 +859,132 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                                     >
                                         <Trash2 className="size-4 text-destructive" />
                                     </Button>
+                                    </div>
+
+                                    {/* Fotos del visor 360 de ESTE color */}
+                                    <div className="grid gap-2 border-t pt-3">
+                                        <Label className="text-xs">Fotos 360 de este color ({(c.photos_360 ?? []).length}) — ideal 12 para una rotación completa</Label>
+                                        {(c.photos_360 ?? []).length > 0 && (
+                                            <div className="flex flex-wrap gap-2">
+                                                {(c.photos_360 ?? []).map((url, pi) => (
+                                                    <div key={pi} className="relative">
+                                                        <img src={url} className="h-16 w-24 rounded object-cover" alt="" />
+                                                        <span className="absolute left-0.5 top-0.5 rounded bg-black/60 px-1 text-[9px] text-white">{pi + 1}</span>
+                                                        <Button
+                                                            type="button" variant="ghost" size="icon"
+                                                            className="absolute right-0.5 top-0.5 size-5 bg-white/80"
+                                                            onClick={() => removeColorPhoto(i, pi)}
+                                                            title="Quitar foto"
+                                                        >
+                                                            <X className="size-3 text-destructive" />
+                                                        </Button>
+                                                        {/* Flechas para reordenar la secuencia del 360 */}
+                                                        <div className="absolute inset-x-0 bottom-0 flex justify-between bg-black/50">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => moveColorPhoto(i, pi, -1)}
+                                                                disabled={pi === 0}
+                                                                className="flex flex-1 items-center justify-center py-0.5 text-white transition hover:bg-white/20 disabled:opacity-30"
+                                                                title="Mover a la izquierda"
+                                                            >
+                                                                <ChevronLeft className="size-3.5" />
+                                                            </button>
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => moveColorPhoto(i, pi, 1)}
+                                                                disabled={pi === (c.photos_360 ?? []).length - 1}
+                                                                className="flex flex-1 items-center justify-center py-0.5 text-white transition hover:bg-white/20 disabled:opacity-30"
+                                                                title="Mover a la derecha"
+                                                            >
+                                                                <ChevronRight className="size-3.5" />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <Input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            disabled={colorPhotoUploading !== null}
+                                            onChange={(e) => {
+                                                const files = Array.from(e.target.files ?? []);
+                                                if (files.length) addColorPhotos(i, files);
+                                                e.target.value = '';
+                                            }}
+                                        />
+                                        {colorPhotoUploading === i && <p className="text-xs text-muted-foreground">Subiendo fotos…</p>}
+                                        {! isEdit && <p className="text-xs text-muted-foreground">Guardá la versión primero para poder subir las fotos 360.</p>}
+                                    </div>
                                 </div>
                             ))}
+                        </div>
+                    )}
+
+                    {section === 'multimedia' && (
+                        <div className="flex flex-col gap-4">
+                            <div>
+                                <Label className="font-semibold">Multimedia ({data.multimedia.length})</Label>
+                                <p className="text-xs text-muted-foreground">Imágenes, videos (mp4) o videos de YouTube. Aparecen en la galería del detalle, en el orden de esta lista. Si está vacío, la sección no se muestra en el sitio.</p>
+                            </div>
+
+                            {! isEdit && (
+                                <p className="text-sm text-muted-foreground">Guardá la versión primero para poder agregar multimedia.</p>
+                            )}
+
+                            {isEdit && (
+                                <>
+                                    {/* Botones para agregar cada tipo */}
+                                    <div className="flex flex-wrap items-end gap-4">
+                                        <div className="grid gap-1.5">
+                                            <Label className="text-xs">Subir imágenes (podés elegir varias)</Label>
+                                            <Input type="file" accept="image/*" multiple disabled={mediaUploading}
+                                                onChange={(e) => { const files = Array.from(e.target.files ?? []); if (files.length) addMediaImages(files); e.target.value = ''; }} />
+                                        </div>
+                                        <div className="grid gap-1.5">
+                                            <Label className="text-xs">Subir video (mp4)</Label>
+                                            <Input type="file" accept="video/mp4,video/webm,video/quicktime" disabled={mediaUploading}
+                                                onChange={(e) => { const f = e.target.files?.[0]; if (f) addMediaVideo(f); e.target.value = ''; }} />
+                                        </div>
+                                        <div className="grid gap-1.5 flex-1 min-w-65">
+                                            <Label className="text-xs">Agregar YouTube (pegá la URL)</Label>
+                                            <div className="flex gap-2">
+                                                <Input value={youtubeUrl} onChange={(e) => setYoutubeUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." />
+                                                <Button type="button" variant="outline" onClick={addMediaYoutube} disabled={! youtubeUrl.trim()}>
+                                                    <Plus className="size-3 mr-1" /> Agregar
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {mediaUploading && <p className="text-sm text-muted-foreground">Subiendo…</p>}
+
+                                    {/* Lista ordenable */}
+                                    {data.multimedia.length === 0 ? (
+                                        <div className="rounded-md border border-dashed p-4 text-center text-sm text-muted-foreground">Sin multimedia. Agregá imágenes, videos o YouTube.</div>
+                                    ) : (
+                                        <div className="flex flex-col gap-2">
+                                            {data.multimedia.map((m, i) => (
+                                                <div key={i} className="flex items-center gap-3 rounded-md border p-2">
+                                                    <span className="shrink-0 rounded bg-muted px-2 py-1 text-xs font-medium uppercase">{m.type}</span>
+                                                    <div className="h-14 w-24 shrink-0 overflow-hidden rounded bg-black/5">
+                                                        {m.type === 'image' && <img src={m.url} className="h-full w-full object-cover" alt="" />}
+                                                        {m.type === 'video' && <video src={m.url} className="h-full w-full object-cover" muted />}
+                                                        {m.type === 'youtube' && <div className="flex h-full w-full items-center justify-center text-xs text-muted-foreground">YouTube</div>}
+                                                    </div>
+                                                    <span className="min-w-0 flex-1 truncate text-xs text-muted-foreground">{m.url}</span>
+                                                    <div className="flex shrink-0 items-center gap-1">
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => moveMedia(i, -1)} disabled={i === 0} title="Subir">↑</Button>
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => moveMedia(i, 1)} disabled={i === data.multimedia.length - 1} title="Bajar">↓</Button>
+                                                        <Button type="button" variant="ghost" size="icon" onClick={() => removeMedia(i)} title="Quitar"><Trash2 className="size-4 text-destructive" /></Button>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
                     )}
 
@@ -675,6 +1000,37 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                     </div>
                 </form>
             </div>
+
+            <Dialog open={replicateOpen} onOpenChange={(v) => { setReplicateOpen(v); if (!v) setReplicateTargets([]); }}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle>Replicar colores a otras versiones</DialogTitle>
+                        <DialogDescription>
+                            Copia los <strong>colores guardados</strong> de esta versión (con sus fotos 360) a las versiones que elijas. Las versiones destino van a <strong>reemplazar</strong> sus colores actuales. Si tienes cambios sin guardar, guárdalos primero.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="flex flex-col gap-2 max-h-72 overflow-y-auto py-2">
+                        {siblings.map((s) => (
+                            <label key={s.id} className="flex cursor-pointer items-center gap-3 rounded-md border p-3 hover:bg-muted/40">
+                                <Checkbox checked={replicateTargets.includes(s.id)} onCheckedChange={() => toggleTarget(s.id)} />
+                                <div className="flex-1">
+                                    <div className="text-sm font-medium">{s.label}</div>
+                                    <div className="text-xs text-muted-foreground">{s.colors_count} color{s.colors_count === 1 ? '' : 'es'} actualmente · serán reemplazados</div>
+                                </div>
+                            </label>
+                        ))}
+                        {siblings.length === 0 && (
+                            <p className="text-sm text-muted-foreground">No hay otras versiones del mismo modelo.</p>
+                        )}
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setReplicateOpen(false)}>Cancelar</Button>
+                        <Button onClick={runReplicate} disabled={replicateTargets.length === 0 || replicating}>
+                            {replicating ? 'Replicando…' : `Replicar a ${replicateTargets.length} versión${replicateTargets.length === 1 ? '' : 'es'}`}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </AdminLayout>
     );
 }

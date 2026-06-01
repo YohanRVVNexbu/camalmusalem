@@ -5,6 +5,8 @@
 import { router, usePage } from '@inertiajs/react';
 import { ChevronDown, RotateCcw } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { uploadImageBase64 } from '@/lib/image-upload';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -302,7 +304,7 @@ export function TextareaField({
 }
 
 // ── Submit helper ──────────────────────────────────────────────────────────────
-export function submitSection(
+export async function submitSection(
     page: string,
     section: string,
     data: Record<string, any>,
@@ -311,21 +313,72 @@ export function submitSection(
     setProcessing: (v: boolean) => void,
 ) {
     setProcessing(true);
-    const fd = new FormData();
-    fd.append('is_visible', isVisible ? '1' : '0');
+    try {
+        // Clonamos data (los archivos no viven acá) para mergear las URLs
+        // que devuelve la subida.
+        const payload = JSON.parse(JSON.stringify(data ?? {}));
+        const fd = new FormData();
+        fd.append('is_visible', isVisible ? '1' : '0');
 
-    // Append all data fields
-    appendData(fd, 'data', data);
+        // Subir cada archivo:
+        //  - Imágenes → vía Base64 (JSON) al endpoint dedicado. Esquiva el
+        //    falso positivo 403 de ModSecurity (path-traversal), porque
+        //    Base64 no contiene `.` y la regla nunca matchea. La URL
+        //    resultante se mergea en `payload` en la misma key.
+        //  - Video/PDF u otros → van por multipart como antes (no se pueden
+        //    Base64-ear sin inflar de más).
+        for (const [key, file] of Object.entries(files)) {
+            if (! file) continue;
+            if (file.type.startsWith('image/')) {
+                const oldUrl = getAtPath(payload, key);
+                const url = await uploadImageBase64(
+                    file,
+                    `paginas/${section}`,
+                    typeof oldUrl === 'string' ? oldUrl : null,
+                );
+                setAtPath(payload, key, url);
+            } else {
+                fd.append(key, file);
+            }
+        }
 
-    // Append file uploads (flat keys matching data path)
-    Object.entries(files).forEach(([key, file]) => {
-        if (file) fd.append(key, file);
-    });
+        appendData(fd, 'data', payload);
 
-    router.post(`/admin/paginas/${page}/${section}`, fd, {
-        forceFormData: true,
-        onFinish: () => setProcessing(false),
-    });
+        router.post(`/admin/paginas/${page}/${section}`, fd, {
+            forceFormData: true,
+            onFinish: () => setProcessing(false),
+        });
+    } catch (err) {
+        setProcessing(false);
+        const msg = err instanceof Error ? err.message : String(err);
+        toast.error(`No se pudo subir una imagen. ${msg}`);
+    }
+}
+
+// Convierte una key tipo `hero_image` o `hero_cards[0][image_override]` a las
+// partes del path y lee/escribe el valor anidado en el objeto data.
+function keyToParts(key: string): string[] {
+    return key.replace(/\[(\w+)\]/g, '.$1').split('.').filter(Boolean);
+}
+
+function getAtPath(obj: any, key: string): unknown {
+    let cur = obj;
+    for (const p of keyToParts(key)) {
+        if (cur == null) return undefined;
+        cur = cur[p];
+    }
+    return cur;
+}
+
+function setAtPath(obj: any, key: string, value: unknown) {
+    const parts = keyToParts(key);
+    let cur = obj;
+    for (let i = 0; i < parts.length - 1; i++) {
+        const p = parts[i];
+        if (cur[p] == null) cur[p] = /^\d+$/.test(parts[i + 1]) ? [] : {};
+        cur = cur[p];
+    }
+    cur[parts[parts.length - 1]] = value;
 }
 
 // ── Reset helper ───────────────────────────────────────────────────────────────

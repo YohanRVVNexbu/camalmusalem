@@ -140,7 +140,7 @@ class SalesforceInspectCommand extends Command
 
         $this->line('<fg=cyan>METHOD:</>  PATCH');
         $this->line('<fg=cyan>URL:</>     '.$url);
-        $this->line('<fg=cyan>HEADERS:</> Content-Type: application/json | client_id: '.substr(config('services.salesforce_dealer.client_id') ?? '', 0, 12).'... | Authorization: Bearer <token oauth>');
+        $this->line('<fg=cyan>HEADERS:</> Content-Type: application/json | client_id: '.substr($this->resolveClientId($dealerId), 0, 12).'... | Authorization: Bearer <token oauth>');
         $this->line('');
 
         $this->line('<fg=cyan>REQUEST BODY:</>');
@@ -193,6 +193,21 @@ class SalesforceInspectCommand extends Command
             return $clean;
         }
         return substr($clean, 0, -1).'-'.substr($clean, -1);
+    }
+
+    /**
+     * Resuelve el client_id que se usaría para llamar al endpoint de este
+     * dealer: prioriza el específico de la sucursal y cae al genérico si
+     * no hay uno definido. Devuelve "(sin credenciales)" si tampoco hay
+     * default — útil para diagnosticar setups incompletos.
+     */
+    private function resolveClientId(?string $dealerId): string
+    {
+        $dealers = config('services.salesforce_dealer.dealers', []);
+        if ($dealerId && ! empty($dealers[$dealerId]['client_id'])) {
+            return $dealers[$dealerId]['client_id'];
+        }
+        return config('services.salesforce_dealer.client_id') ?: '(sin credenciales)';
     }
 
     private function statusBadge(string $status): string

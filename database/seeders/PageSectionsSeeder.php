@@ -95,8 +95,15 @@ class PageSectionsSeeder extends Seeder
             // ─── CONTACTO ────────────────────────────────────────────────────
             'contacto_info' => [
                 'form_image'    => '',
-                'horario_lv'    => '09:00 a 13:30 - 14:45 a 18:30',
-                'horario_sab'   => 'Cerrado',
+                // Horario administrable como lista. Esta misma data se
+                // comparte vía HandleInertiaRequests y la usan también
+                // las páginas de mantención y repuestos (single source).
+                'horarios' => [
+                    ['label' => 'Lunes a Jueves',  'value' => '09:00 a 13:30 - 14:45 a 18:30'],
+                    ['label' => 'Viernes',         'value' => '09:00 a 13:30 - 14:45 a 17:30'],
+                    ['label' => 'Sábado',          'value' => '09:00 a 13:00'],
+                    ['label' => 'Domingo',         'value' => 'Cerrado'],
+                ],
                 'email'         => 'info@camalmusalem.cl',
                 'form_title'    => 'Contacto',
                 'form_subtitle' => '¿En qué te podemos ayudar?',

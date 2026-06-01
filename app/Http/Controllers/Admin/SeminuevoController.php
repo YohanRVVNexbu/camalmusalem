@@ -115,13 +115,7 @@ class SeminuevoController extends Controller
 
     private function handleGallery(Request $request, Seminuevo $seminuevo): void
     {
-        $gallery = $seminuevo->gallery ?? [];
-
-        if ($request->hasFile('gallery_new')) {
-            foreach ($request->file('gallery_new') as $file) {
-                $gallery[] = $this->settings->uploadFile($file, 'seminuevos/' . $seminuevo->id);
-            }
-        }
+        $gallery = $this->reorderExisting($seminuevo->gallery ?? [], $request->input('gallery_order'));
 
         if ($request->has('gallery_remove')) {
             $toRemove = $request->input('gallery_remove', []);
@@ -131,18 +125,19 @@ class SeminuevoController extends Controller
             $gallery = array_values(array_filter($gallery, fn($u) => !in_array($u, $toRemove)));
         }
 
+        // Las fotos nuevas se agregan al final del orden ya definido.
+        if ($request->hasFile('gallery_new')) {
+            foreach ($request->file('gallery_new') as $file) {
+                $gallery[] = $this->settings->uploadFile($file, 'seminuevos/' . $seminuevo->id);
+            }
+        }
+
         $seminuevo->update(['gallery' => $gallery]);
     }
 
     private function handleFeaturedGallery(Request $request, Seminuevo $seminuevo): void
     {
-        $featured = $seminuevo->featured_gallery ?? [];
-
-        if ($request->hasFile('featured_new')) {
-            foreach ($request->file('featured_new') as $file) {
-                $featured[] = $this->settings->uploadFile($file, 'seminuevos/' . $seminuevo->id . '/featured');
-            }
-        }
+        $featured = $this->reorderExisting($seminuevo->featured_gallery ?? [], $request->input('featured_order'));
 
         if ($request->has('featured_remove')) {
             $toRemove = $request->input('featured_remove', []);
@@ -152,7 +147,34 @@ class SeminuevoController extends Controller
             $featured = array_values(array_filter($featured, fn($u) => !in_array($u, $toRemove)));
         }
 
+        if ($request->hasFile('featured_new')) {
+            foreach ($request->file('featured_new') as $file) {
+                $featured[] = $this->settings->uploadFile($file, 'seminuevos/' . $seminuevo->id . '/featured');
+            }
+        }
+
         $seminuevo->update(['featured_gallery' => $featured]);
+    }
+
+    /**
+     * Reordena las URLs existentes según el orden enviado desde el admin.
+     * Solo considera URLs que realmente existen; cualquier URL existente que
+     * no venga en el orden se agrega al final (defensa contra desincronización).
+     */
+    private function reorderExisting(array $existing, $order): array
+    {
+        if (! is_array($order) || empty($order)) {
+            return $existing;
+        }
+
+        $ordered = array_values(array_filter($order, fn ($u) => in_array($u, $existing, true)));
+        foreach ($existing as $u) {
+            if (! in_array($u, $ordered, true)) {
+                $ordered[] = $u;
+            }
+        }
+
+        return $ordered;
     }
 
     /**
@@ -204,6 +226,7 @@ class SeminuevoController extends Controller
             'year'         => ['required', 'integer', 'min:1990', 'max:2030'],
             'km'           => ['required', 'integer', 'min:0'],
             'price'        => ['required', 'string', 'max:100'],
+            'price_offer'  => ['nullable', 'string', 'max:100'],
             'down_payment' => ['nullable', 'string', 'max:100'],
             'fuel'         => ['nullable', 'string', 'max:100'],
             'transmission' => ['nullable', 'string', 'max:100'],
@@ -213,6 +236,7 @@ class SeminuevoController extends Controller
             'color'        => ['nullable', 'string', 'max:100'],
             'description'  => ['nullable', 'string'],
             'is_visible'   => ['boolean'],
+            'certified'    => ['boolean'],
             'order'        => ['integer'],
             'branch_id'    => ['nullable', 'exists:branches,id'],
         ]);
@@ -226,6 +250,9 @@ class SeminuevoController extends Controller
         // Normaliza precios a sólo dígitos para que la BD siempre guarde el
         // valor canónico — el front formatea con formatCLP() al mostrar.
         $data['price'] = $this->onlyDigits($data['price'] ?? '');
+        if (isset($data['price_offer'])) {
+            $data['price_offer'] = $this->onlyDigits($data['price_offer']) ?: null;
+        }
         if (isset($data['down_payment'])) {
             $data['down_payment'] = $this->onlyDigits($data['down_payment']) ?: null;
         }

@@ -11,6 +11,7 @@ import { ProductCard } from '@/components/seminuevos/product-card';
 import { ProductListItem } from '@/components/seminuevos/product-list-item';
 import { Toolbar } from '@/components/seminuevos/toolbar';
 import type { PerPage, SortMode, ViewMode } from '@/components/seminuevos/toolbar';
+import certificateImg from '@images/seminuevos/certificate-toyota.png?format=webp';
 
 type Seminuevo = {
     id: number;
@@ -20,6 +21,8 @@ type Seminuevo = {
     year: number;
     km: number;
     price: string;
+    price_offer?: string | null;
+    certified?: boolean;
     fuel: string;
     transmission: string;
     color: string;
@@ -213,7 +216,9 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                                                     km={formatKm(v.km)}
                                                     transmission={v.transmission}
                                                     fuel={v.fuel}
-                                                    price={v.price}
+                                                    price={v.price_offer || v.price}
+                                                    originalPrice={v.price_offer ? v.price : undefined}
+                                                    certificateBadge={v.certified ? certificateImg : undefined}
                                                     href={`/seminuevos/${v.slug ?? v.id}`}
                                                 />
                                             ))}
@@ -231,7 +236,9 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                                                     km={formatKm(v.km)}
                                                     transmission={v.transmission}
                                                     fuel={v.fuel}
-                                                    price={v.price}
+                                                    price={v.price_offer || v.price}
+                                                    originalPrice={v.price_offer ? v.price : undefined}
+                                                    certificateBadge={v.certified ? certificateImg : undefined}
                                                     href={`/seminuevos/${v.slug ?? v.id}`}
                                                 />
                                             ))}

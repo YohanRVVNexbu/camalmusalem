@@ -21,13 +21,25 @@ type Accesorio = {
     images: string[];
 };
 
-export default function Accesorios({ footer, accesorios_hero, accesorios = [] }: { footer: any | null; accesorios_hero?: any | null; accesorios: Accesorio[] }) {
+type Merch = {
+    id: number;
+    name: string;
+    price: string | null;
+    category: string;
+    images: string[];
+};
+
+export default function Accesorios({ footer, accesorios_hero, accesorios_seccion, accesorios = [], merch = [] }: { footer: any | null; accesorios_hero?: any | null; accesorios_seccion?: any | null; accesorios: Accesorio[]; merch?: Merch[] }) {
     const hero = accesorios_hero ?? {};
+    const seccion = accesorios_seccion ?? {};
     const isMobile = useIsMobile();
     const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
+    const merchImg = pickResponsiveImage(seccion.image, seccion.image_mobile, isMobile) || section2Img;
     const categorias = ['Todos', ...Array.from(new Set(accesorios.map(a => a.category)))];
     const [categoria, setCategoria] = useState('Todos');
     const [ordenar, setOrdenar] = useState('');
+    const merchCategorias = ['Todos', ...Array.from(new Set(merch.map(m => m.category)))];
+    const [merchCategoria, setMerchCategoria] = useState('Todos');
 
     useEffect(() => {
         const html = document.documentElement;
@@ -80,10 +92,11 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                 )}
 
                 {/* Merch section */}
+                {(accesorios_seccion === undefined || accesorios_seccion) && (
                 <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-white px-5 pb-10 lg:flex-row lg:gap-15 lg:px-15 lg:pb-20">
                     <img
-                        src={section2Img}
-                        alt="Merch Oficial Toyota"
+                        src={merchImg}
+                        alt={seccion.title || 'Merch Oficial Toyota'}
                         className="aspect-3/2 w-full shrink-0 rounded-[20px] object-cover lg:aspect-auto lg:h-103.25 lg:w-170 lg:rounded-[30px]"
                         style={{
                             background: 'linear-gradient(to left, rgba(0, 0, 0, 0), rgba(0, 0, 0, 0)), linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.2) 100%)',
@@ -92,18 +105,16 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                     <div className="flex w-full shrink-0 flex-col items-start justify-center gap-5 lg:h-56 lg:w-115.25 lg:pr-5">
                         <h2
                             className="text-[28px] font-semibold leading-[120%] text-black lg:w-115.25 lg:text-[40px]"
-                            style={{ fontFamily: '"Toyota Type"' }}
+                            style={{ fontFamily: '"Toyota Type"', whiteSpace: 'pre-line' }}
                         >
-                            Merch
-                            <br />
-                            Oficial Toyota
+                            {seccion.title || "Merch\nOficial Toyota"}
                         </h2>
                         <p className="text-sm leading-[120%] text-black lg:w-100 lg:text-base">
-                            Accesorios, prendas y productos oficiales que reflejan el estilo Toyota.
-                            Visítanos en nuestras sucursales Musalem y encuentra tus favoritos.
+                            {seccion.description || 'Accesorios, prendas y productos oficiales que reflejan el estilo Toyota. Visítanos en nuestras sucursales Musalem y encuentra tus favoritos.'}
                         </p>
                     </div>
                 </section>
+                )}
 
                 {/* Products grid section */}
                 <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-[#EAEAF1] px-5 py-10 lg:gap-10 lg:px-15 lg:py-20">
@@ -212,6 +223,96 @@ export default function Accesorios({ footer, accesorios_hero, accesorios = [] }:
                         )}
                     </div>
                 </section>
+
+                {/* Merch grid section */}
+                {merch.length > 0 && (
+                <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-white px-5 py-10 lg:gap-10 lg:px-15 lg:py-20">
+                    {/* Title + filter row */}
+                    <div className="flex flex-col items-start gap-5 self-stretch lg:flex-row lg:items-center lg:gap-0">
+                        <h2
+                            className="text-2xl font-semibold leading-[120%] text-black lg:text-[32px]"
+                            style={{ fontFamily: '"Toyota Type"' }}
+                        >
+                            Merch oficial
+                        </h2>
+                        <div className="flex w-full flex-col items-stretch gap-3 lg:flex-1 lg:flex-row lg:items-center lg:justify-end lg:gap-5">
+                            <div className="relative">
+                                <select
+                                    value={merchCategoria}
+                                    onChange={(e) => setMerchCategoria(e.target.value)}
+                                    className="h-11 w-full appearance-none rounded-[60px] border border-black bg-white py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none lg:w-65"
+                                    style={{ fontFamily: '"Toyota Type"' }}
+                                >
+                                    {merchCategorias.map((c) => (
+                                        <option key={c} value={c}>{c === 'Todos' ? `Categorias: ${c}` : c}</option>
+                                    ))}
+                                </select>
+                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
+                                    <svg width="5" height="7" viewBox="0 0 5 8" fill="none">
+                                        <path d="M1 1L4 4L1 7" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+                        {merch
+                            .filter(m => merchCategoria === 'Todos' || m.category === merchCategoria)
+                            .map((item) => (
+                            <Link
+                                key={item.id}
+                                href={`/post-venta/merch/${item.id}`}
+                                className="group relative aspect-square w-full overflow-hidden rounded-[30px] bg-gray-100 lg:h-80 lg:w-80"
+                                style={item.images?.[0] ? {
+                                    backgroundImage: `url(${item.images[0]})`,
+                                    backgroundSize: 'cover',
+                                    backgroundPosition: '50%',
+                                    backgroundRepeat: 'no-repeat',
+                                } : {}}
+                            >
+                                {/* Mobile: bottom label always visible */}
+                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-[#EB0A1E] p-3 lg:hidden">
+                                    <h3 className="line-clamp-1 text-base font-semibold leading-[120%] text-white" style={{ fontFamily: '"Toyota Type"' }}>
+                                        {item.name}
+                                    </h3>
+                                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 18 14" fill="none">
+                                            <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="#EB0A1E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                        </svg>
+                                    </span>
+                                </div>
+                                {/* Desktop: hover overlay */}
+                                <div className="absolute inset-0 hidden translate-y-full flex-col items-center justify-center gap-5 rounded-[30px] bg-[#EB0A1E] px-20.5 transition-transform duration-300 ease-in-out group-hover:translate-y-0 lg:flex">
+                                    <h3
+                                        className="text-center text-[28px] font-semibold leading-[120%] text-white"
+                                        style={{ fontFamily: '"Toyota Type"' }}
+                                    >
+                                        {item.name}
+                                    </h3>
+                                    <span
+                                        className="flex items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 transition hover:bg-white/90"
+                                    >
+                                        <span
+                                            className="whitespace-nowrap text-base leading-[120%] text-[#EB0A1E]"
+                                            style={{ fontFamily: '"Toyota Type"' }}
+                                        >
+                                            Ver detalles
+                                        </span>
+                                        <span className="flex size-10 items-center justify-center rounded-[60px] bg-[#EB0A1E]" style={{ backdropFilter: 'blur(15px)' }}>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="12" viewBox="0 0 18 14" fill="none">
+                                                <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                                            </svg>
+                                        </span>
+                                    </span>
+                                </div>
+                            </Link>
+                        ))}
+                        {merch.filter(m => merchCategoria === 'Todos' || m.category === merchCategoria).length === 0 && (
+                            <p className="col-span-full py-10 text-center text-black/50">No hay productos en esta categoría.</p>
+                        )}
+                    </div>
+                </section>
+                )}
 
                 <ContactCtaBanner />
                 <BranchesSection />

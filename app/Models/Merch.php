@@ -9,7 +9,7 @@ class Merch extends Model
     protected $table = 'merch';
 
     protected $fillable = [
-        'sku', 'name', 'description', 'description_tech',
+        'sku', 'name', 'description', 'description_tech', 'comentarios',
         'category', 'subcategory', 'size', 'price', 'price_offer',
         'status', 'branch', 'images', 'is_visible', 'order',
     ];

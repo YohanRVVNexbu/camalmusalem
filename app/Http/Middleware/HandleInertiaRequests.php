@@ -59,7 +59,43 @@ class HandleInertiaRequests extends Middleware
             'contactCtaBanner' => fn () => $this->contactCtaBanner(),
             'whatsappButton'   => fn () => $this->whatsappButton(),
             'maintenanceActive' => fn () => $this->maintenanceActive(),
+            'horariosAtencion' => fn () => $this->horariosAtencion(),
         ];
+    }
+
+    /**
+     * Horario de atención editable desde /admin/paginas/contacto. Se
+     * comparte globalmente para que todas las vistas que muestran
+     * "Horario de atención" (contacto, mantención, repuestos) lean del
+     * mismo lugar y queden sincronizadas cuando el admin lo cambia.
+     *
+     * @return array<int, array{label: string, value: string}>
+     */
+    private function horariosAtencion(): array
+    {
+        $section = SiteSection::where('section', 'contacto_info')->first();
+        $data = $section?->data ?? [];
+
+        // Formato nuevo: array `horarios`
+        if (isset($data['horarios']) && is_array($data['horarios'])) {
+            return array_values(array_filter(
+                array_map(fn ($h) => [
+                    'label' => (string) ($h['label'] ?? ''),
+                    'value' => (string) ($h['value'] ?? ''),
+                ], $data['horarios']),
+                fn ($h) => $h['label'] !== '' || $h['value'] !== '',
+            ));
+        }
+
+        // Backwards compat: estructura vieja con dos campos fijos
+        $legacy = [];
+        if (! empty($data['horario_lv'])) {
+            $legacy[] = ['label' => 'Lunes a Viernes', 'value' => $data['horario_lv']];
+        }
+        if (! empty($data['horario_sab'])) {
+            $legacy[] = ['label' => 'Sábado / Domingo', 'value' => $data['horario_sab']];
+        }
+        return $legacy;
     }
 
     private function maintenanceActive(): bool

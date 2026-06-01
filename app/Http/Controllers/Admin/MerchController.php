@@ -105,6 +105,7 @@ class MerchController extends Controller
             'name'             => ['required', 'string', 'max:255'],
             'description'      => ['nullable', 'string'],
             'description_tech' => ['nullable', 'string'],
+            'comentarios'      => ['nullable', 'string'],
             'category'         => ['required', 'string', 'max:100'],
             'subcategory'      => ['nullable', 'string', 'max:100'],
             'size'             => ['nullable', 'string', 'max:100'],

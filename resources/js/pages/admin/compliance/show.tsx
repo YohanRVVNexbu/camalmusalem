@@ -162,6 +162,60 @@ export default function ComplianceShow({ denuncia, estados }: { denuncia: Denunc
                     <p className="whitespace-pre-wrap text-sm">{denuncia.hechos_descripcion}</p>
                 </section>
 
+                {/* Datos extras del formulario oficial MUSALEM (payload) */}
+                {denuncia.payload && Object.keys(denuncia.payload).length > 0 && (
+                    <section className="rounded-lg border bg-card p-5">
+                        <h2 className="mb-3 text-base font-semibold">Datos adicionales del formulario</h2>
+                        <dl className="grid gap-3 text-sm md:grid-cols-2">
+                            {denuncia.payload.relacion_empresa && (
+                                <Row label="Relación con la empresa" value={
+                                    denuncia.payload.relacion_empresa === 'otro' && denuncia.payload.relacion_empresa_otro
+                                        ? `Otro: ${denuncia.payload.relacion_empresa_otro}`
+                                        : denuncia.payload.relacion_empresa
+                                } />
+                            )}
+                            {denuncia.payload.categoria_otro && (
+                                <Row label='Categoría "Otro" (especifique)' value={denuncia.payload.categoria_otro} />
+                            )}
+                            {denuncia.payload.reserva_total && (
+                                <Row label="Reserva total" value="Sí — solo el EPD conoce la identidad" />
+                            )}
+                            {(denuncia.payload.hechos_periodo_desde || denuncia.payload.hechos_periodo_hasta) && (
+                                <Row label="Período de los hechos" value={`${denuncia.payload.hechos_periodo_desde ?? '—'} hasta ${denuncia.payload.hechos_periodo_hasta ?? '—'}`} />
+                            )}
+                            {denuncia.payload.hechos_continua && <Row label="Conducta" value="Continua o recurrente" />}
+                            {denuncia.payload.hechos_fechas_desconocidas && <Row label="Fechas exactas" value="Desconocidas" />}
+                            {denuncia.payload.denunciado_area && <Row label="Área / departamento" value={denuncia.payload.denunciado_area} />}
+                            {denuncia.payload.frecuencia && <Row label="Frecuencia" value={denuncia.payload.frecuencia} />}
+                            {denuncia.payload.monto_estimado && <Row label="Monto estimado" value={denuncia.payload.monto_estimado} />}
+                            {denuncia.payload.tiene_evidencia && <Row label="¿Tiene evidencia?" value={denuncia.payload.tiene_evidencia} />}
+                            {denuncia.payload.reportado_antes && (
+                                <Row label="¿Reportado antes?" value={
+                                    denuncia.payload.reportado_a_quien
+                                        ? `${denuncia.payload.reportado_antes} (a: ${denuncia.payload.reportado_a_quien})`
+                                        : denuncia.payload.reportado_antes
+                                } />
+                            )}
+                            {denuncia.payload.otros_saben && <Row label="¿Otros saben?" value={denuncia.payload.otros_saben} />}
+                            {denuncia.payload.recibir_actualizaciones && <Row label="Recibir actualizaciones" value="Sí (al email indicado)" />}
+                        </dl>
+                        {denuncia.payload.evidencia_descripcion && (
+                            <>
+                                <Separator className="my-3" />
+                                <h3 className="mb-1 text-sm font-medium text-muted-foreground">Descripción de la documentación adjunta</h3>
+                                <p className="whitespace-pre-wrap text-sm">{denuncia.payload.evidencia_descripcion}</p>
+                            </>
+                        )}
+                        {denuncia.payload.observaciones && (
+                            <>
+                                <Separator className="my-3" />
+                                <h3 className="mb-1 text-sm font-medium text-muted-foreground">Observaciones adicionales</h3>
+                                <p className="whitespace-pre-wrap text-sm">{denuncia.payload.observaciones}</p>
+                            </>
+                        )}
+                    </section>
+                )}
+
                 {/* Adjuntos */}
                 <section className="rounded-lg border bg-card p-5">
                     <h2 className="mb-3 text-base font-semibold">Adjuntos</h2>

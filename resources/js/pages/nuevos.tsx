@@ -13,6 +13,7 @@ import { Pagination } from '@/components/seminuevos/pagination';
 import { Toolbar } from '@/components/seminuevos/toolbar';
 import type { PerPage, SortMode, ViewMode } from '@/components/seminuevos/toolbar';
 import { PillButton } from '@/components/ui/pill-button';
+import { formatCLP } from '@/lib/format';
 
 type Version = {
     name: string;
@@ -30,6 +31,10 @@ type Vehicle = {
     fuel: string | null;
     hero_image: string | null;
     versions: Version[];
+    // "Desde": precio MENOR entre versiones con bono total aplicado, y el bono
+    // de esa versión (dígitos crudos como string). Calculado en el backend.
+    desde_price?: string | null;
+    desde_bono?: string | null;
 };
 
 function ChevronIcon({ className }: { className?: string }) {
@@ -92,7 +97,20 @@ function vehicleTags(v: Vehicle): string[] {
 }
 
 function vehiclePrice(v: Vehicle): string {
-    return v.versions?.[0]?.price || 'Consultar';
+    // Preferimos el precio "Desde" (menor entre versiones con bono aplicado)
+    // que calcula el backend. Fallback al precio de la primera versión.
+    const raw = v.desde_price ?? v.versions?.[0]?.price;
+    if (! raw) return 'Consultar';
+    // El backend guarda solo dígitos (`52990000`); el formato CLP `$52.990.000`
+    // se aplica al renderizar. Si por algún motivo el valor ya viene formateado,
+    // formatCLP() es idempotente y normaliza igual.
+    return formatCLP(raw);
+}
+
+// Texto del bono incluido ("Incluye bono $3.000.000") o null si no hay bono.
+function vehicleBono(v: Vehicle): string | null {
+    if (! v.desde_bono) return null;
+    return `Incluye bono ${formatCLP(v.desde_bono)}`;
 }
 
 function vehicleElectric(v: Vehicle): boolean {
@@ -118,7 +136,26 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
     const [currentPage, setCurrentPage] = useState(1);
-    const [modal360, setModal360] = useState<{ open: boolean; name: string; subtitle: string }>({ open: false, name: '', subtitle: '' });
+    const [modal360, setModal360] = useState<{ open: boolean; name: string; subtitle: string; frames: string[]; href: string }>({ open: false, name: '', subtitle: '', frames: [], href: '#' });
+
+    // Extrae los frames del visor 360 de un vehículo: usa el primer color
+    // que tenga fotos cargadas. Si ninguno tiene, devuelve [] y el modal
+    // muestra el estado "sin imágenes 360".
+    const get360Frames = (v: any): string[] => {
+        const colors = v?.detail_content?.viewer_360?.colors ?? [];
+        for (const c of colors) {
+            if (Array.isArray(c?.photos) && c.photos.length >= 2) return c.photos;
+        }
+        return [];
+    };
+
+    const open360 = (v: any) => setModal360({
+        open: true,
+        name: v.name,
+        subtitle: v.subtitle ?? '',
+        frames: get360Frames(v),
+        href: vehicleHref(v),
+    });
 
     // Bloquear scroll del body cuando el drawer está abierto
     useEffect(() => {
@@ -301,9 +338,6 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                                                     }`}
                                                     style={{ transitionDelay: contentVisible ? `${i * 80}ms` : '0ms' }}
                                                 >
-                                                    <span className="text-center text-2xl font-semibold uppercase leading-none text-white drop-shadow">
-                                                        {card.name}
-                                                    </span>
                                                     {(card.force_electric_badge ?? vehicleElectric(card)) && <ElectricBadge />}
                                                 </div>
                                                 <div
@@ -315,6 +349,9 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                                                     <div className="inline-flex flex-col items-center gap-1">
                                                         <span className="text-center text-base leading-none text-white">Desde</span>
                                                         <span className="text-[28px] leading-none text-white">{vehiclePrice(card)}</span>
+                                                        {vehicleBono(card) && (
+                                                            <span className="text-center text-sm font-semibold leading-none text-white">{vehicleBono(card)}</span>
+                                                        )}
                                                     </div>
                                                     <a
                                                         href={vehicleHref(card)}
@@ -355,15 +392,15 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                                                             )}
                                                             <div className="relative flex h-full flex-col items-center justify-between">
                                                                 <div className="mt-6 flex w-65 flex-col items-center gap-3">
-                                                                    <span className="text-center text-2xl font-semibold uppercase leading-none text-white drop-shadow">
-                                                                        {card.name}
-                                                                    </span>
                                                                     {(card.force_electric_badge ?? vehicleElectric(card)) && <ElectricBadge />}
                                                                 </div>
                                                                 <div className="mb-3 flex flex-col items-center gap-3">
                                                                     <div className="inline-flex flex-col items-center gap-1">
                                                                         <span className="text-center text-base leading-none text-white">Desde</span>
                                                                         <span className="text-[28px] leading-none text-white">{vehiclePrice(card)}</span>
+                                                                        {vehicleBono(card) && (
+                                                                            <span className="text-center text-sm font-semibold leading-none text-white">{vehicleBono(card)}</span>
+                                                                        )}
                                                                     </div>
                                                                     <a
                                                                         href={vehicleHref(card)}
@@ -505,7 +542,7 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                                                     tags={vehicleTags(v)}
                                                     price={vehiclePrice(v)}
                                                     href={vehicleHref(v)}
-                                                    on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle ?? '' })}
+                                                    on360Click={() => open360(v)}
                                                 />
                                             ))}
                                         </div>
@@ -520,7 +557,7 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                                                     tags={vehicleTags(v)}
                                                     price={vehiclePrice(v)}
                                                     href={vehicleHref(v)}
-                                                    on360Click={() => setModal360({ open: true, name: v.name, subtitle: v.subtitle ?? '' })}
+                                                    on360Click={() => open360(v)}
                                                 />
                                             ))}
                                         </div>
@@ -540,6 +577,8 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                 onClose={() => setModal360({ ...modal360, open: false })}
                 name={modal360.name}
                 subtitle={modal360.subtitle}
+                frames={modal360.frames}
+                detailHref={modal360.href}
             />
 
             {/* Drawer de filtros mobile */}

@@ -79,6 +79,7 @@ class VehicleVersionController extends Controller
                 'material_code' => $data['material_code'] ?? null,
                 'option_code' => $data['option_code'] ?? null,
                 'description' => $data['description'] ?? null,
+                'multimedia' => $this->normalizeMultimedia($data['multimedia'] ?? []),
                 'is_active' => $data['is_active'] ?? true,
                 'display_order' => $data['display_order'] ?? 0,
             ]);
@@ -127,6 +128,7 @@ class VehicleVersionController extends Controller
                 'material_code' => $data['material_code'] ?? null,
                 'option_code' => $data['option_code'] ?? null,
                 'description' => $data['description'] ?? null,
+                'multimedia' => $this->normalizeMultimedia($data['multimedia'] ?? []),
                 'is_active' => $data['is_active'] ?? true,
                 'display_order' => $data['display_order'] ?? 0,
             ]);
@@ -155,6 +157,55 @@ class VehicleVersionController extends Controller
         $vehicleVersion->delete();
 
         return redirect('/admin/vehicle-versions')->with('success', 'Versión eliminada.');
+    }
+
+    /**
+     * Sube UNA foto del visor 360 de una versión (un archivo por request).
+     * Mismo patrón que el de modelos: endpoint dedicado para esquivar el
+     * MaxReqBodySize del LSWS con batches grandes. El JS ya comprime la
+     * imagen; acá guardamos tal cual y devolvemos la URL. La asociación
+     * foto→color vive en el state de React hasta que se guarda la versión.
+     */
+    public function uploadPhoto360(Request $request, VehicleVersion $vehicleVersion)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'image', 'max:51200'], // 50 MB
+        ]);
+
+        $request->session()->save();
+
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->guessExtension() ?? 'webp'));
+        $name = Str::random(40).'.'.$extension;
+        $directory = 'vehicle-versions/'.$vehicleVersion->id.'/360';
+        $path = $file->storeAs($directory, $name, 'public');
+
+        return response()->json(['url' => '/storage/'.$path]);
+    }
+
+    /**
+     * Sube UN archivo (imagen o video) de la sección Multimedia de la versión.
+     * Los videos NO se optimizan; las imágenes ya vienen comprimidas del
+     * cliente. Las URLs de YouTube no pasan por acá (se guardan como texto).
+     */
+    public function uploadMedia(Request $request, VehicleVersion $vehicleVersion)
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'mimes:jpg,jpeg,png,webp,mp4,webm,mov,m4v', 'max:153600'], // 150 MB
+        ]);
+
+        $request->session()->save();
+
+        $file = $request->file('file');
+        $extension = strtolower($file->getClientOriginalExtension() ?: ($file->guessExtension() ?? 'bin'));
+        $name = Str::random(40).'.'.$extension;
+        $directory = 'vehicle-versions/'.$vehicleVersion->id.'/multimedia';
+        $path = $file->storeAs($directory, $name, 'public');
+
+        return response()->json([
+            'url' => '/storage/'.$path,
+            'is_video' => in_array($extension, ['mp4', 'webm', 'mov', 'm4v'], true),
+        ]);
     }
 
     /**
@@ -218,7 +269,69 @@ class VehicleVersionController extends Controller
                 ->groupBy('category'),
             'enums' => $this->enums(),
             'suggestions' => $this->collectSuggestions(),
+            // Otras versiones del MISMO modelo, para poder replicar colores entre ellas
+            'siblings' => $version ? VehicleVersion::where('vehicle_model_id', $version->vehicle_model_id)
+                ->where('id', '!=', $version->id)
+                ->orderBy('model_year', 'desc')
+                ->orderBy('trim_name')
+                ->withCount('colors')
+                ->get(['id', 'trim_name', 'model_year'])
+                ->map(fn ($v) => [
+                    'id' => $v->id,
+                    'label' => "{$v->trim_name} ({$v->model_year})",
+                    'colors_count' => $v->colors_count,
+                ])
+                ->all() : [],
         ];
+    }
+
+    /**
+     * Replica los colores (con sus fotos 360) de esta versión a otras versiones
+     * del mismo modelo. Útil cuando la marca no entrega PNG por versión y se
+     * usa la misma imagen para varias. Reemplaza por completo los colores
+     * existentes en las versiones destino.
+     */
+    public function replicateColors(Request $request, VehicleVersion $vehicleVersion)
+    {
+        $data = $request->validate([
+            'targets'   => ['required', 'array', 'min:1'],
+            'targets.*' => ['integer', 'exists:vehicle_versions,id'],
+        ]);
+
+        $sourceColors = $vehicleVersion->colors()->orderBy('display_order')->get();
+        if ($sourceColors->isEmpty()) {
+            return back()->with('error', 'Esta versión no tiene colores para replicar. Guardá los colores antes de replicar.');
+        }
+
+        // Filtra destinos: distintos al origen y del mismo modelo (defensa server-side).
+        $targets = VehicleVersion::whereIn('id', $data['targets'])
+            ->where('id', '!=', $vehicleVersion->id)
+            ->where('vehicle_model_id', $vehicleVersion->vehicle_model_id)
+            ->get();
+
+        if ($targets->isEmpty()) {
+            return back()->with('error', 'No hay versiones destino válidas (deben pertenecer al mismo modelo).');
+        }
+
+        DB::transaction(function () use ($sourceColors, $targets) {
+            foreach ($targets as $target) {
+                VersionColor::where('vehicle_version_id', $target->id)->delete();
+                foreach ($sourceColors as $i => $sc) {
+                    VersionColor::create([
+                        'vehicle_version_id' => $target->id,
+                        'name'               => $sc->name,
+                        'hex'                => $sc->hex,
+                        'type'               => $sc->type ?? 'solid',
+                        'is_available'       => (bool) $sc->is_available,
+                        'photos_360'         => $sc->photos_360 ?? [],
+                        'display_order'      => $i,
+                    ]);
+                }
+            }
+        });
+
+        $count = $targets->count();
+        return back()->with('success', "Colores replicados a {$count} versión".($count === 1 ? '' : 'es').'.');
     }
 
     private function enums(): array
@@ -307,6 +420,24 @@ class VehicleVersionController extends Controller
         $version->features()->sync($sync);
     }
 
+    /**
+     * Normaliza la lista de multimedia: solo items con type válido
+     * (image/video/youtube) y url no vacía, preservando el orden.
+     */
+    private function normalizeMultimedia(array $items): array
+    {
+        $valid = ['image', 'video', 'youtube'];
+        $out = [];
+        foreach ($items as $it) {
+            $type = $it['type'] ?? null;
+            $url = $it['url'] ?? null;
+            if (in_array($type, $valid, true) && is_string($url) && $url !== '') {
+                $out[] = ['type' => $type, 'url' => $url];
+            }
+        }
+        return $out;
+    }
+
     private function syncColors(VehicleVersion $version, array $colors): void
     {
         $existingIds = $version->colors()->pluck('id')->all();
@@ -316,12 +447,19 @@ class VehicleVersionController extends Controller
             if (empty($c['name'])) {
                 continue;
             }
+            // photos_360: lista de URLs (ya subidas vía el endpoint dedicado).
+            // Filtramos vacíos para no guardar slots sucios.
+            $photos360 = array_values(array_filter(
+                $c['photos_360'] ?? [],
+                fn ($url) => is_string($url) && $url !== '',
+            ));
             $row = [
                 'vehicle_version_id' => $version->id,
                 'name' => $c['name'],
                 'hex' => $c['hex'] ?? null,
                 'type' => $c['type'] ?? 'solid',
                 'is_available' => (bool) ($c['is_available'] ?? true),
+                'photos_360' => $photos360,
                 'display_order' => $i,
             ];
             if (! empty($c['id'])) {
@@ -360,6 +498,18 @@ class VehicleVersionController extends Controller
             'is_active' => ['boolean'],
             'display_order' => ['integer'],
             'engine' => ['nullable', 'array'],
+            // Validamos rangos campo-por-campo para que un error tipo "puse 2393
+            // en N° cilindros pensando que era cilindrada (cc)" salga como un
+            // 422 con mensaje claro en el form, en vez de un 500 SQL feo
+            // (cylinders es TINYINT, max 255 — cualquier valor de cilindrada
+            // real lo rompía).
+            'engine.cylinders'          => ['nullable', 'integer', 'min:1', 'max:16'],
+            'engine.displacement_cc'    => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'engine.hp'                 => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'engine.hp_rpm'             => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'engine.torque_nm'          => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'engine.torque_rpm_min'     => ['nullable', 'integer', 'min:0', 'max:65535'],
+            'engine.torque_rpm_max'     => ['nullable', 'integer', 'min:0', 'max:65535'],
             'electric' => ['nullable', 'array'],
             'dimensions' => ['nullable', 'array'],
             'capacities' => ['nullable', 'array'],
@@ -368,6 +518,11 @@ class VehicleVersionController extends Controller
             'feature_ids' => ['nullable', 'array'],
             'feature_ids.*' => ['integer', 'exists:features,id'],
             'colors' => ['nullable', 'array'],
+            'colors.*.photos_360' => ['nullable', 'array'],
+            'colors.*.photos_360.*' => ['nullable', 'string'],
+            'multimedia' => ['nullable', 'array'],
+            'multimedia.*.type' => ['required_with:multimedia.*.url', 'in:image,video,youtube'],
+            'multimedia.*.url' => ['required_with:multimedia.*.type', 'string'],
         ]);
     }
 

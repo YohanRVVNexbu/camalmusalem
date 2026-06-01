@@ -50,6 +50,11 @@ class CotizacionSyncService
             return false;
         }
 
+        if (! $this->client->hasCredentialsFor($branch->salesforce_dealer_id)) {
+            $this->markFailed($cot, "No hay credenciales Salesforce configuradas para el dealer {$branch->salesforce_dealer_id} ({$branch->name}).");
+            return false;
+        }
+
         $version = $cot->version_id ? VehicleVersion::find($cot->version_id) : null;
         if (! $version || ! $version->option_code) {
             $this->markFailed($cot, 'Versión sin option_code (campo requerido por Salesforce).');

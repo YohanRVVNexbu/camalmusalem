@@ -71,7 +71,7 @@ export function NuevosProductCard({
                 <div className="flex flex-1 flex-col items-start gap-2.5 pl-3">
                     <div className="flex items-end gap-1.5">
                         {electric && <ElectricIcon />}
-                        <span className="text-lg font-semibold uppercase leading-none text-black">
+                        <span className="line-clamp-2 text-lg font-semibold uppercase leading-tight text-black">
                             {name}
                         </span>
                     </div>
@@ -127,14 +127,14 @@ export function NuevosProductCard({
                     />
                 </div>
 
-                <div className="relative flex h-90 flex-col rounded-[20px] bg-white px-1 pb-3 pt-2">
+                <div className="relative flex h-62 flex-col rounded-[20px] bg-white px-1 pb-4 pt-2">
                     <div className="h-10 shrink-0" />
 
-                    <div className="flex flex-1 flex-col gap-3.5 overflow-hidden px-2">
-                        <div className="flex flex-col items-center gap-3">
+                    <div className="flex flex-1 flex-col gap-3 overflow-hidden px-2">
+                        <div className="flex flex-col items-center gap-2.5">
                             <div className="flex items-end gap-1.5">
                                 {electric && <ElectricIcon />}
-                                <span className="text-xl font-semibold uppercase leading-none text-black">
+                                <span className="line-clamp-2 text-center text-xl font-semibold uppercase leading-tight text-black">
                                     {name}
                                 </span>
                             </div>

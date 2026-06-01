@@ -8,7 +8,7 @@ class Accesorio extends Model
 {
     protected $fillable = [
         'sku', 'name', 'description', 'price', 'price_offer', 'compatible_with',
-        'category', 'images', 'is_visible', 'order',
+        'comentarios', 'category', 'images', 'is_visible', 'order',
     ];
 
     protected $casts = [

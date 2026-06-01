@@ -35,6 +35,7 @@ class CatalogPresenter
 
         $firstVersion = $model->versions->first();
         $firstPowertrain = $firstVersion?->powertrain_type;
+        $desde = $this->computeDesde($model);
 
         return [
             'id' => $model->id,
@@ -46,16 +47,65 @@ class CatalogPresenter
             'type' => self::BODY_TYPE_LABELS[$model->body_type] ?? null,
             'fuel' => $firstPowertrain ? (self::POWERTRAIN_LABELS[$firstPowertrain] ?? null) : null,
             'hero_image' => $model->hero_image,
+            // Imagen exclusiva del hero del detalle. El frontend hace
+            // fallback a hero_image si esta es null.
+            'detail_hero_image' => $model->detail_hero_image,
             'datasheet_url' => $model->datasheet_file ?: $model->datasheet_url,
             // Precios siempre como string de dígitos crudos. El frontend
             // aplica formatCLP() para mostrarlos. Esto evita formato doble y
             // mantiene una sola fuente de verdad para la presentación CLP.
             'price' => $firstVersion?->msrp_clp ? (string) $firstVersion->msrp_clp : 'Consultar',
+            // "Desde": precio MENOR entre versiones con el bono total aplicado,
+            // y el bono de esa versión. Usado en los cards destacados de /nuevos.
+            'desde_price' => $desde['price'],
+            'desde_bono'  => $desde['bono'],
             'gallery' => [],
             'highlights' => $this->buildHighlights($firstVersion),
             'versions' => $model->versions->map(fn ($v) => $this->presentVersion($v))->values()->all(),
             'is_visible' => $model->is_active,
             'detail_content' => $this->resolveDetailContent($model, $firstVersion),
+            // Shorts específicos de este vehículo (lista de {url, thumbnail}).
+            'shorts' => is_array($model->shorts) ? array_values($model->shorts) : [],
+        ];
+    }
+
+    /**
+     * Calcula el precio "Desde" del modelo: el MENOR precio con bono total
+     * aplicado entre todas sus versiones, y el bono de esa versión.
+     *
+     * Bono total por versión = bono_marca + bono_financiamiento_tradicional
+     * + bono_financiamiento_r9, que mapean respectivamente a las columnas
+     * de la lista de precios "Bono Base TCL" + "Bono Crédito" + "Bono
+     * Crédito R9" (ver ListaPreciosMayo2026Importer). Los modelos sin alguno
+     * de esos bonos lo tienen en 0, así que la suma funciona igual.
+     *
+     * Devuelve dígitos crudos como string (el frontend aplica formatCLP).
+     * Si ninguna versión tiene msrp, price = null (el card muestra "Consultar").
+     */
+    private function computeDesde(VehicleModel $model): array
+    {
+        $bestPrice = null;
+        $bestBono = 0;
+
+        foreach ($model->versions as $v) {
+            if (! $v->msrp_clp) {
+                continue;
+            }
+            $bono = (int) $v->bono_marca
+                + (int) $v->bono_financiamiento_tradicional
+                + (int) $v->bono_financiamiento_r9;
+            $price = (int) $v->msrp_clp - $bono;
+
+            if ($bestPrice === null || $price < $bestPrice) {
+                $bestPrice = $price;
+                $bestBono = $bono;
+            }
+        }
+
+        return [
+            'price' => $bestPrice !== null ? (string) $bestPrice : null,
+            // Solo exponemos el bono si es > 0 (para no mostrar "Incluye bono $0").
+            'bono'  => $bestBono > 0 ? (string) $bestBono : null,
         ];
     }
 
@@ -94,8 +144,13 @@ class CatalogPresenter
             ],
             'highlights' => $stored['highlights'] ?? [],
             'viewer_360' => [
+                'heading' => $stored['viewer_360']['heading'] ?? '',
                 'colors' => $stored['viewer_360']['colors'] ?? [],
                 'text_blocks' => $stored['viewer_360']['text_blocks'] ?? self::DEFAULT_360_TEXT_BLOCKS,
+            ],
+            'multimedia' => [
+                'video' => $stored['multimedia']['video'] ?? null,
+                'images' => array_values(array_filter($stored['multimedia']['images'] ?? [])),
             ],
         ];
     }
@@ -127,6 +182,16 @@ class CatalogPresenter
             'exterior'     => $this->exteriorRows($v),
             'seguridad'    => $this->safetyRows($v),
             'rendimiento'  => $this->performanceRows($v),
+            // Colores del visor 360 de ESTA versión, cada uno con su set de
+            // fotos. El frontend del detalle arma el 360 con version+color.
+            'colors_360'   => $v->colors->map(fn ($c) => [
+                'name'   => $c->name,
+                'hex'    => $c->hex,
+                'photos' => is_array($c->photos_360) ? array_values($c->photos_360) : [],
+            ])->values()->all(),
+            // Multimedia de ESTA versión: lista mixta [{type, url}] con
+            // type image|video|youtube. El frontend la renderiza por tipo.
+            'multimedia'   => is_array($v->multimedia) ? array_values($v->multimedia) : [],
         ];
     }
 
@@ -145,14 +210,21 @@ class CatalogPresenter
         $raw = fn (?int $val) => $val !== null ? (string) $val : null;
 
         $lista  = $v->msrp_clp;
-        $bMarca = $v->bono_marca;
-        $bR9    = $v->bono_financiamiento_r9;
-        $bTrad  = $v->bono_financiamiento_tradicional;
+        // Casteamos a int: los bonos pueden venir null y los usamos en restas.
+        $bMarca = (int) $v->bono_marca;
+        $bR9    = (int) $v->bono_financiamiento_r9;
+        $bTrad  = (int) $v->bono_financiamiento_tradicional;
 
+        // Cada precio con bono se muestra si SU propio bono existe, sin
+        // depender de bono_marca. Antes exigíamos bono_marca (Bono Base TCL)
+        // para mostrar R9/Tradicional, pero hay modelos sin Base TCL que igual
+        // tienen Bono Crédito (trad) y/o Bono Crédito R9 — esos quedaban con
+        // solo "Precio de lista". Los bonos R9/Trad stackean sobre marca:
+        // precio = lista − marca − bono (con marca=0 queda lista − bono).
         $precioLista  = $lista ? $raw($lista) : null;
-        $precioBono   = ($lista && $bMarca)            ? $raw($lista - $bMarca)         : null;
-        $precioR9     = ($lista && $bMarca && $bR9)    ? $raw($lista - $bMarca - $bR9)  : null;
-        $precioTrad   = ($lista && $bMarca && $bTrad)  ? $raw($lista - $bMarca - $bTrad): null;
+        $precioBono   = ($lista && $bMarca > 0) ? $raw($lista - $bMarca)          : null;
+        $precioR9     = ($lista && $bR9 > 0)    ? $raw($lista - $bMarca - $bR9)   : null;
+        $precioTrad   = ($lista && $bTrad > 0)  ? $raw($lista - $bMarca - $bTrad) : null;
 
         $rows = array_values(array_filter([
             $precioLista ? ['label' => 'Precio de lista',                        'value' => $precioLista, 'highlight' => false] : null,

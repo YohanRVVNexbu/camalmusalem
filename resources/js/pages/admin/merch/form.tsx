@@ -15,6 +15,7 @@ type MerchItem = {
     name: string;
     description: string | null;
     description_tech: string | null;
+    comentarios: string | null;
     category: string;
     subcategory: string | null;
     size: string | null;
@@ -32,7 +33,7 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
     const isEdit = !!merch?.id;
 
     const [data, setData] = useState<MerchItem>(merch ?? {
-        sku: null, name: '', description: null, description_tech: null,
+        sku: null, name: '', description: null, description_tech: null, comentarios: null,
         category: 'merch', subcategory: null, size: null,
         price: null, price_offer: null, status: 'disponible',
         branch: null, images: [], is_visible: true, order: 0,
@@ -52,6 +53,7 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
         fd.append('name', data.name);
         fd.append('description', data.description ?? '');
         fd.append('description_tech', data.description_tech ?? '');
+        fd.append('comentarios', data.comentarios ?? '');
         fd.append('category', data.category);
         fd.append('subcategory', data.subcategory ?? '');
         fd.append('size', data.size ?? '');
@@ -146,6 +148,10 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
                         <div className="col-span-4 grid gap-2">
                             <Label>Descripción técnica</Label>
                             <Textarea value={data.description_tech ?? ''} onChange={set('description_tech')} rows={3} />
+                        </div>
+                        <div className="col-span-4 grid gap-2">
+                            <Label>Comentarios <span className="text-muted-foreground text-xs">(nota manual; aparece en la ficha del producto)</span></Label>
+                            <Textarea value={data.comentarios ?? ''} onChange={set('comentarios')} rows={3} placeholder="Ej: Edición limitada, stock por sucursal…" />
                         </div>
                     </div>
 

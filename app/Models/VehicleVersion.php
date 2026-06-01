@@ -18,12 +18,13 @@ class VehicleVersion extends Model
         'powertrain_type', 'drivetrain', 'transmission_type', 'transmission_speeds',
         'msrp_clp', 'bono_marca', 'bono_financiamiento_r9', 'bono_financiamiento_tradicional',
         'sales_code', 'material_code', 'option_code', 'description', 'hero_image',
-        'is_active', 'display_order',
+        'multimedia', 'is_active', 'display_order',
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'model_year' => 'integer',
+        'multimedia' => 'array',
     ];
 
     public function model(): BelongsTo

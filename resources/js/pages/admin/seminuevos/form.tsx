@@ -20,11 +20,11 @@ type BranchLite = { id: number; name: string; city: string | null };
 
 type Seminuevo = {
     id?: number; brand: string; model: string; vu_code: string | null; slug: string | null; year: number; km: number;
-    price: string; down_payment: string | null;
+    price: string; price_offer: string | null; down_payment: string | null;
     fuel: string | null; transmission: string | null; traction: string | null;
     doors: number; seats: number; color: string | null; description: string | null;
     gallery: string[]; featured_gallery: string[]; specs: Specs | null;
-    is_visible: boolean; order: number;
+    is_visible: boolean; certified: boolean; order: number;
     branch_id: number | null;
 };
 
@@ -200,9 +200,9 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
     const [data, setData] = useState<Seminuevo>(() => {
         const base = seminuevo ?? {
             brand: 'Toyota', model: '', vu_code: null, slug: null, year: new Date().getFullYear(), km: 0,
-            price: '', down_payment: null, fuel: null, transmission: null, traction: null,
+            price: '', price_offer: null, down_payment: null, fuel: null, transmission: null, traction: null,
             doors: 5, seats: 5, color: null, description: null,
-            gallery: [], featured_gallery: [], specs: null, is_visible: true, order: 0,
+            gallery: [], featured_gallery: [], specs: null, is_visible: true, certified: false, order: 0,
             branch_id: null,
         };
         return { ...base, specs: normalizeSpecs(base.specs) };
@@ -221,18 +221,36 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
     const setSpecs = (section: keyof Specs, rows: any) =>
         set('specs', { ...specs, [section]: rows });
 
+    const moveGallery = (i: number, dir: -1 | 1) => {
+        const arr = [...(data.gallery ?? [])];
+        const j = i + dir;
+        if (j < 0 || j >= arr.length) return;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        setData({ ...data, gallery: arr });
+    };
+    const moveFeatured = (i: number, dir: -1 | 1) => {
+        const arr = [...(data.featured_gallery ?? [])];
+        const j = i + dir;
+        if (j < 0 || j >= arr.length) return;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        setData({ ...data, featured_gallery: arr });
+    };
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
         const formData = new FormData();
         const fields: (keyof Seminuevo)[] = [
-            'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'down_payment',
-            'fuel', 'transmission', 'traction', 'doors', 'seats', 'color', 'description', 'is_visible', 'order', 'branch_id',
+            'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'price_offer', 'down_payment',
+            'fuel', 'transmission', 'traction', 'doors', 'seats', 'color', 'description', 'is_visible', 'certified', 'order', 'branch_id',
         ];
         fields.forEach((f) => formData.append(f as string, String(data[f] ?? '')));
         formData.set('is_visible', data.is_visible ? '1' : '0');
+        formData.set('certified', data.certified ? '1' : '0');
         formData.append('specs', JSON.stringify(specs));
 
+        (data.gallery ?? []).forEach((u) => formData.append('gallery_order[]', u));
+        (data.featured_gallery ?? []).forEach((u) => formData.append('featured_order[]', u));
         newGallery.forEach((f) => formData.append('gallery_new[]', f));
         removeGallery.forEach((u) => formData.append('gallery_remove[]', u));
         newFeatured.forEach((f) => formData.append('featured_new[]', f));
@@ -261,9 +279,15 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
 
                 <form onSubmit={submit} className="flex flex-col gap-6">
-                    <div className="flex items-center space-x-3">
-                        <Checkbox checked={data.is_visible} onCheckedChange={(v) => set('is_visible', !!v)} />
-                        <Label>Publicado</Label>
+                    <div className="flex flex-wrap items-center gap-x-8 gap-y-3">
+                        <div className="flex items-center space-x-3">
+                            <Checkbox checked={data.is_visible} onCheckedChange={(v) => set('is_visible', !!v)} />
+                            <Label>Publicado</Label>
+                        </div>
+                        <div className="flex items-center space-x-3">
+                            <Checkbox checked={data.certified} onCheckedChange={(v) => set('certified', !!v)} />
+                            <Label>Seminuevo Certificado Toyota Musalem <span className="text-muted-foreground text-xs">(muestra el distintivo en el vehículo)</span></Label>
+                        </div>
                     </div>
                     <Separator />
 
@@ -317,10 +341,23 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                             />
                         </div>
                         <div className="grid gap-2">
+                            <Label>Precio oferta <span className="text-muted-foreground text-xs">(opcional — para campañas con descuento)</span></Label>
+                            <Input
+                                value={formatCLP(data.price_offer)}
+                                onChange={(e) => set('price_offer', e.target.value.replace(/[^0-9]/g, '') || null)}
+                                placeholder="$ 13.990.000"
+                                inputMode="numeric"
+                            />
+                            {data.price_offer && <p className="text-xs text-muted-foreground">Se mostrará como precio rebajado y el precio normal aparecerá tachado.</p>}
+                        </div>
+                        <div className="grid gap-2">
                             <Label>Combustible</Label>
                             <Select value={data.fuel ?? ''} onValueChange={(v) => set('fuel', v)}>
                                 <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
                                 <SelectContent>
+                                    {data.fuel && !['Gasolina', 'Diésel', 'Eléctrico', 'Híbrido'].includes(data.fuel) && (
+                                        <SelectItem value={data.fuel}>{data.fuel} (importado)</SelectItem>
+                                    )}
                                     <SelectItem value="Gasolina">Gasolina</SelectItem>
                                     <SelectItem value="Diésel">Diésel</SelectItem>
                                     <SelectItem value="Eléctrico">Eléctrico</SelectItem>
@@ -333,6 +370,9 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                             <Select value={data.transmission ?? ''} onValueChange={(v) => set('transmission', v)}>
                                 <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
                                 <SelectContent>
+                                    {data.transmission && !['Automática', 'Manual', 'CVT', 'ECVT'].includes(data.transmission) && (
+                                        <SelectItem value={data.transmission}>{data.transmission} (importado)</SelectItem>
+                                    )}
                                     <SelectItem value="Automática">Automática</SelectItem>
                                     <SelectItem value="Manual">Manual</SelectItem>
                                     <SelectItem value="CVT">CVT</SelectItem>
@@ -345,6 +385,9 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                             <Select value={data.traction ?? ''} onValueChange={(v) => set('traction', v)}>
                                 <SelectTrigger><SelectValue placeholder="Seleccionar…" /></SelectTrigger>
                                 <SelectContent>
+                                    {data.traction && !['4x2', '4x4', 'AWD', 'FWD', 'RWD'].includes(data.traction) && (
+                                        <SelectItem value={data.traction}>{data.traction} (importado)</SelectItem>
+                                    )}
                                     <SelectItem value="4x2">4x2</SelectItem>
                                     <SelectItem value="4x4">4x4</SelectItem>
                                     <SelectItem value="AWD">AWD</SelectItem>
@@ -401,17 +444,29 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                     <div className="grid gap-2">
                         <Label className="text-base font-semibold">Galería de fotos (carrusel)</Label>
                         {(data.gallery ?? []).length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {data.gallery.map((url) => (
-                                    <div key={url} className="relative">
-                                        <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
-                                        <button type="button" onClick={() => {
-                                            setRemoveGallery([...removeGallery, url]);
-                                            setData({ ...data, gallery: data.gallery.filter((u) => u !== url) });
-                                        }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
-                                    </div>
-                                ))}
-                            </div>
+                            <>
+                                <p className="text-sm text-muted-foreground">La <strong>primera foto</strong> es la <strong>portada</strong> (la que aparece en el card del listado). Usá las flechas <strong>← →</strong> bajo cada foto para reordenar.</p>
+                                <div className="flex flex-wrap gap-3">
+                                    {data.gallery.map((url, i) => (
+                                        <div key={url} className="flex flex-col items-center gap-1">
+                                            <div className={`relative ${i === 0 ? 'ring-2 ring-primary' : ''} rounded-lg`}>
+                                                <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
+                                                {i === 0 && (
+                                                    <span className="absolute left-1 top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase leading-none text-primary-foreground">Portada</span>
+                                                )}
+                                                <button type="button" onClick={() => {
+                                                    setRemoveGallery([...removeGallery, url]);
+                                                    setData({ ...data, gallery: data.gallery.filter((u) => u !== url) });
+                                                }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
+                                            </div>
+                                            <div className="flex w-32 items-stretch gap-1">
+                                                <button type="button" onClick={() => moveGallery(i, -1)} disabled={i === 0} className="flex flex-1 items-center justify-center rounded-md border bg-background py-1 text-base leading-none hover:bg-muted disabled:opacity-30" title="Mover a la izquierda">←</button>
+                                                <button type="button" onClick={() => moveGallery(i, 1)} disabled={i === data.gallery.length - 1} className="flex flex-1 items-center justify-center rounded-md border bg-background py-1 text-base leading-none hover:bg-muted disabled:opacity-30" title="Mover a la derecha">→</button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </>
                         )}
                         <Input type="file" accept="image/*" multiple onChange={(e) => {
                             setNewGallery([...newGallery, ...Array.from(e.target.files ?? [])]);
@@ -432,16 +487,22 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                     {/* Featured gallery */}
                     <div className="grid gap-2">
                         <Label className="text-base font-semibold">Fotos destacadas (sección inferior)</Label>
-                        <p className="text-sm text-muted-foreground">Fotos grandes que aparecen debajo del carrusel en la vista del vehículo.</p>
+                        <p className="text-sm text-muted-foreground">Fotos grandes que aparecen debajo del carrusel en la vista del vehículo. Usá las flechas <strong>← →</strong> bajo cada foto para reordenarlas.</p>
                         {(data.featured_gallery ?? []).length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {data.featured_gallery.map((url) => (
-                                    <div key={url} className="relative">
-                                        <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
-                                        <button type="button" onClick={() => {
-                                            setRemoveFeatured([...removeFeatured, url]);
-                                            setData({ ...data, featured_gallery: data.featured_gallery.filter((u) => u !== url) });
-                                        }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
+                            <div className="flex flex-wrap gap-3">
+                                {data.featured_gallery.map((url, i) => (
+                                    <div key={url} className="flex flex-col items-center gap-1">
+                                        <div className="relative">
+                                            <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
+                                            <button type="button" onClick={() => {
+                                                setRemoveFeatured([...removeFeatured, url]);
+                                                setData({ ...data, featured_gallery: data.featured_gallery.filter((u) => u !== url) });
+                                            }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
+                                        </div>
+                                        <div className="flex w-32 items-stretch gap-1">
+                                            <button type="button" onClick={() => moveFeatured(i, -1)} disabled={i === 0} className="flex flex-1 items-center justify-center rounded-md border bg-background py-1 text-base leading-none hover:bg-muted disabled:opacity-30" title="Mover a la izquierda">←</button>
+                                            <button type="button" onClick={() => moveFeatured(i, 1)} disabled={i === data.featured_gallery.length - 1} className="flex flex-1 items-center justify-center rounded-md border bg-background py-1 text-base leading-none hover:bg-muted disabled:opacity-30" title="Mover a la derecha">→</button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Pencil, Plus, Trash2 } from 'lucide-react';
-import { useState } from 'react';
+import { Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
+import { Input } from '@/components/ui/input';
 import {
     AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
     AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
@@ -9,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { ImportExportBar } from '@/components/admin/import-export-bar';
+import { CrossReferenceSync } from '@/components/admin/cross-reference-sync';
 import AdminLayout from '@/layouts/admin-layout';
 
 type MerchItem = {
@@ -27,6 +29,13 @@ type MerchItem = {
 export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [query, setQuery] = useState('');
+
+    const filtered = useMemo(() => {
+        const q = query.trim().toLowerCase();
+        if (!q) return merch;
+        return merch.filter((m) => `${m.name} ${m.sku ?? ''} ${m.category} ${m.subcategory ?? ''} ${m.size ?? ''}`.toLowerCase().includes(q));
+    }, [merch, query]);
 
     return (
         <AdminLayout breadcrumbs={[{ title: 'Dashboard', href: '/admin' }, { title: 'Merch', href: '/admin/merch' }]}>
@@ -38,6 +47,7 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
                         <p className="text-sm text-muted-foreground">Productos de merchandising Toyota Musalem.</p>
                     </div>
                     <div className="flex gap-2">
+                        <CrossReferenceSync />
                         <ImportExportBar
                             entityLabel="merch"
                             exportUrl="/admin/merch/export"
@@ -54,6 +64,11 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
                 )}
 
+                <div className="relative max-w-sm">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                    <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre, SKU, categoría o talla…" className="pl-9" />
+                </div>
+
                 <div className="rounded-lg border">
                     <Table>
                         <TableHeader>
@@ -69,7 +84,7 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {merch.map((m) => (
+                            {filtered.map((m) => (
                                 <TableRow key={m.id}>
                                     <TableCell className="font-medium">{m.name}</TableCell>
                                     <TableCell className="text-xs text-muted-foreground">{m.sku ?? '—'}</TableCell>
@@ -97,9 +112,9 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
                                     </TableCell>
                                 </TableRow>
                             ))}
-                            {merch.length === 0 && (
+                            {filtered.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">No hay merch.</TableCell>
+                                    <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">{query ? 'No se encontró merch para tu búsqueda.' : 'No hay merch.'}</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

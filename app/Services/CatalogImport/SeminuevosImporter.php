@@ -35,11 +35,12 @@ class SeminuevosImporter
                 continue;
             }
 
-            $year  = (int) ($row[3] ?? 0);
-            $color = $this->str($row[4]);
-            $price = $this->str($row[9]);
-            $bonus = $this->str($row[10]);
-            $km    = (int) ($row[19] ?? 0);
+            $year      = (int) ($row[3] ?? 0);
+            $color     = $this->str($row[4]);
+            $price     = $this->money($row[9]);   // Precio lista (CLP)
+            $financed  = $this->money($row[11]);  // Precio Lista + Bono (= "Precio con Financiamiento")
+            $km        = (int) ($row[19] ?? 0);
+            $certified = $this->parseCertified($row[6] ?? null); // Certificación Toyota Usados
 
             // Mapeo de características booleanas desde la columna U (índice 20) en adelante
             $specs = $this->parseSpecs($row);
@@ -47,22 +48,25 @@ class SeminuevosImporter
             $data = [
                 'brand'        => $brand,
                 'model'        => $model,
+                'vu_code'      => $vu ?: null,
                 'slug'         => Str::slug("{$brand}-{$model}-{$year}-".Str::random(4)),
                 'year'         => $year ?: null,
                 'color'        => $color,
                 'km'           => $km,
                 'price'        => $price,
-                'down_payment' => $bonus,
+                'down_payment' => $financed,
                 'fuel'         => $this->str($row[18]),
                 'transmission' => $this->str($row[14]),
                 'traction'     => $this->str($row[13]),
+                'certified'    => $certified,
                 'specs'        => $specs ?: null,
                 'is_visible'   => true,
             ];
 
-            // Upsert por VU (código interno) si está presente
-            if ($vu !== '' && is_numeric($vu)) {
-                $existing = Seminuevo::where('id', (int) $vu)->first();
+            // Upsert por VU (código interno único) si está presente: si ya existe
+            // un seminuevo con ese VU, se actualiza; si no, se crea uno nuevo.
+            if ($vu !== '') {
+                $existing = Seminuevo::where('vu_code', $vu)->first();
                 if ($existing) {
                     unset($data['slug']); // Preservar slug existente
                     $existing->update($data);
@@ -120,6 +124,18 @@ class SeminuevosImporter
         return $specs;
     }
 
+    /**
+     * Interpreta la columna "Certificación Toyota Usados". Como puede traer
+     * "Si", "X", "Certificado", una fecha o un código, tratamos como
+     * certificado cualquier valor NO vacío que no sea explícitamente negativo.
+     */
+    private function parseCertified(mixed $val): bool
+    {
+        $v = mb_strtolower(trim((string) ($val ?? '')));
+
+        return $v !== '' && ! in_array($v, ['no', '0', 'false', 'n/a', '-', 'sin', 'sin certificar', 'no certificado']);
+    }
+
     private function parseBool(mixed $val): bool
     {
         if (is_bool($val)) {
@@ -135,5 +151,17 @@ class SeminuevosImporter
         $s = trim((string) ($val ?? ''));
 
         return $s !== '' ? $s : null;
+    }
+
+    /**
+     * Normaliza un valor monetario a SOLO dígitos (canónico para la BD).
+     * Quita separadores de miles, símbolos y espacios ("14,790,000" → "14790000").
+     * Devuelve null si no quedan dígitos.
+     */
+    private function money(mixed $val): ?string
+    {
+        $digits = preg_replace('/[^0-9]/', '', (string) ($val ?? ''));
+
+        return $digits !== '' ? $digits : null;
     }
 }

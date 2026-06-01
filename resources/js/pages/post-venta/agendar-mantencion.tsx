@@ -70,20 +70,30 @@ const carouselCards: (
 export default function AgendarMantencion({
     footer,
     mantencion_hero,
+    mantencion_reserva,
     branches = [],
     services = [],
     vehicle_models = [],
 }: {
     footer: any | null;
     mantencion_hero?: any | null;
+    mantencion_reserva?: any | null;
     branches?: BranchLite[];
     services?: ServiceLite[];
     vehicle_models?: VehicleModelLite[];
 }) {
     const hero = mantencion_hero ?? {};
+    const reserva = mantencion_reserva ?? {};
     const isMobile = useIsMobile();
     const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
-    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
+    const reservaImg = pickResponsiveImage(reserva.image, reserva.image_mobile, isMobile) || thirdSectionImg;
+    const reservaStep2Img = pickResponsiveImage(reserva.step2_image, reserva.step2_image_mobile, isMobile) || step2Img;
+    const reservaStep4Img = pickResponsiveImage(reserva.step4_image, reserva.step4_image_mobile, isMobile) || step4Img;
+    const { flash, horariosAtencion: horariosShared } = usePage<{
+        flash: { success?: string; error?: string };
+        horariosAtencion?: { label: string; value: string }[];
+    }>().props;
+    const horariosAtencion = horariosShared ?? [];
     const [submitting, setSubmitting] = useState(false);
 
     useEffect(() => {
@@ -242,13 +252,10 @@ export default function AgendarMantencion({
                 <section className="flex w-full flex-col items-start bg-white px-5 pt-10 lg:px-15 lg:pt-20">
                     <div className="flex w-full flex-col items-start gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-0">
                         <h2 className="text-left text-2xl leading-[120%] font-semibold text-black lg:w-115.25 lg:text-[40px]">
-                            Servicio técnico Musalem
+                            {reserva.carousel_title || 'Servicio técnico Musalem'}
                         </h2>
                         <p className="text-left text-sm leading-[120%] font-normal text-black lg:w-130 lg:text-base">
-                            Nuestro objetivo está enfocado en ofrecer y entregar
-                            a nuestros clientes un servicio de alto nivel en
-                            calidad y seguridad en cada reparación que
-                            realizamos.
+                            {reserva.carousel_description || 'Nuestro objetivo está enfocado en ofrecer y entregar a nuestros clientes un servicio de alto nivel en calidad y seguridad en cada reparación que realizamos.'}
                         </p>
                     </div>
 
@@ -317,25 +324,22 @@ export default function AgendarMantencion({
                             <div key="base" className="flex w-full flex-col items-start gap-7.5 lg:flex-row lg:items-center lg:gap-20" style={{ animation: 'fadeSlideDown 0.5s ease-out' }}>
                                 <div className="flex flex-col items-start justify-center gap-5 lg:gap-10">
                                     <h2 className="text-[28px] leading-[120%] font-semibold text-black lg:text-[40px]">
-                                        Reserva tu hora
+                                        {reserva.title || 'Reserva tu hora'}
                                     </h2>
                                     <p className="text-sm leading-[120%] font-normal text-black lg:w-130 lg:text-base">
-                                        Ahorra tiempo programando el servicio aquí
-                                        mismo. Después de enviar el formulario, nos
-                                        pondremos en contacto para confirmar su cita de
-                                        servicio.
+                                        {reserva.description || 'Ahorra tiempo programando el servicio aquí mismo. Después de enviar el formulario, nos pondremos en contacto para confirmar su cita de servicio.'}
                                     </p>
                                     <button
                                         onClick={() => { setShowForm(true); setFormStep(0); setStepDirection('right'); prevStepRef.current = 0; }}
                                         className="flex w-full cursor-pointer items-center justify-center gap-2.5 rounded-[60px] bg-black px-8 py-4 text-base leading-[120%] font-normal text-white transition hover:bg-black/85 lg:w-auto lg:px-15 lg:py-4.75"
                                     >
-                                        Ir a agendar servicio
+                                        {reserva.button_text || 'Ir a agendar servicio'}
                                     </button>
                                 </div>
                                 <div
                                     className="flex aspect-square w-full shrink-0 flex-col items-start justify-end gap-2.5 rounded-[30px] p-3 lg:aspect-auto lg:h-140 lg:w-140 lg:p-7.5"
                                     style={{
-                                        background: `url(${thirdSectionImg}) lightgray center / cover no-repeat`,
+                                        background: `url(${reservaImg}) lightgray center / cover no-repeat`,
                                     }}
                                 >
                                     <div
@@ -347,14 +351,12 @@ export default function AgendarMantencion({
                                     >
                                         <div className="flex flex-col items-start gap-4 self-stretch">
                                             <span className="text-xl leading-none font-semibold text-white uppercase">Horario de atención</span>
-                                            <div className="flex h-3.5 items-center justify-between self-stretch">
-                                                <span className="text-sm leading-none font-normal text-white">Lunes a Viernes</span>
-                                                <span className="text-sm leading-none font-normal text-white">09:00 a 13:30 - 14:45 a 18:30</span>
-                                            </div>
-                                            <div className="flex h-3.5 items-center justify-between self-stretch">
-                                                <span className="text-sm leading-none font-normal text-white">Domingo</span>
-                                                <span className="text-sm leading-none font-normal text-white">Cerrado</span>
-                                            </div>
+                                            {horariosAtencion.map((h, i) => (
+                                                <div key={i} className="flex items-center justify-between gap-3 self-stretch">
+                                                    <span className="text-sm leading-none font-normal text-white">{h.label}</span>
+                                                    <span className="text-sm leading-none font-normal text-white text-right">{h.value}</span>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
                                 </div>
@@ -423,7 +425,7 @@ export default function AgendarMantencion({
                                         ) : (
                                             <div className="relative aspect-square w-full overflow-hidden rounded-[30px] lg:h-140 lg:aspect-auto">
                                                 <img
-                                                    src={formStep <= 2 ? step2Img : step4Img}
+                                                    src={formStep <= 2 ? reservaStep2Img : reservaStep4Img}
                                                     alt=""
                                                     className="absolute inset-0 size-full object-cover transition-opacity duration-500"
                                                     key={formStep <= 2 ? 'step2' : 'step4'}

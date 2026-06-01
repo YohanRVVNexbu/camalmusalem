@@ -35,6 +35,7 @@ type VehicleData = {
     transmission: string;
     fuel: string;
     price: string;
+    href?: string;
 };
 
 type SeminuevosData = {
@@ -116,7 +117,18 @@ export function Seminuevos({ data }: { data: SeminuevosData }) {
                     </a>
                 </div>
 
-                {/* Carousel */}
+                {/* Empty state: cuando el catálogo real está vacío, evitar
+                    renderizar un carrusel sin cards. */}
+                {(!data.vehicles || data.vehicles.length === 0) ? (
+                    <div className={`flex w-full items-center justify-center rounded-[20px] border border-dashed border-black/15 bg-white/40 px-5 py-20 transition-all duration-700 delay-200 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+                        <p
+                            className="text-center text-base leading-[140%] text-black/60 md:text-lg"
+                            style={{ fontFamily: '"Toyota Type"' }}
+                        >
+                            No hay seminuevos disponibles en este momento.
+                        </p>
+                    </div>
+                ) : (
                 <div className={`flex w-full flex-col gap-10 transition-all duration-700 delay-200 ease-out ${visible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
                     <div className="overflow-hidden" ref={emblaRef}>
                         <div className="flex gap-5">
@@ -162,6 +174,7 @@ export function Seminuevos({ data }: { data: SeminuevosData }) {
                         </div>
                     )}
                 </div>
+                )}
             </div>
         </section>
     );

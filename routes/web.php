@@ -3,6 +3,7 @@
 use App\Http\Controllers\ComplianceController;
 use App\Http\Controllers\ContactoController;
 use App\Http\Controllers\CotizacionAccesorioController;
+use App\Http\Controllers\CotizacionMerchController;
 use App\Http\Controllers\CotizacionRepuestoController;
 use App\Http\Controllers\CotizacionVehiculoController;
 use App\Http\Controllers\HomeController;
@@ -32,6 +33,9 @@ Route::get('/post-venta/accesorios', [PostVentaController::class, 'accesorios'])
 Route::get('/post-venta/accesorios/{id}', [PostVentaController::class, 'accesorioShow'])->name('post-venta.accesorios.show');
 Route::get('/post-venta/accesorios/{id}/cotizar', [PostVentaController::class, 'accesorioCotizar'])->name('post-venta.accesorios.cotizar');
 Route::post('/post-venta/accesorios/{id}/cotizar', [CotizacionAccesorioController::class, 'store'])->name('post-venta.accesorios.cotizar.store');
+Route::get('/post-venta/merch/{id}', [PostVentaController::class, 'merchShow'])->name('post-venta.merch.show');
+Route::get('/post-venta/merch/{id}/cotizar', [PostVentaController::class, 'merchCotizar'])->name('post-venta.merch.cotizar');
+Route::post('/post-venta/merch/{id}/cotizar', [CotizacionMerchController::class, 'store'])->name('post-venta.merch.cotizar.store');
 Route::get('/post-venta/repuestos', [PostVentaController::class, 'repuestos'])->name('post-venta.repuestos');
 Route::post('/post-venta/repuestos/encargo', [SolicitudEncargoRepuestoController::class, 'store'])->name('post-venta.repuestos.encargo.store');
 Route::get('/post-venta/repuestos/{id}', [PostVentaController::class, 'repuestoShow'])->name('post-venta.repuestos.show');

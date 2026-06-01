@@ -34,20 +34,21 @@ class Denuncia extends Model
     public const ESTADO_CERRADA          = 'cerrada';
 
     /**
-     * Catálogo de delitos contemplados en la Ley 20.393 (actualizada por
-     * Ley 21.595 de Delitos Económicos). El cliente / abogada puede
-     * agregar entradas — los keys se guardan en `categoria` de la
-     * denuncia.
+     * Catálogo de delitos contemplados en Ley 20.393 (Responsabilidad
+     * Penal de las Personas Jurídicas) y Ley 19.913 (Lavado de Activos
+     * y Financiamiento del Terrorismo). Alineado al "Formulario de
+     * Denuncia MUSALEM" provisto por la abogada del cliente.
      */
     public const CATEGORIAS_LEY_20393 = [
-        'cohecho_funcionario'      => 'Cohecho a funcionario público',
-        'cohecho_privados'         => 'Cohecho entre particulares',
-        'lavado_activos'           => 'Lavado de activos',
-        'financiamiento_terrorismo' => 'Financiamiento del terrorismo',
-        'receptacion'              => 'Receptación',
-        'negociacion_incompatible' => 'Negociación incompatible',
-        'delitos_economicos'       => 'Delitos económicos (Ley 21.595)',
-        'otro'                     => 'Otro / no estoy seguro',
+        'lavado_activos'             => 'Lavado de activos',
+        'financiamiento_terrorismo'  => 'Financiamiento del terrorismo',
+        'cohecho_funcionario'        => 'Cohecho a funcionario público',
+        'receptacion'                => 'Receptación',
+        'corrupcion_privados'        => 'Corrupción entre particulares',
+        'administracion_desleal'     => 'Administración desleal',
+        'negociacion_incompatible'   => 'Negociación incompatible',
+        'apropiacion_indebida'       => 'Apropiación indebida',
+        'otro'                       => 'Otro (especifique)',
     ];
 
     /**
@@ -60,6 +61,62 @@ class Denuncia extends Model
         'acoso_sexual'     => 'Acoso sexual',
         'violencia_trabajo' => 'Violencia en el trabajo',
         'otro'             => 'Otro / no estoy seguro',
+    ];
+
+    /**
+     * Relación del denunciante con la empresa. Sección 2 del formulario.
+     */
+    public const RELACIONES_EMPRESA = [
+        'empleado'   => 'Empleado',
+        'proveedor'  => 'Proveedor',
+        'cliente'    => 'Cliente',
+        'accionista' => 'Accionista',
+        'otro'       => 'Otro',
+    ];
+
+    /**
+     * Frecuencia con la que ocurrió la conducta denunciada. Sección 3.
+     */
+    public const FRECUENCIAS = [
+        'evento_unico'  => 'Evento único',
+        'varias_veces'  => 'Ocurrió varias veces',
+        'regularmente'  => 'Ocurre regularmente',
+        'desconocido'   => 'Desconocido',
+    ];
+
+    /**
+     * Rangos de monto involucrado. Sección 3.
+     */
+    public const MONTOS = [
+        'menos_1m'    => 'Menos de $1.000.000',
+        '1m_10m'      => 'Entre $1.000.000 y $10.000.000',
+        '10m_100m'    => 'Entre $10.000.000 y $100.000.000',
+        'mas_100m'    => 'Más de $100.000.000',
+        'desconocido' => 'Desconocido / No aplica',
+    ];
+
+    /**
+     * Disponibilidad de evidencia física o digital. Sección 4.
+     */
+    public const EVIDENCIA = [
+        'si'           => 'Sí — La pondré a disposición del equipo investigador',
+        'no'           => 'No',
+        'posiblemente' => 'Posiblemente — Necesito más información sobre el proceso',
+    ];
+
+    /**
+     * Si la denuncia ya fue reportada antes. Sección 5.
+     */
+    public const REPORTADO_ANTES = [
+        'no'           => 'No — Es la primera vez que lo reporto',
+        'internamente' => 'Sí — Ya lo comuniqué internamente',
+        'externamente' => 'Sí — Ya lo comuniqué a una autoridad externa',
+    ];
+
+    public const OTROS_SABEN = [
+        'si'         => 'Sí',
+        'no'         => 'No',
+        'desconoce'  => 'Desconoce',
     ];
 
     protected $fillable = [

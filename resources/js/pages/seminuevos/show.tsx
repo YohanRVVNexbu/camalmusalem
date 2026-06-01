@@ -13,7 +13,7 @@ import { TransmissionIcon } from '@/components/icons/transmission-icon';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import certificateImg from '@images/seminuevos/certificate-toyota.png?format=webp';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 type SpecRow = { label: string; value: string };
 type Specs = { general: SpecRow[]; equipment: SpecRow[]; downloads: SpecRow[] };
@@ -36,6 +36,7 @@ type Seminuevo = {
     year: number;
     km: number;
     price: string;
+    price_offer: string | null;
     down_payment: string | null;
     fuel: string | null;
     transmission: string | null;
@@ -48,6 +49,7 @@ type Seminuevo = {
     featured_gallery: string[];
     specs: Specs | null;
     is_visible: boolean;
+    certified: boolean;
 };
 
 function FuelIcon({ fuel, className = '' }: { fuel: string; className?: string }) {
@@ -66,6 +68,7 @@ type DetailsTab = 'general' | 'equipment' | 'downloads';
 export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Seminuevo; footer: any | null }) {
     const [currentImage, setCurrentImage] = useState(0);
     const [detailsTab, setDetailsTab] = useState<DetailsTab>('general');
+    const [currentFeatured, setCurrentFeatured] = useState(0);
 
     useEffect(() => {
         const html = document.documentElement;
@@ -80,6 +83,28 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
 
     const prevImage = () => setCurrentImage((prev) => (prev === 0 ? images.length - 1 : prev - 1));
     const nextImage = () => setCurrentImage((prev) => (prev === images.length - 1 ? 0 : prev + 1));
+
+    const prevFeatured = () => setCurrentFeatured((p) => (p === 0 ? Math.max(featuredPhotos.length - 1, 0) : p - 1));
+    const nextFeatured = () => setCurrentFeatured((p) => (p === featuredPhotos.length - 1 ? 0 : p + 1));
+
+    // Tiras de miniaturas que siguen a la imagen principal (auto-scroll a la activa)
+    const thumbsDesktopRef = useRef<HTMLDivElement>(null);
+    const thumbsMobileRef = useRef<HTMLDivElement>(null);
+    const featuredThumbsRef = useRef<HTMLDivElement>(null);
+
+    const scrollThumbIntoView = (container: HTMLDivElement | null, index: number) => {
+        const el = container?.children[index] as HTMLElement | undefined;
+        el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+    };
+
+    useEffect(() => {
+        scrollThumbIntoView(thumbsDesktopRef.current, currentImage);
+        scrollThumbIntoView(thumbsMobileRef.current, currentImage);
+    }, [currentImage]);
+
+    useEffect(() => {
+        scrollThumbIntoView(featuredThumbsRef.current, currentFeatured);
+    }, [currentFeatured]);
 
     const title = `${seminuevo.brand} ${seminuevo.model} ${seminuevo.year}`.toUpperCase();
     const vehicleSlug = seminuevo.slug ?? seminuevo.id;
@@ -169,6 +194,9 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                             <span className="absolute left-3 top-3 rounded-full bg-black/50 px-3 py-1.5 text-xs leading-none text-white backdrop-blur-[10px]">
                                 Seminuevo
                             </span>
+                            {seminuevo.certified && (
+                                <img src={certificateImg} alt="Seminuevo Certificado Toyota Musalem" className="absolute right-3 top-3 h-16 w-auto drop-shadow-lg" />
+                            )}
                         </div>
 
                         {/* Thumbnails + arrows */}
@@ -181,7 +209,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                 >
                                     <ChevronLeft className="size-4 text-black" />
                                 </button>
-                                <div className="flex flex-1 gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
+                                <div ref={thumbsMobileRef} className="flex flex-1 gap-2 overflow-x-auto" style={{ scrollbarWidth: 'none' }}>
                                     {images.map((img, i) => (
                                         <button
                                             key={i}
@@ -237,7 +265,17 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                         <div className="flex flex-col gap-1.5">
                             <span className="text-base leading-none text-black/60">*Precio</span>
                             <div className="rounded-[10px] bg-white p-4">
-                                <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
+                                {seminuevo.price_offer ? (
+                                    <div className="flex flex-col gap-1.5">
+                                        <div className="flex items-center gap-2">
+                                            <span className="rounded-full bg-[#EB0A1E] px-2 py-1 text-xs font-semibold leading-none text-white">Oferta</span>
+                                            <span className="text-base leading-none text-[#EB0A1E] line-through">{formatCLP(seminuevo.price)}</span>
+                                        </div>
+                                        <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price_offer)}</span>
+                                    </div>
+                                ) : (
+                                    <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
+                                )}
                             </div>
                         </div>
 
@@ -380,6 +418,9 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                 <span className="absolute left-5 top-5 rounded-full bg-black/50 px-3 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
                                     Seminuevo
                                 </span>
+                                {seminuevo.certified && (
+                                    <img src={certificateImg} alt="Seminuevo Certificado Toyota Musalem" className="absolute right-5 top-5 h-24 w-auto drop-shadow-lg" />
+                                )}
                                 {images.length > 1 && (
                                     <>
                                         <button
@@ -398,14 +439,15 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                 )}
                             </div>
 
-                            {/* Thumbnails */}
+                            {/* Thumbnails: ancho landscape (similar a la foto real) +
+                                scroll horizontal cuando hay muchas. */}
                             {images.length > 1 && (
-                                <div className="flex gap-3">
+                                <div ref={thumbsDesktopRef} className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
                                     {images.map((img, i) => (
                                         <button
                                             key={i}
                                             onClick={() => setCurrentImage(i)}
-                                            className={`h-20 w-25 cursor-pointer overflow-hidden rounded-xl transition ${
+                                            className={`aspect-3/2 h-20 shrink-0 cursor-pointer overflow-hidden rounded-xl transition ${
                                                 i === currentImage ? 'ring-2 ring-black' : 'opacity-60 hover:opacity-100'
                                             }`}
                                         >
@@ -529,7 +571,17 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                             <div className="flex flex-col gap-1.5">
                                 <span className="text-lg leading-none text-black/60">*Precio</span>
                                 <div className="rounded-[10px] bg-[#EAEAF1] p-4">
-                                    <span className="text-[28px] font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
+                                    {seminuevo.price_offer ? (
+                                        <div className="flex flex-col gap-1.5">
+                                            <div className="flex items-center gap-2.5">
+                                                <span className="rounded-full bg-[#EB0A1E] px-2.5 py-1 text-xs font-semibold leading-none text-white">Oferta</span>
+                                                <span className="text-lg leading-none text-[#EB0A1E] line-through">{formatCLP(seminuevo.price)}</span>
+                                            </div>
+                                            <span className="text-[28px] font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price_offer)}</span>
+                                        </div>
+                                    ) : (
+                                        <span className="text-[28px] font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
+                                    )}
                                 </div>
                             </div>
 
@@ -601,20 +653,61 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                         </div>
                     </div>
 
-                    {/* Featured photos */}
+                    {/* Featured photos: imagen grande a ancho completo + miniaturas
+                        con scroll horizontal cuando hay muchas. */}
                     {featuredPhotos.length > 0 && (
-                        <div className="mt-15 flex flex-col gap-10">
+                        <div className="mt-15 flex flex-col gap-5">
                             <h2 className="text-[32px] leading-none text-black">Fotos destacadas</h2>
-                            <div className="flex gap-5">
-                                {featuredPhotos.map((img, i) => (
-                                    <img
-                                        key={i}
-                                        src={img}
-                                        alt={`Foto destacada ${i + 1}`}
-                                        className="h-100 flex-1 rounded-[19px] object-cover"
-                                    />
-                                ))}
+
+                            {/* Imagen destacada (ancho completo) */}
+                            <div className="relative overflow-hidden rounded-[20px]">
+                                <img
+                                    src={featuredPhotos[currentFeatured]}
+                                    alt={`Foto destacada ${currentFeatured + 1}`}
+                                    className="h-64 w-full object-cover transition-all duration-500 sm:h-100 lg:h-150"
+                                />
+                                {featuredPhotos.length > 1 && (
+                                    <>
+                                        <button
+                                            type="button"
+                                            onClick={prevFeatured}
+                                            aria-label="Anterior"
+                                            className="absolute left-4 top-1/2 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[60px] bg-black/80 backdrop-blur-[10px] transition hover:bg-black/60"
+                                        >
+                                            <ChevronLeft className="size-5 text-white" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={nextFeatured}
+                                            aria-label="Siguiente"
+                                            className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 cursor-pointer items-center justify-center rounded-[60px] bg-black/80 backdrop-blur-[10px] transition hover:bg-black/60"
+                                        >
+                                            <ChevronRight className="size-5 text-white" />
+                                        </button>
+                                        <span className="absolute bottom-4 left-1/2 -translate-x-1/2 rounded-full bg-black/50 px-3 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
+                                            {currentFeatured + 1} / {featuredPhotos.length}
+                                        </span>
+                                    </>
+                                )}
                             </div>
+
+                            {/* Tira de miniaturas: scroll horizontal cuando hay muchas */}
+                            {featuredPhotos.length > 1 && (
+                                <div ref={featuredThumbsRef} className="flex gap-3 overflow-x-auto pb-1" style={{ scrollbarWidth: 'thin' }}>
+                                    {featuredPhotos.map((img, i) => (
+                                        <button
+                                            key={i}
+                                            type="button"
+                                            onClick={() => setCurrentFeatured(i)}
+                                            className={`h-20 w-28 shrink-0 cursor-pointer overflow-hidden rounded-xl transition ${
+                                                i === currentFeatured ? 'ring-2 ring-black' : 'opacity-60 hover:opacity-100'
+                                            }`}
+                                        >
+                                            <img src={img} alt="" className="size-full object-cover" />
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )}
                 </div>

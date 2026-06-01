@@ -292,13 +292,16 @@ export default function RepuestoCotizar({ repuesto, footer }: { repuesto: Repues
 
                             {/* Price */}
                             {repuesto.price && (
-                                <div className="self-stretch rounded-[10px] p-4 lg:p-5" style={{ background: 'rgba(0,0,0,0.06)' }}>
-                                    <div className="flex items-center justify-between self-stretch">
-                                        <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
-                                        <span className="text-base font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                            {formatCLP(repuesto.price)}
-                                        </span>
+                                <div className="flex flex-col gap-1.5 self-stretch">
+                                    <div className="self-stretch rounded-[10px] p-4 lg:p-5" style={{ background: 'rgba(0,0,0,0.06)' }}>
+                                        <div className="flex items-center justify-between self-stretch">
+                                            <span className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>Precio:</span>
+                                            <span className="text-base font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                {formatCLP(repuesto.price)}
+                                            </span>
+                                        </div>
                                     </div>
+                                    <span className="text-xs leading-none text-black/50" style={{ fontFamily: '"Toyota Type"' }}>*Los valores no incluyen instalación.</span>
                                 </div>
                             )}
 

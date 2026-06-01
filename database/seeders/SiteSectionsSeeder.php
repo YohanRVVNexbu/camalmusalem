@@ -13,7 +13,14 @@ class SiteSectionsSeeder extends Seeder
         $this->copyAssets();
         $this->copyDefaults();
 
-        $url = fn (string $path) => Storage::disk('public')->url($path);
+        // Devolvemos paths RELATIVOS (/storage/...) en vez de absolutos
+        // (https://APP_URL/storage/...). Esto evita que la BD quede
+        // contaminada con el dominio del entorno donde se corrió el seeder:
+        // si seedeás en local con APP_URL=http://camalmusalem.test, antes
+        // los <img src> apuntaban a ese host hardcodeado y rompían en prod.
+        // Los paths relativos se resuelven contra el host actual de cada
+        // request, así la misma data funciona en local, staging y prod.
+        $url = fn (string $path) => '/storage/' . ltrim($path, '/');
 
         SiteSection::updateOrCreate(['section' => 'hero'], [
             'data' => [
@@ -440,11 +447,32 @@ class SiteSectionsSeeder extends Seeder
 
         SiteSection::updateOrCreate(['section' => 'whatsapp_button'], [
             'data' => [
-                'phone'   => '+56912345678',
-                'message' => 'Hola, quisiera información sobre los vehículos Toyota.',
+                // Lista de contactos. Si hay 1, el botón abre directo WhatsApp;
+                // si hay 2+, abre un menú para que el visitante elija.
+                'contacts' => [
+                    [
+                        'label'   => 'Ventas La Serena',
+                        'phone'   => '+56912345678',
+                        'message' => 'Hola, quisiera información sobre los vehículos Toyota.',
+                    ],
+                    [
+                        'label'   => 'Ventas Ovalle',
+                        'phone'   => '+56987654321',
+                        'message' => 'Hola, quisiera información sobre los vehículos Toyota.',
+                    ],
+                ],
             ],
             'is_visible' => true,
             'order' => 9,
+        ]);
+
+        SiteSection::updateOrCreate(['section' => 'accesorios_whatsapp'], [
+            'data' => [
+                'phone'   => '+56912345678',
+                'message' => 'Hola, quiero cotizar por el producto',
+            ],
+            'is_visible' => true,
+            'order' => 34,
         ]);
 
         SiteSection::updateOrCreate(['section' => 'compliance_hero'], [
@@ -471,6 +499,70 @@ class SiteSectionsSeeder extends Seeder
             ],
             'is_visible' => true,
             'order' => 31,
+        ]);
+
+        SiteSection::updateOrCreate(['section' => 'kinto_formulario'], [
+            'data' => [
+                'title'              => "Solicita tu arriendo\nKinto en Musalem",
+                'description'        => 'Conoce la opción de arriendo disponible a través de KINTO y déjanos tu solicitud para que un asesor de Musalem te contacte y te ayude a gestionar el proceso según sucursal, disponibilidad y fecha estimada.',
+                'button_text'        => 'Solicitar arriendo Kinto',
+                'image'              => '',
+                'image_mobile'       => '',
+                'step2_image'        => '',
+                'step2_image_mobile' => '',
+                'step3_image'        => '',
+                'step3_image_mobile' => '',
+            ],
+            'is_visible' => true,
+            'order' => 33,
+        ]);
+
+        SiteSection::updateOrCreate(['section' => 'mantencion_reserva'], [
+            'data' => [
+                'carousel_title'        => 'Servicio técnico Musalem',
+                'carousel_description'  => 'Nuestro objetivo está enfocado en ofrecer y entregar a nuestros clientes un servicio de alto nivel en calidad y seguridad en cada reparación que realizamos.',
+                'title'                 => 'Reserva tu hora',
+                'description'           => 'Ahorra tiempo programando el servicio aquí mismo. Después de enviar el formulario, nos pondremos en contacto para confirmar su cita de servicio.',
+                'button_text'           => 'Ir a agendar servicio',
+                'image'                 => '',
+                'image_mobile'          => '',
+                'step2_image'           => '',
+                'step2_image_mobile'    => '',
+                'step4_image'           => '',
+                'step4_image_mobile'    => '',
+            ],
+            'is_visible' => true,
+            'order' => 34,
+        ]);
+
+        SiteSection::updateOrCreate(['section' => 'repuestos_seccion'], [
+            'data' => [
+                'title'              => "Repuestos\nCamal Musalem",
+                'description'        => 'Disponemos de repuestos, accesorios y equipamiento para mantener y mejorar su vehículo, con opciones en seguridad, conectividad, audio y soluciones certificadas para faenas industriales y mineras.',
+                'card_title'         => "Encargo\nde repuestos",
+                'card_text'          => "Solicitamos el repuesto que necesites\n\nSi el repuesto no se encuentra disponible en nuestras dependencias, lo gestionamos directamente con las bodegas centrales de Toyota. El plazo de llegada es de 24 horas hábiles, con un abono mínimo del 50% del valor del repuesto.\nTambién ofrecemos despacho a domicilio o a la oficina de transportes que el cliente indique.",
+                'card_subtext'       => 'Pedidos después de las 16:00 horas se consideran para la solicitud del día siguiente.',
+                'image'              => '',
+                'image_mobile'       => '',
+                'form_title'         => "Solicitud de encargo\nde repuestos",
+                'form_description'   => 'Ahorra tiempo cotizando sus repuestos aquí mismo. Después de enviar el formulario, nos pondremos en contacto para entregarle información.',
+                'form_button_text'   => 'Solicitar repuestos',
+                'form_image'         => '',
+                'form_image_mobile'  => '',
+            ],
+            'is_visible' => true,
+            'order' => 35,
+        ]);
+
+        SiteSection::updateOrCreate(['section' => 'accesorios_seccion'], [
+            'data' => [
+                'title'        => "Merch\nOficial Toyota",
+                'description'  => 'Accesorios, prendas y productos oficiales que reflejan el estilo Toyota. Visítanos en nuestras sucursales Musalem y encuentra tus favoritos.',
+                'image'        => '',
+                'image_mobile' => '',
+            ],
+            'is_visible' => true,
+            'order' => 36,
         ]);
 
         SiteSection::updateOrCreate(['section' => 'maintenance_mode'], [

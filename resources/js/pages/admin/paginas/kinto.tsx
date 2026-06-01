@@ -12,6 +12,9 @@ import defaultHeroImg from '@images/kinto/hero_image.png?format=webp';
 import defaultCard1 from '@images/kinto/card_1.jpg?format=webp';
 import defaultCard2 from '@images/kinto/card_2.jpg?format=webp';
 import defaultCard3 from '@images/kinto/card_3.jpg?format=webp';
+import defaultFormImg from '@images/kinto/image_form.jpg?format=webp';
+import defaultStep2Img from '@images/mantencion/form_2_image.png?format=webp';
+import defaultStep3Img from '@images/mantencion/form_image_3.png?format=webp';
 const DEFAULT_PASO_IMGS = [defaultCard1, defaultCard2, defaultCard3];
 
 export default function KintoPage({ sections }: { sections: Record<string, SectionProp> }) {
@@ -35,8 +38,81 @@ export default function KintoPage({ sections }: { sections: Record<string, Secti
                 <HeroSection page={page} s={sections['kinto_hero']} />
                 <PasosSection page={page} s={sections['kinto_pasos']} />
                 <VehiculosSection page={page} s={sections['kinto_vehiculos']} />
+                <FormularioSection page={page} s={sections['kinto_formulario']} />
             </div>
         </AdminLayout>
+    );
+}
+
+// ── Solicitar arriendo (Form) ─────────────────────────────────────────────────
+function FormularioSection({ page, s }: { page: string; s: SectionProp }) {
+    const [data, setData] = useState(s.data);
+    const [visible, setVisible] = useState(s.is_visible);
+    const [imgFile, setImgFile] = useState<File | null>(null);
+    const [imgMobileFile, setImgMobileFile] = useState<File | null>(null);
+    const [step2File, setStep2File] = useState<File | null>(null);
+    const [step2MobileFile, setStep2MobileFile] = useState<File | null>(null);
+    const [step3File, setStep3File] = useState<File | null>(null);
+    const [step3MobileFile, setStep3MobileFile] = useState<File | null>(null);
+    const [processing, setProcessing] = useState(false);
+    const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
+
+    return (
+        <SectionCard page={page} sectionKey="kinto_formulario" label="Solicitar arriendo (textos e imágenes del formulario)" isVisible={visible}
+            processing={processing}
+            onSubmit={(e) => {
+                e.preventDefault();
+                submitSection(page, 'kinto_formulario', data, visible, {
+                    image: imgFile,
+                    image_mobile: imgMobileFile,
+                    step2_image: step2File,
+                    step2_image_mobile: step2MobileFile,
+                    step3_image: step3File,
+                    step3_image_mobile: step3MobileFile,
+                }, setProcessing);
+            }}
+            onReset={() => resetSection(page, 'kinto_formulario')}>
+            <VisibilityField checked={visible} onChange={setVisible} />
+            <Separator />
+            <TextareaField
+                label='Título (usar línea nueva para "Solicita tu arriendo" y "Kinto en Musalem")'
+                value={data.title ?? ''}
+                onChange={(v) => set('title', v)}
+                rows={3}
+            />
+            <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={4} />
+            <TextField label="Texto del botón" value={data.button_text ?? ''} onChange={(v) => set('button_text', v)} />
+            <Separator />
+            <p className="text-sm font-medium text-foreground">Imagen principal (al lado del título "Solicita tu arriendo...")</p>
+            <ResponsiveMediaField
+                label="Imagen principal"
+                currentDesktopUrl={data.image ?? ''}
+                currentMobileUrl={data.image_mobile ?? ''}
+                defaultDesktopUrl={defaultFormImg}
+                onChangeDesktop={setImgFile}
+                onChangeMobile={setImgMobileFile}
+            />
+            <Separator />
+            <p className="text-sm font-medium text-foreground">Imagen del paso 2 — Datos de contacto</p>
+            <ResponsiveMediaField
+                label="Imagen paso 2"
+                currentDesktopUrl={data.step2_image ?? ''}
+                currentMobileUrl={data.step2_image_mobile ?? ''}
+                defaultDesktopUrl={defaultStep2Img}
+                onChangeDesktop={setStep2File}
+                onChangeMobile={setStep2MobileFile}
+            />
+            <Separator />
+            <p className="text-sm font-medium text-foreground">Imagen del paso 3 — Confirmar solicitud</p>
+            <ResponsiveMediaField
+                label="Imagen paso 3"
+                currentDesktopUrl={data.step3_image ?? ''}
+                currentMobileUrl={data.step3_image_mobile ?? ''}
+                defaultDesktopUrl={defaultStep3Img}
+                onChangeDesktop={setStep3File}
+                onChangeMobile={setStep3MobileFile}
+            />
+        </SectionCard>
     );
 }
 

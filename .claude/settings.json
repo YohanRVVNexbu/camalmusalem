@@ -70,7 +70,17 @@
       "Bash(curl -sI http://camalmusalem.test/)",
       "Bash(curl -sI http://camalmusalem.test/admin/login)",
       "Bash(curl -sI http://camalmusalem.test/nuevos)",
-      "Bash(curl -sI http://camalmusalem.test/up)"
+      "Bash(curl -sI http://camalmusalem.test/up)",
+      "Bash(curl -s -H 'X-Inertia: true' -H 'Accept: application/json' http://camalmusalem.test/compliance/seguimiento?code=YTBJCHHTZDEY)",
+      "Bash(python3 -c ' *)",
+      "Bash(curl -s -H \"X-Inertia: true\" -H \"Accept: application/json\" \"http://camalmusalem.test/compliance/seguimiento?code=INVALIDXXX\")",
+      "Bash(curl -s -H \"X-Inertia: true\" -H \"Accept: application/json\" \"http://camalmusalem.test/compliance/seguimiento\")",
+      "Bash(curl -s -I \"http://camalmusalem.test/compliance/seguimiento?code=YTBJCHHTZDEY\")",
+      "Bash(curl -s \"http://camalmusalem.test/compliance/seguimiento?code=YTBJCHHTZDEY\")",
+      "Bash(curl -s \"http://camalmusalem.test/compliance/seguimiento?code=INVALIDXXX999\")",
+      "Bash(curl -s \"http://camalmusalem.test/compliance/seguimiento\")",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST https://oauth-provider-api-prd-vsica6.h2xi6x.usa-e1.cloudhub.io/api/v1/token -H 'client_id: c44a66cfb2f2419aa0c71f9d96c955e9' -H 'client_secret: 75A6746a70Fd4abBaF3392Fdc7fCF91f' -H 'grant_type: CLIENT_CREDENTIALS' -H 'scope: DEALER' -H 'Content-Length: 0' --data '')",
+      "Bash(curl -s -w '\\\\nHTTP_STATUS:%{http_code}\\\\n' -X POST https://oauth-provider-api-prd-vsica6.h2xi6x.usa-e1.cloudhub.io/api/v1/token -H 'client_id: 8fe4a043ceec462ba5e5ef8bb3aeb275' -H 'client_secret: 99fc88E2329448D8B53FAb3a47a729Ab' -H 'grant_type: CLIENT_CREDENTIALS' -H 'scope: DEALER' -H 'Content-Length: 0' --data '')"
     ],
     "additionalDirectories": [
       "/tmp"

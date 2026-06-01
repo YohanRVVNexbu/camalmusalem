@@ -25,6 +25,14 @@ type Modal360Props = {
     onClose: () => void;
     name: string;
     subtitle: string;
+    /**
+     * Frames reales del visor 360 del vehículo (URLs en orden de rotación).
+     * Si viene vacío o undefined, el modal muestra el estado "sin imágenes"
+     * en vez de las fotos de ejemplo bundleadas.
+     */
+    frames?: string[];
+    /** Link opcional al detalle del vehículo para el botón "Ver detalles". */
+    detailHref?: string;
 };
 
 function Icon360Large() {
@@ -36,13 +44,18 @@ function Icon360Large() {
     );
 }
 
-export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
+export function Modal360({ open, onClose, name, subtitle, frames, detailHref }: Modal360Props) {
     const [mounted, setMounted] = useState(false);
     const [visible, setVisible] = useState(false);
     const [frameIndex, setFrameIndex] = useState(0);
     const [isDragging, setIsDragging] = useState(false);
     const dragStartX = useRef(0);
     const dragStartFrame = useRef(0);
+
+    // Usamos las fotos reales del vehículo. Si no hay (o solo 1, que no
+    // permite rotar), mostramos el estado vacío en vez de las de ejemplo.
+    const activeFrames = frames && frames.length >= 2 ? frames : [];
+    const hasFrames = activeFrames.length > 0;
 
     useEffect(() => {
         if (open) {
@@ -81,14 +94,14 @@ export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
     }, [frameIndex]);
 
     const handlePointerMove = useCallback((e: React.PointerEvent) => {
-        if (!isDragging) return;
+        if (!isDragging || activeFrames.length === 0) return;
         const dx = e.clientX - dragStartX.current;
         const sensitivity = 30;
         const frameDelta = Math.round(dx / sensitivity);
-        let newIndex = (dragStartFrame.current + frameDelta) % frames360.length;
-        if (newIndex < 0) newIndex += frames360.length;
+        let newIndex = (dragStartFrame.current + frameDelta) % activeFrames.length;
+        if (newIndex < 0) newIndex += activeFrames.length;
         setFrameIndex(newIndex);
-    }, [isDragging]);
+    }, [isDragging, activeFrames.length]);
 
     const handlePointerUp = useCallback(() => {
         setIsDragging(false);
@@ -133,29 +146,43 @@ export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
                     <Icon360Large />
                 </div>
 
-                {/* 360 Viewer */}
-                <div
-                    className={`mt-3 flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-[20px] select-none touch-none lg:mt-4 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
-                    onPointerDown={handlePointerDown}
-                    onPointerMove={handlePointerMove}
-                    onPointerUp={handlePointerUp}
-                    onPointerCancel={handlePointerUp}
-                >
-                    {frames360.map((src, i) => (
-                        <img
-                            key={i}
-                            src={src}
-                            alt={`${name} vista ${i}`}
-                            className={`max-h-full max-w-full object-contain transition-opacity duration-150 ${i === frameIndex ? 'block' : 'hidden'}`}
-                            draggable={false}
-                        />
-                    ))}
-                </div>
+                {/* 360 Viewer — o estado vacío si el vehículo no tiene fotos 360 */}
+                {hasFrames ? (
+                    <div
+                        className={`relative mt-3 flex min-h-0 w-full flex-1 items-center justify-center overflow-hidden rounded-[20px] select-none touch-none lg:mt-4 ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+                        onPointerDown={handlePointerDown}
+                        onPointerMove={handlePointerMove}
+                        onPointerUp={handlePointerUp}
+                        onPointerCancel={handlePointerUp}
+                    >
+                        {activeFrames.map((src, i) => (
+                            <img
+                                key={i}
+                                src={src}
+                                alt={`${name} vista ${i}`}
+                                className={`max-h-full max-w-full object-contain transition-opacity duration-150 ${i === frameIndex ? 'block' : 'hidden'}`}
+                                draggable={false}
+                            />
+                        ))}
+                        <span className="pointer-events-none absolute right-3 top-3 rounded-full bg-black/55 px-3 py-1 text-xs leading-none text-white backdrop-blur-[6px]">
+                            Imagen Referencial
+                        </span>
+                    </div>
+                ) : (
+                    <div className="mt-3 flex min-h-50 w-full flex-1 flex-col items-center justify-center gap-3 rounded-[20px] border border-dashed border-black/15 bg-white/40 px-5 py-10 lg:mt-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" className="text-black/30">
+                            <path d="M3 16.5L9 10.5L13 14.5L16 11.5L21 16.5M3 4.5H21V19.5H3V4.5Z" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <p className="text-center text-base leading-[140%] text-black/60">
+                            Este vehículo no posee imágenes 360° por el momento.
+                        </p>
+                    </div>
+                )}
 
                 {/* Buttons */}
                 <div className="mt-4 flex w-full flex-col items-stretch gap-2.5 lg:mt-6 lg:w-auto lg:flex-row lg:items-center lg:gap-4">
                     <a
-                        href="#"
+                        href={detailHref || '#'}
                         className="flex items-center justify-between gap-2.5 rounded-[60px] border border-black p-1 pl-4 text-base leading-none text-black transition hover:bg-black/5 lg:justify-start"
                     >
                         Ver detalles
@@ -164,7 +191,7 @@ export function Modal360({ open, onClose, name, subtitle }: Modal360Props) {
                         </span>
                     </a>
                     <a
-                        href="#"
+                        href={detailHref ? `${detailHref}/cotizar` : '#'}
                         className="flex items-center justify-between gap-2.5 rounded-[60px] bg-black p-1 pl-4 text-base leading-none text-white transition hover:bg-black/85 lg:justify-start"
                     >
                         Cotizar

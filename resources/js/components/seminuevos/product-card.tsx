@@ -54,6 +54,13 @@ export function ProductCard({
                     <span className="inline-block rounded-full bg-black/50 px-2 py-1 text-xs leading-none text-white backdrop-blur-[10px]">
                         {badge}
                     </span>
+                    {certificateBadge && (
+                        <img
+                            src={certificateBadge}
+                            alt="Seminuevo Certificado Toyota Musalem"
+                            className="absolute right-1.5 top-1.5 size-11 object-contain drop-shadow-md"
+                        />
+                    )}
                 </div>
 
                 <div className="flex flex-1 flex-col gap-2 pl-3">
@@ -112,12 +119,19 @@ export function ProductCard({
             {/* ── Desktop: layout vertical original con altura fija ── */}
             <div className="relative hidden w-full flex-col rounded-[20px] border border-black/5 bg-white lg:flex lg:h-130 lg:w-81.75">
                 <div
-                    className="h-59.25 shrink-0 rounded-t-[14px] bg-cover bg-center bg-no-repeat p-2.5"
+                    className="relative h-59.25 shrink-0 rounded-t-[14px] bg-cover bg-center bg-no-repeat p-2.5"
                     style={{ backgroundImage: `url(${image})` }}
                 >
                     <span className="inline-block rounded-full bg-black/50 px-2.5 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
                         {badge}
                     </span>
+                    {certificateBadge && (
+                        <img
+                            src={certificateBadge}
+                            alt="Seminuevo Certificado Toyota Musalem"
+                            className="absolute right-2.5 top-2.5 size-16 object-contain drop-shadow-md"
+                        />
+                    )}
                 </div>
 
                 <div className="flex flex-1 flex-col gap-5 px-2.5 py-5">
@@ -129,13 +143,6 @@ export function ProductCard({
                             <span className="rounded bg-[#EAEAF1] px-1.5 py-1.5 text-sm leading-none text-black/60">
                                 {year}
                             </span>
-                            {certificateBadge && (
-                                <img
-                                    src={certificateBadge}
-                                    alt="Certificado"
-                                    className="-mt-10 ml-auto size-17.5 object-contain"
-                                />
-                            )}
                         </div>
 
                         <h3 className="line-clamp-2 whitespace-pre-line text-lg font-semibold uppercase leading-[120%] text-black">

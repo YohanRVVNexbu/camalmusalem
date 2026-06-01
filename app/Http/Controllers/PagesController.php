@@ -159,6 +159,7 @@ class PagesController extends Controller
             'kinto_hero'       => $this->section('kinto_hero'),
             'kinto_pasos'      => $this->section('kinto_pasos'),
             'kinto_vehiculos'  => $this->section('kinto_vehiculos'),
+            'kinto_formulario' => $this->section('kinto_formulario'),
             'rentals'          => $rentals,
             'branches'         => $branches,
         ]);

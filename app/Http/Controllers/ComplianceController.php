@@ -97,8 +97,14 @@ class ComplianceController extends Controller
     public function denunciaPrevencionDelito()
     {
         return Inertia::render('compliance/denuncia-prevencion-delito', [
-            'footer'     => $this->section('footer'),
-            'categorias' => Denuncia::CATEGORIAS_LEY_20393,
+            'footer'            => $this->section('footer'),
+            'categorias'        => Denuncia::CATEGORIAS_LEY_20393,
+            'relacionesEmpresa' => Denuncia::RELACIONES_EMPRESA,
+            'frecuencias'       => Denuncia::FRECUENCIAS,
+            'montos'            => Denuncia::MONTOS,
+            'evidencia'         => Denuncia::EVIDENCIA,
+            'reportadoAntes'    => Denuncia::REPORTADO_ANTES,
+            'otrosSaben'        => Denuncia::OTROS_SABEN,
         ]);
     }
 
@@ -202,6 +208,29 @@ class ComplianceController extends Controller
             'privacidad'            => ['accepted'],
             'adjuntos'              => ['nullable', 'array', 'max:'.self::MAX_ADJUNTOS],
             'adjuntos.*'            => ['file', 'max:'.self::MAX_SIZE_KB, 'mimetypes:'.implode(',', self::MIME_ACEPTADOS)],
+
+            // Campos extra del "Formulario de Denuncia MUSALEM" (Ley 20.393 +
+            // Ley 19.913). Todos opcionales para mantener compat con Ley Karin
+            // que sigue usando el formulario simplificado. Se guardan en el
+            // payload JSON, no en columnas dedicadas.
+            'categoria_otro'                 => ['nullable', 'string', 'max:255'],
+            'relacion_empresa'               => ['nullable', 'string', 'in:'.implode(',', array_keys(Denuncia::RELACIONES_EMPRESA))],
+            'relacion_empresa_otro'          => ['nullable', 'string', 'max:255'],
+            'reserva_total'                  => ['nullable', 'boolean'],
+            'hechos_periodo_desde'           => ['nullable', 'date'],
+            'hechos_periodo_hasta'           => ['nullable', 'date'],
+            'hechos_continua'                => ['nullable', 'boolean'],
+            'hechos_fechas_desconocidas'     => ['nullable', 'boolean'],
+            'denunciado_area'                => ['nullable', 'string', 'max:255'],
+            'frecuencia'                     => ['nullable', 'string', 'in:'.implode(',', array_keys(Denuncia::FRECUENCIAS))],
+            'monto_estimado'                 => ['nullable', 'string', 'in:'.implode(',', array_keys(Denuncia::MONTOS))],
+            'evidencia_descripcion'          => ['nullable', 'string', 'max:2000'],
+            'tiene_evidencia'                => ['nullable', 'string', 'in:'.implode(',', array_keys(Denuncia::EVIDENCIA))],
+            'reportado_antes'                => ['nullable', 'string', 'in:'.implode(',', array_keys(Denuncia::REPORTADO_ANTES))],
+            'reportado_a_quien'              => ['nullable', 'string', 'max:255'],
+            'otros_saben'                    => ['nullable', 'string', 'in:'.implode(',', array_keys(Denuncia::OTROS_SABEN))],
+            'recibir_actualizaciones'        => ['nullable', 'boolean'],
+            'observaciones'                  => ['nullable', 'string', 'max:2000'],
         ];
 
         // Identificación: requerida salvo que la denuncia sea anónima.
@@ -213,6 +242,29 @@ class ComplianceController extends Controller
         }
 
         $data = $request->validate($rules);
+
+        // Campos del payload (form oficial MUSALEM). Solo guardamos los que
+        // tienen valor — null vacío no aporta nada al JSON.
+        $payload = array_filter([
+            'categoria_otro'             => $data['categoria_otro'] ?? null,
+            'relacion_empresa'           => $data['relacion_empresa'] ?? null,
+            'relacion_empresa_otro'      => $data['relacion_empresa_otro'] ?? null,
+            'reserva_total'              => $request->boolean('reserva_total') ?: null,
+            'hechos_periodo_desde'       => $data['hechos_periodo_desde'] ?? null,
+            'hechos_periodo_hasta'       => $data['hechos_periodo_hasta'] ?? null,
+            'hechos_continua'            => $request->boolean('hechos_continua') ?: null,
+            'hechos_fechas_desconocidas' => $request->boolean('hechos_fechas_desconocidas') ?: null,
+            'denunciado_area'            => $data['denunciado_area'] ?? null,
+            'frecuencia'                 => $data['frecuencia'] ?? null,
+            'monto_estimado'             => $data['monto_estimado'] ?? null,
+            'evidencia_descripcion'      => $data['evidencia_descripcion'] ?? null,
+            'tiene_evidencia'            => $data['tiene_evidencia'] ?? null,
+            'reportado_antes'            => $data['reportado_antes'] ?? null,
+            'reportado_a_quien'          => $data['reportado_a_quien'] ?? null,
+            'otros_saben'                => $data['otros_saben'] ?? null,
+            'recibir_actualizaciones'    => $request->boolean('recibir_actualizaciones') ?: null,
+            'observaciones'              => $data['observaciones'] ?? null,
+        ], fn ($v) => $v !== null && $v !== '');
 
         $denuncia = Denuncia::create([
             'tipo'                 => $tipo,
@@ -232,6 +284,7 @@ class ComplianceController extends Controller
             'denunciado_cargo'     => $data['denunciado_cargo'] ?? null,
             'denunciado_sucursal'  => $data['denunciado_sucursal'] ?? null,
             'declaracion_veracidad' => true,
+            'payload'              => $payload ?: null,
             'estado'               => Denuncia::ESTADO_RECIBIDA,
         ]);
 

@@ -11,6 +11,8 @@ import formImgDefault from '@images/contacto/form_image.png?format=webp';
 
 export default function Contacto({ footer, contacto_info }: { footer: any | null; contacto_info?: any | null }) {
     const info = contacto_info ?? {};
+    const { horariosAtencion } = usePage<{ horariosAtencion?: { label: string; value: string }[] }>().props;
+    const horarios = horariosAtencion ?? [];
     const isMobile = useIsMobile();
     const formImg = pickResponsiveImage(info.form_image, info.form_image_mobile, isMobile) || formImgDefault;
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
@@ -76,14 +78,12 @@ export default function Contacto({ footer, contacto_info }: { footer: any | null
                                     <span className="text-xl font-semibold uppercase leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                         Horario de atención
                                     </span>
-                                    <div className="flex h-3.5 items-center justify-between self-stretch">
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Lunes a Viernes</span>
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.horario_lv ?? '09:00 a 13:30 - 14:45 a 18:30'}</span>
-                                    </div>
-                                    <div className="flex h-3.5 items-center justify-between self-stretch">
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>Sábado / Domingo</span>
-                                        <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{info.horario_sab ?? 'Cerrado'}</span>
-                                    </div>
+                                    {horarios.map((h, i) => (
+                                        <div key={i} className="flex items-center justify-between gap-3 self-stretch">
+                                            <span className="text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>{h.label}</span>
+                                            <span className="text-sm leading-none text-white text-right" style={{ fontFamily: '"Toyota Type"' }}>{h.value}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 

@@ -46,16 +46,42 @@ return [
      * nuevo desde la web. Documentación: "Documentos de Integración - PATCH
      * Create Opportunities WEB Dealer" + Postman collection UAT.
      *
-     * UAT (qas): host *-qas-eh5zuw.na8zri.usa-e1.cloudhub.io
-     * PRD: cuando se entregue, solo cambiar las URLs y credenciales en .env.
+     * Endpoints:
+     *  UAT (qas): host *-qas-eh5zuw.na8zri.usa-e1.cloudhub.io
+     *  PRD:       host *-prd-vsica6.h2xi6x.usa-e1.cloudhub.io
+     *
+     * Credenciales:
+     *  En PRD Globant entrega un par client_id/client_secret POR SUCURSAL
+     *  (cada sucursal solo puede crear quotes para su propio dealer_id).
+     *  En UAT había un solo par genérico que aplicaba para ambos dealers.
+     *
+     *  El cliente resuelve credenciales así:
+     *   1. Busca `dealers.{dealerId}.client_id` / `client_secret`
+     *   2. Si no existe, cae al `client_id` / `client_secret` genéricos
+     *      (backwards-compat con UAT)
      */
     'salesforce_dealer' => [
         'oauth_url'     => env('SALESFORCE_OAUTH_URL', 'https://oauth-provider-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/v1/token'),
         'api_base_url'  => env('SALESFORCE_API_BASE_URL', 'https://dealer-exp-api-qas-eh5zuw.na8zri.usa-e1.cloudhub.io/api/dealers'),
-        'client_id'     => env('SALESFORCE_CLIENT_ID'),
-        'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
         'scope'         => env('SALESFORCE_SCOPE', 'DEALER'),
         'enabled'       => env('SALESFORCE_ENABLED', false),
+
+        // Credenciales genéricas (fallback, usadas en UAT/QAS)
+        'client_id'     => env('SALESFORCE_CLIENT_ID'),
+        'client_secret' => env('SALESFORCE_CLIENT_SECRET'),
+
+        // Credenciales específicas por sucursal (usadas en producción).
+        // Key = salesforce_dealer_id que está en branches.salesforce_dealer_id.
+        'dealers' => [
+            '100068' => [ // La Serena
+                'client_id'     => env('SALESFORCE_CLIENT_ID_LS'),
+                'client_secret' => env('SALESFORCE_CLIENT_SECRET_LS'),
+            ],
+            '100069' => [ // Ovalle
+                'client_id'     => env('SALESFORCE_CLIENT_ID_OVA'),
+                'client_secret' => env('SALESFORCE_CLIENT_SECRET_OVA'),
+            ],
+        ],
     ],
 
     /*

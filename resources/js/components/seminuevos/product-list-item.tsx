@@ -47,18 +47,25 @@ export function ProductListItem({
         <div className="relative flex w-full overflow-hidden rounded-[20px] border border-black/5 bg-white">
             {/* Image */}
             <div
-                className="h-50 w-75 shrink-0 rounded-l-[14px] bg-cover bg-center bg-no-repeat p-2.5"
+                className="relative h-50 w-75 shrink-0 rounded-l-[14px] bg-cover bg-center bg-no-repeat p-2.5"
                 style={{ backgroundImage: `url(${image})` }}
             >
                 <span className="inline-block rounded-full bg-black/50 px-2.5 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
                     {badge}
                 </span>
+                {certificateBadge && (
+                    <img
+                        src={certificateBadge}
+                        alt="Seminuevo Certificado Toyota Musalem"
+                        className="absolute right-2.5 top-2.5 size-14 object-contain drop-shadow-md"
+                    />
+                )}
             </div>
 
             {/* Content */}
             <div className="flex flex-1 items-center justify-between gap-5 px-7.5 py-5">
                 <div className="flex flex-col gap-3">
-                    {/* Brand + Year + Certificate */}
+                    {/* Brand + Year */}
                     <div className="flex items-center gap-1.5">
                         <span className="rounded bg-[#EAEAF1] px-1.5 py-1.5 text-sm leading-none text-black/60">
                             {brand}
@@ -66,13 +73,6 @@ export function ProductListItem({
                         <span className="rounded bg-[#EAEAF1] px-1.5 py-1.5 text-sm leading-none text-black/60">
                             {year}
                         </span>
-                        {certificateBadge && (
-                            <img
-                                src={certificateBadge}
-                                alt="Certificado"
-                                className="size-12 object-contain"
-                            />
-                        )}
                     </div>
 
                     {/* Name */}

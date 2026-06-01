@@ -16,10 +16,8 @@ class AccesoriosExporter extends BaseExporter
     protected function headers(): array
     {
         return [
-            'Codigo Interno', 'Nombre Repuesto', 'Descripcion corta',
-            'Descripción tecnica', 'Precio', 'Precio Oferta', 'Precio instalado',
-            'Categoria', 'Inventario / stock', 'Tiempo estimado de entrega',
-            'Compatible con', 'Año vehiculo compatible', 'Disponible en', 'Fotografia',
+            'SKU', 'Categoría', 'Imagen (URL)', 'Descripción', 'Precio',
+            'Versión (compatible)', 'Comentarios',
         ];
     }
 
@@ -32,19 +30,12 @@ class AccesoriosExporter extends BaseExporter
         return Accesorio::orderBy('order')->orderBy('name')->get()->map(function (Accesorio $a) {
             return [
                 $a->sku,
-                $a->name,
-                $a->description,
-                null,
-                $a->price,
-                $a->price_offer,
-                null,
                 $a->category,
-                null,
-                null,
+                $a->images[0] ?? null,
+                $a->name,
+                $a->price,
                 $a->compatible_with,
-                null,
-                null,
-                null,
+                $a->comentarios,
             ];
         })->values()->toArray();
     }

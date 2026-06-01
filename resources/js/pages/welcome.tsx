@@ -34,7 +34,7 @@ export default function Welcome({ sections, youtubeShorts }: WelcomeProps) {
                 {sections.about && <About data={sections.about as any} />}
                 {sections.seminuevos && <Seminuevos data={sections.seminuevos as any} />}
                 {sections.programas && <Programas data={sections.programas as any} />}
-                {sections.shorts && <Shorts data={sections.shorts as any} videos={youtubeShorts || []} />}
+                {sections.shorts && <Shorts data={sections.shorts as any} shorts={(sections.shorts as any).shorts ?? []} />}
                 {sections.footer && <Footer data={sections.footer as any} />}
                 <WhatsappButton />
             </div>

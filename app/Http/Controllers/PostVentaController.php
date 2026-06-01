@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Accesorio;
+use App\Models\Merch;
 use App\Models\Repuesto;
 use App\Models\SiteSection;
 use Inertia\Inertia;
@@ -42,29 +43,33 @@ class PostVentaController extends Controller
             ->all();
 
         return Inertia::render('post-venta/agendar-mantencion', [
-            'footer'          => $this->section('footer'),
-            'mantencion_hero' => $this->section('mantencion_hero'),
-            'branches'        => $branches,
-            'services'        => $services,
-            'vehicle_models'  => $vehicleModels,
+            'footer'             => $this->section('footer'),
+            'mantencion_hero'    => $this->section('mantencion_hero'),
+            'mantencion_reserva' => $this->section('mantencion_reserva'),
+            'branches'           => $branches,
+            'services'           => $services,
+            'vehicle_models'     => $vehicleModels,
         ]);
     }
 
     public function accesorios()
     {
         return Inertia::render('post-venta/accesorios', [
-            'footer'          => $this->section('footer'),
-            'accesorios_hero' => $this->section('accesorios_hero'),
-            'accesorios'      => Accesorio::where('is_visible', true)->orderBy('order')->orderBy('name')->get(),
+            'footer'             => $this->section('footer'),
+            'accesorios_hero'    => $this->section('accesorios_hero'),
+            'accesorios_seccion' => $this->section('accesorios_seccion'),
+            'accesorios'         => Accesorio::where('is_visible', true)->orderBy('order')->orderBy('name')->get(),
+            'merch'              => Merch::where('is_visible', true)->orderBy('order')->orderBy('name')->get(),
         ]);
     }
 
     public function repuestos()
     {
         return Inertia::render('post-venta/repuestos', [
-            'footer'         => $this->section('footer'),
-            'repuestos_hero' => $this->section('repuestos_hero'),
-            'repuestos'      => Repuesto::where('is_visible', true)->orderBy('order')->orderBy('name')->get(),
+            'footer'            => $this->section('footer'),
+            'repuestos_hero'    => $this->section('repuestos_hero'),
+            'repuestos_seccion' => $this->section('repuestos_seccion'),
+            'repuestos'         => Repuesto::where('is_visible', true)->orderBy('order')->orderBy('name')->get(),
         ]);
     }
 
@@ -73,6 +78,7 @@ class PostVentaController extends Controller
         return Inertia::render('post-venta/accesorio-show', [
             'accesorio' => Accesorio::where('is_visible', true)->findOrFail($id),
             'footer'    => $this->section('footer'),
+            'whatsapp'  => $this->section('accesorios_whatsapp'),
         ]);
     }
 
@@ -81,6 +87,23 @@ class PostVentaController extends Controller
         return Inertia::render('post-venta/accesorio-cotizar', [
             'accesorio' => Accesorio::where('is_visible', true)->findOrFail($id),
             'footer'    => $this->section('footer'),
+        ]);
+    }
+
+    public function merchShow(string $id)
+    {
+        return Inertia::render('post-venta/merch-show', [
+            'merch'    => Merch::where('is_visible', true)->findOrFail($id),
+            'footer'   => $this->section('footer'),
+            'whatsapp' => $this->section('accesorios_whatsapp'),
+        ]);
+    }
+
+    public function merchCotizar(string $id)
+    {
+        return Inertia::render('post-venta/merch-cotizar', [
+            'merch'  => Merch::where('is_visible', true)->findOrFail($id),
+            'footer' => $this->section('footer'),
         ]);
     }
 

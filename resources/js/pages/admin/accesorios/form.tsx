@@ -9,14 +9,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { formatCLP } from '@/lib/format';
 import AdminLayout from '@/layouts/admin-layout';
 
-type Accesorio = { id?: number; name: string; description: string | null; price: string | null; category: string; images: string[]; is_visible: boolean; order: number; };
+type Accesorio = { id?: number; name: string; description: string | null; comentarios: string | null; price: string | null; category: string; images: string[]; is_visible: boolean; order: number; };
 
 export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | null }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!accesorio?.id;
 
     const [data, setData] = useState<Accesorio>(accesorio ?? {
-        name: '', description: null, price: null, category: 'General', images: [], is_visible: true, order: 0,
+        name: '', description: null, comentarios: null, price: null, category: 'General', images: [], is_visible: true, order: 0,
     });
     const [newImages, setNewImages] = useState<File[]>([]);
     const [removeImages, setRemoveImages] = useState<string[]>([]);
@@ -28,6 +28,7 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
         const formData = new FormData();
         formData.append('name', data.name);
         formData.append('description', data.description ?? '');
+        formData.append('comentarios', data.comentarios ?? '');
         formData.append('price', data.price ?? '');
         formData.append('category', data.category);
         formData.append('is_visible', data.is_visible ? '1' : '0');
@@ -79,6 +80,10 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
                         <div className="grid gap-2 col-span-3">
                             <Label>Descripción</Label>
                             <Textarea value={data.description ?? ''} onChange={(e) => setData({ ...data, description: e.target.value })} rows={4} />
+                        </div>
+                        <div className="md:col-span-2 grid gap-2">
+                            <Label>Comentarios <span className="text-muted-foreground text-xs">(nota manual; aparece en la ficha del producto)</span></Label>
+                            <Textarea value={data.comentarios ?? ''} onChange={(e) => setData({ ...data, comentarios: e.target.value })} rows={3} placeholder="Ej: Disponible solo por encargo, consultar tiempos de entrega…" />
                         </div>
                     </div>
                     <div className="grid gap-2">

@@ -8,9 +8,24 @@ import { Navbar } from '@/components/landing/navbar';
 type Props = {
     footer: any | null;
     categorias: Record<string, string>;
+    relacionesEmpresa?: Record<string, string>;
+    frecuencias?: Record<string, string>;
+    montos?: Record<string, string>;
+    evidencia?: Record<string, string>;
+    reportadoAntes?: Record<string, string>;
+    otrosSaben?: Record<string, string>;
 };
 
-export default function DenunciaPrevencionDelito({ footer, categorias }: Props) {
+export default function DenunciaPrevencionDelito({
+    footer,
+    categorias,
+    relacionesEmpresa,
+    frecuencias,
+    montos,
+    evidencia,
+    reportadoAntes,
+    otrosSaben,
+}: Props) {
     useEffect(() => {
         const html = document.documentElement;
         const prev = html.style.backgroundColor;
@@ -36,25 +51,26 @@ export default function DenunciaPrevencionDelito({ footer, categorias }: Props) 
                                         Marco legal
                                     </span>
                                     <h2 className="text-2xl font-semibold lg:text-3xl" style={{ fontFamily: '"Toyota Type"' }}>
-                                        Ley 20.393
+                                        Ley 20.393 y Ley 19.913
                                     </h2>
                                 </div>
                                 <p className="text-sm leading-relaxed text-white/80" style={{ fontFamily: '"Toyota Type"' }}>
-                                    Modelo de Prevención del Delito de Toyota Musalem. Canal habilitado para
-                                    denuncias o consultas relacionadas con lavado de activos, financiamiento del
-                                    terrorismo, cohecho a funcionarios públicos y entre particulares, receptación,
-                                    negociación incompatible y los demás delitos contemplados en la Ley 20.393
-                                    (actualizada por la Ley 21.595 de Delitos Económicos).
+                                    Canal de denuncias de Toyota Camal Musalem implementado para que empleados,
+                                    proveedores, clientes y terceros puedan reportar, de manera segura y
+                                    confidencial, posibles infracciones relacionadas con la Ley 20.393 sobre
+                                    Responsabilidad Penal de las Personas Jurídicas y la Ley 19.913 sobre
+                                    Lavado de Activos y Financiamiento del Terrorismo.
                                 </p>
                                 <div className="rounded-2xl bg-white/5 p-4">
                                     <span className="mb-1 block text-xs uppercase tracking-wider text-white/60" style={{ fontFamily: '"Toyota Type"' }}>
-                                        Confidencialidad
+                                        Compromiso de confidencialidad
                                     </span>
-                                    <p className="text-sm text-white/80" style={{ fontFamily: '"Toyota Type"' }}>
-                                        Tu denuncia es revisada exclusivamente por el Encargado de Prevención del
-                                        Delito. La identidad del denunciante se mantiene en reserva y no se permite
-                                        ningún tipo de represalia por denunciar de buena fe.
-                                    </p>
+                                    <ul className="flex flex-col gap-1 text-sm text-white/80" style={{ fontFamily: '"Toyota Type"' }}>
+                                        <li>• Toda la información será tratada con la máxima reserva.</li>
+                                        <li>• Solo el Encargado de Prevención del Delito tendrá acceso.</li>
+                                        <li>• No se tomarán represalias contra denunciantes de buena fe.</li>
+                                        <li>• Tu identidad se protege salvo requerimiento judicial expreso.</li>
+                                    </ul>
                                 </div>
                                 <div className="rounded-2xl bg-white/5 p-4">
                                     <span className="mb-1 block text-xs uppercase tracking-wider text-white/60" style={{ fontFamily: '"Toyota Type"' }}>
@@ -72,10 +88,17 @@ export default function DenunciaPrevencionDelito({ footer, categorias }: Props) 
                             <div className="bg-[#EAEAF1] p-6 lg:p-10">
                                 <DenunciaForm
                                     submitUrl="/compliance/denuncia-prevencion-delito"
-                                    title="Denuncia — Ley 20.393"
-                                    subtitle="Canal de Prevención del Delito"
-                                    intro="Completa los datos a continuación. Mientras más detalle aportes, mejor podremos investigar."
+                                    title="Formulario de Denuncia"
+                                    subtitle="Delitos Económicos y Lavado de Activos — Toyota Camal Musalem"
+                                    intro="Tu denuncia es fundamental para mantener los más altos estándares éticos y contribuir a la prevención de delitos económicos y medioambientales. Los campos marcados con asterisco son obligatorios."
                                     categorias={categoriasArr}
+                                    variant="completo"
+                                    relacionesEmpresa={relacionesEmpresa}
+                                    frecuencias={frecuencias}
+                                    montos={montos}
+                                    evidencia={evidencia}
+                                    reportadoAntes={reportadoAntes}
+                                    otrosSaben={otrosSaben}
                                 />
                             </div>
                         </div>

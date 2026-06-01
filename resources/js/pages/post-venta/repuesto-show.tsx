@@ -13,6 +13,7 @@ type Repuesto = {
     name: string;
     sku: string | null;
     description: string | null;
+    comentarios: string | null;
     price: string | null;
     category: string;
     images: string[];
@@ -71,7 +72,7 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                         {/* Main image */}
                         <div className="relative overflow-hidden rounded-[20px]">
                             {images[currentImage] ? (
-                                <img src={images[currentImage]} alt={repuesto.name} className="aspect-square w-full object-cover" />
+                                <img src={images[currentImage]} alt={repuesto.name} className="aspect-square w-full bg-white object-contain" />
                             ) : (
                                 <div className="flex aspect-square w-full items-center justify-center bg-gray-100">
                                     <span className="text-base text-black/30">Sin imagen</span>
@@ -116,6 +117,7 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                             <div className="rounded-[10px] bg-[#EAEAF1] p-4">
                                 <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{repuesto.price ? formatCLP(repuesto.price) : '—'}</span>
                             </div>
+                            <span className="text-xs leading-none text-black/50" style={{ fontFamily: '"Toyota Type"' }}>*Los valores no incluyen instalación.</span>
                         </div>
 
                         {/* CTAs */}
@@ -179,6 +181,18 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                                 </p>
                             </div>
                         )}
+
+                        {/* Comentarios */}
+                        {repuesto.comentarios && (
+                            <div className="flex flex-col gap-2.5 rounded-[20px] bg-[#EAEAF1] p-5">
+                                <h2 className="text-xl font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                    Comentarios
+                                </h2>
+                                <p className="whitespace-pre-line text-sm leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                    {repuesto.comentarios}
+                                </p>
+                            </div>
+                        )}
                     </div>
 
                     {/* ───────── Desktop layout ───────── */}
@@ -188,7 +202,7 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                             {/* Main image */}
                             <div className="relative overflow-hidden rounded-[20px]">
                                 {images[currentImage] ? (
-                                    <img src={images[currentImage]} alt={repuesto.name} className="h-120 w-full object-cover" />
+                                    <img src={images[currentImage]} alt={repuesto.name} className="h-120 w-full bg-white object-contain" />
                                 ) : (
                                     <div className="flex h-120 w-full items-center justify-center bg-gray-100">
                                         <span className="text-base text-black/30">Sin imagen</span>
@@ -234,6 +248,17 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                                     </p>
                                 </div>
                             )}
+
+                            {repuesto.comentarios && (
+                                <div className="mt-5 flex flex-col gap-5 rounded-[20px] bg-[#EAEAF1] p-7.5">
+                                    <h2 className="text-2xl font-semibold leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                        Comentarios
+                                    </h2>
+                                    <p className="whitespace-pre-line text-sm leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                        {repuesto.comentarios}
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         {/* Right: Info card */}
@@ -249,6 +274,7 @@ export default function RepuestoShow({ repuesto, footer }: { repuesto: Repuesto;
                                 <div className="rounded-[10px] bg-white p-4">
                                     <span className="text-[28px] font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{repuesto.price ? formatCLP(repuesto.price) : '—'}</span>
                                 </div>
+                                <span className="text-xs leading-none text-black/50" style={{ fontFamily: '"Toyota Type"' }}>*Los valores no incluyen instalación.</span>
                             </div>
 
                             <hr className="border-black/10" />

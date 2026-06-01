@@ -66,8 +66,14 @@ export default function NuevosPage({ sections, vehicle_models }: Props) {
             banner_image: bannerFile,
             banner_image_mobile: bannerMobileFile,
         };
+        // Nota: usamos brackets en vez de puntos porque PHP convierte `.`
+        // a `_` automáticamente en keys de $_FILES/$_POST/$_GET. Si
+        // mandáramos `hero_cards.0.image_override`, el server recibiría
+        // `hero_cards_0_image_override` y el data_set con dot-notation
+        // crearía una clave plana en vez de anidar — la imagen subiría
+        // al disco pero la BD nunca registraría la URL.
         Object.entries(cardImages).forEach(([idx, file]) => {
-            files[`hero_cards.${idx}.image_override`] = file;
+            files[`hero_cards[${idx}][image_override]`] = file;
         });
 
         submitSection(page, 'nuevos_page', data, visible, files, setProcessing);
