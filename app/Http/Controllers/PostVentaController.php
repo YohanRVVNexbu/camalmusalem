@@ -43,12 +43,13 @@ class PostVentaController extends Controller
             ->all();
 
         return Inertia::render('post-venta/agendar-mantencion', [
-            'footer'             => $this->section('footer'),
-            'mantencion_hero'    => $this->section('mantencion_hero'),
-            'mantencion_reserva' => $this->section('mantencion_reserva'),
-            'branches'           => $branches,
-            'services'           => $services,
-            'vehicle_models'     => $vehicleModels,
+            'footer'              => $this->section('footer'),
+            'mantencion_hero'     => $this->section('mantencion_hero'),
+            'mantencion_carrusel' => $this->section('mantencion_carrusel'),
+            'mantencion_reserva'  => $this->section('mantencion_reserva'),
+            'branches'            => $branches,
+            'services'            => $services,
+            'vehicle_models'      => $vehicleModels,
         ]);
     }
 

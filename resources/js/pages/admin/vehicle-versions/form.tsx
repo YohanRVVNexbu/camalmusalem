@@ -192,7 +192,12 @@ export default function VehicleVersionForm({ version, models, features, enums, s
         setColorPhotoUploading(colorIdx);
         let done = 0;
         let failed = 0;
+        let idx = 0;
+        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
         for (const raw of files) {
+            // Pausa entre uploads para no gatillar rate-limit del WAF/LSWS.
+            // Sin esto, tras ~7 uploads rápidos seguidos el siguiente cae con 403.
+            if (idx++ > 0) await sleep(700);
             try {
                 // Base64 (no multipart): evita el 403 de ModSecurity 930110 que
                 // bloquea binarios cuyos bytes contienen la secuencia "../".
@@ -227,20 +232,34 @@ export default function VehicleVersionForm({ version, models, features, enums, s
 
     // Reordena una foto del 360 dentro de su color (dir -1 = izquierda,
     // +1 = derecha). El orden define la secuencia de rotación del visor.
-    // ── Replicar colores a otras versiones del mismo modelo ───────────────
-    const [replicateOpen, setReplicateOpen] = useState(false);
+    // ── Replicar (colores, multimedia o equipamiento) a otras versiones ────
+    // del mismo modelo. Un solo modal parametrizado por `replicateWhat`.
+    type ReplicateWhat = 'colors' | 'multimedia' | 'features';
+    const [replicateWhat, setReplicateWhat] = useState<ReplicateWhat | null>(null);
     const [replicateTargets, setReplicateTargets] = useState<number[]>([]);
     const [replicating, setReplicating] = useState(false);
+
+    const REPLICATE_META: Record<ReplicateWhat, { title: string; what: string; endpoint: string }> = {
+        colors:     { title: 'Replicar colores a otras versiones',     what: 'colores (con sus fotos 360)', endpoint: 'replicate-colors' },
+        multimedia: { title: 'Replicar multimedia a otras versiones',  what: 'multimedia (imágenes, videos y YouTube)', endpoint: 'replicate-multimedia' },
+        features:   { title: 'Replicar equipamiento a otras versiones',what: 'equipamiento (features marcados)', endpoint: 'replicate-features' },
+    };
 
     const toggleTarget = (id: number) =>
         setReplicateTargets((ts) => (ts.includes(id) ? ts.filter((t) => t !== id) : [...ts, id]));
 
+    const openReplicate = (what: ReplicateWhat) => {
+        setReplicateWhat(what);
+        setReplicateTargets([]);
+    };
+
     const runReplicate = () => {
-        if (!isEdit || replicateTargets.length === 0) return;
+        if (!isEdit || !replicateWhat || replicateTargets.length === 0) return;
         setReplicating(true);
-        router.post(`/admin/vehicle-versions/${version!.id}/replicate-colors`, { targets: replicateTargets }, {
+        const { endpoint } = REPLICATE_META[replicateWhat];
+        router.post(`/admin/vehicle-versions/${version!.id}/${endpoint}`, { targets: replicateTargets }, {
             preserveScroll: true,
-            onFinish: () => { setReplicating(false); setReplicateOpen(false); setReplicateTargets([]); },
+            onFinish: () => { setReplicating(false); setReplicateWhat(null); setReplicateTargets([]); },
         });
     };
 
@@ -296,9 +315,13 @@ export default function VehicleVersionForm({ version, models, features, enums, s
         setMediaUploading(true);
         let done = 0;
         let failed = 0;
+        let idx = 0;
+        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
         // Secuencial (no en paralelo) para no saturar el WAF/MaxReqBodySize.
         // Imágenes vía Base64 para evitar el 403 de ModSecurity 930110.
+        // Pausa entre uploads para no gatillar rate-limit del WAF.
         for (const file of files) {
+            if (idx++ > 0) await sleep(700);
             try {
                 const url = await uploadImageBase64(file, `vehiculos/${version!.id}/media`);
                 if (url) {
@@ -729,9 +752,16 @@ export default function VehicleVersionForm({ version, models, features, enums, s
 
                     {section === 'equipamiento' && (
                         <div className="grid gap-4">
-                            <div className="text-sm text-muted-foreground">
-                                Marca las características que trae esta versión. Si falta alguna, créala en <Link href="/admin/features" className="underline">Equipamiento</Link>.
-                                <span className="ml-2 font-medium">{data.feature_ids.length} seleccionadas</span>
+                            <div className="flex flex-wrap items-center justify-between gap-2">
+                                <div className="text-sm text-muted-foreground">
+                                    Marca las características que trae esta versión. Si falta alguna, créala en <Link href="/admin/features" className="underline">Equipamiento</Link>.
+                                    <span className="ml-2 font-medium">{data.feature_ids.length} seleccionadas</span>
+                                </div>
+                                {isEdit && siblings.length > 0 && (
+                                    <Button type="button" variant="outline" size="sm" onClick={() => openReplicate('features')} title="Copia el equipamiento marcado a otras versiones del mismo modelo">
+                                        Replicar a otras versiones
+                                    </Button>
+                                )}
                             </div>
                             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
                                 {Object.keys(features).map((cat) => (
@@ -762,7 +792,7 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                                 <Label className="font-semibold">Colores disponibles ({data.colors.length})</Label>
                                 <div className="flex gap-2">
                                     {isEdit && siblings.length > 0 && (
-                                        <Button type="button" variant="outline" size="sm" onClick={() => setReplicateOpen(true)} title="Copia los colores (con sus fotos 360) a otras versiones del mismo modelo">
+                                        <Button type="button" variant="outline" size="sm" onClick={() => openReplicate('colors')} title="Copia los colores (con sus fotos 360) a otras versiones del mismo modelo">
                                             Replicar a otras versiones
                                         </Button>
                                     )}
@@ -924,9 +954,16 @@ export default function VehicleVersionForm({ version, models, features, enums, s
 
                     {section === 'multimedia' && (
                         <div className="flex flex-col gap-4">
-                            <div>
-                                <Label className="font-semibold">Multimedia ({data.multimedia.length})</Label>
-                                <p className="text-xs text-muted-foreground">Imágenes, videos (mp4) o videos de YouTube. Aparecen en la galería del detalle, en el orden de esta lista. Si está vacío, la sección no se muestra en el sitio.</p>
+                            <div className="flex flex-wrap items-start justify-between gap-2">
+                                <div>
+                                    <Label className="font-semibold">Multimedia ({data.multimedia.length})</Label>
+                                    <p className="text-xs text-muted-foreground">Imágenes, videos (mp4) o videos de YouTube. Aparecen en la galería del detalle, en el orden de esta lista. Si está vacío, la sección no se muestra en el sitio.</p>
+                                </div>
+                                {isEdit && siblings.length > 0 && (
+                                    <Button type="button" variant="outline" size="sm" onClick={() => openReplicate('multimedia')} title="Copia la multimedia (imágenes, videos, YouTube) a otras versiones del mismo modelo">
+                                        Replicar a otras versiones
+                                    </Button>
+                                )}
                             </div>
 
                             {! isEdit && (
@@ -1001,12 +1038,12 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                 </form>
             </div>
 
-            <Dialog open={replicateOpen} onOpenChange={(v) => { setReplicateOpen(v); if (!v) setReplicateTargets([]); }}>
+            <Dialog open={replicateWhat !== null} onOpenChange={(v) => { if (!v) { setReplicateWhat(null); setReplicateTargets([]); } }}>
                 <DialogContent className="sm:max-w-md">
                     <DialogHeader>
-                        <DialogTitle>Replicar colores a otras versiones</DialogTitle>
+                        <DialogTitle>{replicateWhat ? REPLICATE_META[replicateWhat].title : ''}</DialogTitle>
                         <DialogDescription>
-                            Copia los <strong>colores guardados</strong> de esta versión (con sus fotos 360) a las versiones que elijas. Las versiones destino van a <strong>reemplazar</strong> sus colores actuales. Si tienes cambios sin guardar, guárdalos primero.
+                            Copia el <strong>{replicateWhat ? REPLICATE_META[replicateWhat].what : ''}</strong> guardado de esta versión a las versiones que elijas. Las versiones destino van a <strong>reemplazar</strong> lo que tengan actualmente. Si tienes cambios sin guardar, guárdalos primero.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="flex flex-col gap-2 max-h-72 overflow-y-auto py-2">
@@ -1015,7 +1052,6 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                                 <Checkbox checked={replicateTargets.includes(s.id)} onCheckedChange={() => toggleTarget(s.id)} />
                                 <div className="flex-1">
                                     <div className="text-sm font-medium">{s.label}</div>
-                                    <div className="text-xs text-muted-foreground">{s.colors_count} color{s.colors_count === 1 ? '' : 'es'} actualmente · serán reemplazados</div>
                                 </div>
                             </label>
                         ))}
@@ -1024,7 +1060,7 @@ export default function VehicleVersionForm({ version, models, features, enums, s
                         )}
                     </div>
                     <DialogFooter>
-                        <Button variant="outline" onClick={() => setReplicateOpen(false)}>Cancelar</Button>
+                        <Button variant="outline" onClick={() => { setReplicateWhat(null); setReplicateTargets([]); }}>Cancelar</Button>
                         <Button onClick={runReplicate} disabled={replicateTargets.length === 0 || replicating}>
                             {replicating ? 'Replicando…' : `Replicar a ${replicateTargets.length} versión${replicateTargets.length === 1 ? '' : 'es'}`}
                         </Button>

@@ -7,7 +7,7 @@
  * matchea. Comprimimos la imagen, la mandamos como data URL en un JSON, y el
  * endpoint la decodifica y guarda.
  */
-import { compressUntilUnder } from '@/lib/image-compress';
+import { compressImage } from '@/lib/image-compress';
 
 function fileToDataUrl(file: File | Blob): Promise<string> {
     return new Promise((resolve, reject) => {
@@ -30,21 +30,27 @@ export async function uploadImageBase64(
 ): Promise<string> {
     const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
 
-    // Bajamos el target en cada reintento. Esto consigue dos cosas a la vez:
-    //  - Bytes más chicos → no se topa con MaxReqBodySize / SecRequestBodyLimit
-    //    (recordar que Base64 infla ~33% el tamaño raw).
-    //  - Bytes distintos en cada intento → si por mala suerte el contenido del
-    //    Base64 matchea con alguna regla del WAF, el reintento manda otros bytes
-    //    completamente distintos y la regla ya no matchea.
-    const TARGETS_BYTES = [1_000_000, 600_000, 300_000]; // 1 MB → 600 KB → 300 KB raw
-    const BACKOFF_MS = [0, 800, 2000];
+    // Recompresión progresiva con minSizeBytes:0 → SIEMPRE re-encodea, incluso
+    // si la imagen ya era chica. Esto es clave: con compressUntilUnder, si la
+    // imagen original ya estaba bajo el target, devolvía los mismos bytes y
+    // los 3 reintentos mandaban exactamente lo mismo. Ahora cada intento manda
+    // bytes garantizadamente distintos (distinto re-encode), lo que vence:
+    //  - Reglas de WAF que matchean contenido por azar.
+    //  - Límites de tamaño del body (cada intento es más liviano).
+    // Backoff agresivo para sortear rate-limits del WAF tras varios uploads.
+    const PASSES = [
+        { maxDimension: 2400, quality: 0.85, minSizeBytes: 0 },
+        { maxDimension: 1800, quality: 0.65, minSizeBytes: 0 },
+        { maxDimension: 1400, quality: 0.45, minSizeBytes: 0 },
+    ];
+    const BACKOFF_MS = [0, 1500, 4000];
     const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
     let lastError = 'razón desconocida';
 
     for (let attempt = 1; attempt <= 3; attempt++) {
         if (BACKOFF_MS[attempt - 1] > 0) await sleep(BACKOFF_MS[attempt - 1]);
         try {
-            const compressed = await compressUntilUnder(file, TARGETS_BYTES[attempt - 1]);
+            const compressed = await compressImage(file, PASSES[attempt - 1]);
             const dataUrl = await fileToDataUrl(compressed);
             const res = await fetch('/admin/upload-image', {
                 method: 'POST',

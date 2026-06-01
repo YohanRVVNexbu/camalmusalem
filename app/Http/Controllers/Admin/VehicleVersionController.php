@@ -334,6 +334,76 @@ class VehicleVersionController extends Controller
         return back()->with('success', "Colores replicados a {$count} versión".($count === 1 ? '' : 'es').'.');
     }
 
+    /**
+     * Replica la multimedia (imágenes, videos, YouTube) de esta versión a otras
+     * del mismo modelo. Reemplaza por completo la multimedia de los destinos.
+     */
+    public function replicateMultimedia(Request $request, VehicleVersion $vehicleVersion)
+    {
+        $data = $request->validate([
+            'targets'   => ['required', 'array', 'min:1'],
+            'targets.*' => ['integer', 'exists:vehicle_versions,id'],
+        ]);
+
+        $sourceMultimedia = $vehicleVersion->multimedia ?? [];
+        if (empty($sourceMultimedia)) {
+            return back()->with('error', 'Esta versión no tiene multimedia para replicar. Guardá la versión con su multimedia antes de replicar.');
+        }
+
+        $targets = VehicleVersion::whereIn('id', $data['targets'])
+            ->where('id', '!=', $vehicleVersion->id)
+            ->where('vehicle_model_id', $vehicleVersion->vehicle_model_id)
+            ->get();
+
+        if ($targets->isEmpty()) {
+            return back()->with('error', 'No hay versiones destino válidas (deben pertenecer al mismo modelo).');
+        }
+
+        DB::transaction(function () use ($sourceMultimedia, $targets) {
+            foreach ($targets as $target) {
+                $target->update(['multimedia' => $sourceMultimedia]);
+            }
+        });
+
+        $count = $targets->count();
+        return back()->with('success', "Multimedia replicada a {$count} versión".($count === 1 ? '' : 'es').'.');
+    }
+
+    /**
+     * Replica el equipamiento (features) de esta versión a otras del mismo
+     * modelo. Reemplaza por completo el equipamiento de los destinos.
+     */
+    public function replicateFeatures(Request $request, VehicleVersion $vehicleVersion)
+    {
+        $data = $request->validate([
+            'targets'   => ['required', 'array', 'min:1'],
+            'targets.*' => ['integer', 'exists:vehicle_versions,id'],
+        ]);
+
+        $sourceFeatureIds = $vehicleVersion->features()->pluck('features.id')->all();
+        if (empty($sourceFeatureIds)) {
+            return back()->with('error', 'Esta versión no tiene equipamiento para replicar. Guardá la versión con su equipamiento antes de replicar.');
+        }
+
+        $targets = VehicleVersion::whereIn('id', $data['targets'])
+            ->where('id', '!=', $vehicleVersion->id)
+            ->where('vehicle_model_id', $vehicleVersion->vehicle_model_id)
+            ->get();
+
+        if ($targets->isEmpty()) {
+            return back()->with('error', 'No hay versiones destino válidas (deben pertenecer al mismo modelo).');
+        }
+
+        DB::transaction(function () use ($sourceFeatureIds, $targets) {
+            foreach ($targets as $target) {
+                $target->features()->sync($sourceFeatureIds);
+            }
+        });
+
+        $count = $targets->count();
+        return back()->with('success', "Equipamiento replicado a {$count} versión".($count === 1 ? '' : 'es').'.');
+    }
+
     private function enums(): array
     {
         $map = fn ($class) => $class::where('is_active', true)

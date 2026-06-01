@@ -1,11 +1,12 @@
 import { Head, Link } from '@inertiajs/react';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { formatCLP } from '@/lib/format';
 import { useEffect } from 'react';
 
 const ordenarOpciones = ['Menor precio', 'Mayor precio', 'Más reciente'];
@@ -35,11 +36,36 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
     const isMobile = useIsMobile();
     const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
     const merchImg = pickResponsiveImage(seccion.image, seccion.image_mobile, isMobile) || section2Img;
-    const categorias = ['Todos', ...Array.from(new Set(accesorios.map(a => a.category)))];
+
+    // Unificamos accesorios + merch en una sola lista con un discriminador
+    // de tipo. El filtro de "tipo" permite alternar entre Todos / Accesorios /
+    // Merch sin tener dos secciones separadas en la página.
+    type Item = { id: number; name: string; price: string | null; category: string; images: string[]; type: 'accesorio' | 'merch' };
+    const allItems: Item[] = useMemo(() => [
+        ...accesorios.map((a) => ({ ...a, type: 'accesorio' as const })),
+        ...merch.map((m) => ({ ...m, type: 'merch' as const })),
+    ], [accesorios, merch]);
+
+    const [tipo, setTipo] = useState<'Todos' | 'Accesorios' | 'Merch'>('Todos');
     const [categoria, setCategoria] = useState('Todos');
-    const [ordenar, setOrdenar] = useState('');
-    const merchCategorias = ['Todos', ...Array.from(new Set(merch.map(m => m.category)))];
-    const [merchCategoria, setMerchCategoria] = useState('Todos');
+    const [ordenar, setOrdenar] = useState<'' | 'menor' | 'mayor'>('');
+
+    // Las categorías disponibles dependen del tipo seleccionado.
+    const categorias = useMemo(() => {
+        const base = allItems.filter((i) => tipo === 'Todos' || (tipo === 'Accesorios' ? i.type === 'accesorio' : i.type === 'merch'));
+        return ['Todos', ...Array.from(new Set(base.map((i) => i.category).filter(Boolean)))];
+    }, [allItems, tipo]);
+
+    const filtered = useMemo(() => {
+        let list = allItems;
+        if (tipo === 'Accesorios') list = list.filter((i) => i.type === 'accesorio');
+        else if (tipo === 'Merch') list = list.filter((i) => i.type === 'merch');
+        if (categoria !== 'Todos') list = list.filter((i) => i.category === categoria);
+        const price = (s: string | null) => Number(String(s ?? '').replace(/[^0-9]/g, '')) || 0;
+        if (ordenar === 'menor') list = [...list].sort((a, b) => price(a.price) - price(b.price));
+        else if (ordenar === 'mayor') list = [...list].sort((a, b) => price(b.price) - price(a.price));
+        return list;
+    }, [allItems, tipo, categoria, ordenar]);
 
     useEffect(() => {
         const html = document.documentElement;
@@ -116,7 +142,7 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
                 </section>
                 )}
 
-                {/* Products grid section */}
+                {/* Grid UNIFICADO accesorios + merch (estilo repuestos) */}
                 <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-[#EAEAF1] px-5 py-10 lg:gap-10 lg:px-15 lg:py-20">
                     {/* Title + filters row */}
                     <div className="flex flex-col items-start gap-5 self-stretch lg:flex-row lg:items-center lg:gap-0">
@@ -126,193 +152,111 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
                         >
                             Productos disponibles
                         </h2>
-                        <div className="flex w-full flex-col items-stretch gap-3 lg:flex-1 lg:flex-row lg:items-center lg:justify-end lg:gap-5">
-                            {/* Categorias filter */}
-                            <div className="relative">
+                        <div className="flex w-full flex-col items-stretch gap-3 lg:flex-1 lg:flex-row lg:items-center lg:justify-end lg:gap-2.5">
+                            {/* Tipo (accesorio / merch) */}
+                            <div className="relative lg:w-56">
+                                <select
+                                    value={tipo}
+                                    onChange={(e) => { setTipo(e.target.value as 'Todos' | 'Accesorios' | 'Merch'); setCategoria('Todos'); }}
+                                    className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
+                                    style={{ fontFamily: '"Toyota Type"' }}
+                                >
+                                    <option value="Todos">Tipo: Todos</option>
+                                    <option value="Accesorios">Accesorios</option>
+                                    <option value="Merch">Merch</option>
+                                </select>
+                                <svg className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                    <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
+                            {/* Categoría */}
+                            <div className="relative lg:w-56">
                                 <select
                                     value={categoria}
                                     onChange={(e) => setCategoria(e.target.value)}
-                                    className="h-11 w-full appearance-none rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none lg:w-65"
+                                    className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
                                     {categorias.map((c) => (
-                                        <option key={c} value={c}>{c === 'Todos' ? `Categorias: ${c}` : c}</option>
+                                        <option key={c} value={c}>{c === 'Todos' ? 'Categoría: Todos' : c}</option>
                                     ))}
                                 </select>
-                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-                                    <svg width="5" height="7" viewBox="0 0 5 8" fill="none">
-                                        <path d="M1 1L4 4L1 7" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </span>
+                                <svg className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                    <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
                             </div>
-                            {/* Ordenar filter */}
-                            <div className="relative">
+                            {/* Ordenar */}
+                            <div className="relative lg:w-44">
                                 <select
                                     value={ordenar}
-                                    onChange={(e) => setOrdenar(e.target.value)}
-                                    className="h-11 w-full appearance-none rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none lg:w-65"
+                                    onChange={(e) => setOrdenar(e.target.value as '' | 'menor' | 'mayor')}
+                                    className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
-                                    <option value="" disabled>Ordenar:</option>
-                                    {ordenarOpciones.map((o) => (
-                                        <option key={o} value={o}>{o}</option>
-                                    ))}
+                                    <option value="">Ordenar:</option>
+                                    <option value="menor">Menor precio</option>
+                                    <option value="mayor">Mayor precio</option>
                                 </select>
-                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-                                    <svg width="5" height="7" viewBox="0 0 5 8" fill="none">
-                                        <path d="M1 1L4 4L1 7" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </span>
+                                <svg className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                    <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
                             </div>
                         </div>
                     </div>
-                    <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {accesorios
-                            .filter(a => categoria === 'Todos' || a.category === categoria)
-                            .map((item) => (
-                            <Link
-                                key={item.id}
-                                href={`/post-venta/accesorios/${item.id}`}
-                                className="group relative aspect-square w-full overflow-hidden rounded-[30px] bg-gray-100 lg:h-80 lg:w-80"
-                                style={item.images?.[0] ? {
-                                    backgroundImage: `url(${item.images[0]})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: '50%',
-                                    backgroundRepeat: 'no-repeat',
-                                } : {}}
-                            >
-                                {/* Mobile: bottom label always visible */}
-                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-[#EB0A1E] p-3 lg:hidden">
-                                    <h3 className="line-clamp-1 text-base font-semibold leading-[120%] text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                                        {item.name}
-                                    </h3>
-                                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 18 14" fill="none">
-                                            <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="#EB0A1E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    </span>
-                                </div>
-                                {/* Desktop: hover overlay */}
-                                <div className="absolute inset-0 hidden translate-y-full flex-col items-center justify-center gap-5 rounded-[30px] bg-[#EB0A1E] px-20.5 transition-transform duration-300 ease-in-out group-hover:translate-y-0 lg:flex">
-                                    <h3
-                                        className="text-center text-[28px] font-semibold leading-[120%] text-white"
-                                        style={{ fontFamily: '"Toyota Type"' }}
-                                    >
-                                        {item.name}
-                                    </h3>
-                                    <span
-                                        className="flex items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 transition hover:bg-white/90"
-                                    >
-                                        <span
-                                            className="whitespace-nowrap text-base leading-[120%] text-[#EB0A1E]"
-                                            style={{ fontFamily: '"Toyota Type"' }}
-                                        >
-                                            Ver detalles
-                                        </span>
-                                        <span className="flex size-10 items-center justify-center rounded-[60px] bg-[#EB0A1E]" style={{ backdropFilter: 'blur(15px)' }}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="12" viewBox="0 0 18 14" fill="none">
-                                                <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                        </span>
-                                    </span>
-                                </div>
-                            </Link>
-                        ))}
-                        {accesorios.filter(a => categoria === 'Todos' || a.category === categoria).length === 0 && (
-                            <p className="col-span-full py-10 text-center text-black/50">No hay productos en esta categoría.</p>
-                        )}
-                    </div>
-                </section>
 
-                {/* Merch grid section */}
-                {merch.length > 0 && (
-                <section className="flex flex-col items-center justify-center gap-7.5 self-stretch bg-white px-5 py-10 lg:gap-10 lg:px-15 lg:py-20">
-                    {/* Title + filter row */}
-                    <div className="flex flex-col items-start gap-5 self-stretch lg:flex-row lg:items-center lg:gap-0">
-                        <h2
-                            className="text-2xl font-semibold leading-[120%] text-black lg:text-[32px]"
-                            style={{ fontFamily: '"Toyota Type"' }}
-                        >
-                            Merch oficial
-                        </h2>
-                        <div className="flex w-full flex-col items-stretch gap-3 lg:flex-1 lg:flex-row lg:items-center lg:justify-end lg:gap-5">
-                            <div className="relative">
-                                <select
-                                    value={merchCategoria}
-                                    onChange={(e) => setMerchCategoria(e.target.value)}
-                                    className="h-11 w-full appearance-none rounded-[60px] border border-black bg-white py-2.5 pl-5 pr-8 text-base leading-none text-black outline-none lg:w-65"
-                                    style={{ fontFamily: '"Toyota Type"' }}
-                                >
-                                    {merchCategorias.map((c) => (
-                                        <option key={c} value={c}>{c === 'Todos' ? `Categorias: ${c}` : c}</option>
-                                    ))}
-                                </select>
-                                <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2">
-                                    <svg width="5" height="7" viewBox="0 0 5 8" fill="none">
-                                        <path d="M1 1L4 4L1 7" stroke="black" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                    </div>
                     <div className="grid w-full grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-                        {merch
-                            .filter(m => merchCategoria === 'Todos' || m.category === merchCategoria)
-                            .map((item) => (
-                            <Link
-                                key={item.id}
-                                href={`/post-venta/merch/${item.id}`}
-                                className="group relative aspect-square w-full overflow-hidden rounded-[30px] bg-gray-100 lg:h-80 lg:w-80"
-                                style={item.images?.[0] ? {
-                                    backgroundImage: `url(${item.images[0]})`,
-                                    backgroundSize: 'cover',
-                                    backgroundPosition: '50%',
-                                    backgroundRepeat: 'no-repeat',
-                                } : {}}
-                            >
-                                {/* Mobile: bottom label always visible */}
-                                <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-3 bg-[#EB0A1E] p-3 lg:hidden">
-                                    <h3 className="line-clamp-1 text-base font-semibold leading-[120%] text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                                        {item.name}
-                                    </h3>
-                                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-white">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="11" viewBox="0 0 18 14" fill="none">
-                                            <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="#EB0A1E" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                        </svg>
-                                    </span>
-                                </div>
-                                {/* Desktop: hover overlay */}
-                                <div className="absolute inset-0 hidden translate-y-full flex-col items-center justify-center gap-5 rounded-[30px] bg-[#EB0A1E] px-20.5 transition-transform duration-300 ease-in-out group-hover:translate-y-0 lg:flex">
-                                    <h3
-                                        className="text-center text-[28px] font-semibold leading-[120%] text-white"
-                                        style={{ fontFamily: '"Toyota Type"' }}
-                                    >
-                                        {item.name}
-                                    </h3>
-                                    <span
-                                        className="flex items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 transition hover:bg-white/90"
-                                    >
+                        {filtered.length === 0 && (
+                            <p className="col-span-full py-10 text-center text-black/50">No hay productos para los filtros seleccionados.</p>
+                        )}
+                        {filtered.map((item) => {
+                            const href = item.type === 'accesorio'
+                                ? `/post-venta/accesorios/${item.id}`
+                                : `/post-venta/merch/${item.id}`;
+                            return (
+                                <div key={`${item.type}-${item.id}`} className="flex flex-col overflow-hidden rounded-[20px] border border-black/5 bg-white">
+                                    {item.images?.[0] ? (
+                                        <img src={item.images[0]} alt={item.name} className="aspect-3/2 w-full rounded-t-[14px] object-cover lg:aspect-auto lg:h-59.5" />
+                                    ) : (
+                                        <div className="aspect-3/2 w-full rounded-t-[14px] bg-gray-100 lg:aspect-auto lg:h-59.5" />
+                                    )}
+                                    <div className="flex flex-col gap-3 px-5 py-5">
+                                        <div className="flex items-center gap-2 px-2.5">
+                                            <span className="rounded-full bg-[#EAEAF1] px-2 py-1 text-xs leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                                {item.type === 'accesorio' ? 'Accesorio' : 'Merch'}
+                                            </span>
+                                            {item.category && (
+                                                <span className="rounded-full bg-[#EAEAF1] px-2 py-1 text-xs leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                                    {item.category}
+                                                </span>
+                                            )}
+                                        </div>
                                         <span
-                                            className="whitespace-nowrap text-base leading-[120%] text-[#EB0A1E]"
+                                            className="line-clamp-2 px-2.5 text-base font-semibold leading-[120%] text-black lg:text-lg"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
-                                            Ver detalles
+                                            {item.name}
                                         </span>
-                                        <span className="flex size-10 items-center justify-center rounded-[60px] bg-[#EB0A1E]" style={{ backdropFilter: 'blur(15px)' }}>
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="12" viewBox="0 0 18 14" fill="none">
-                                                <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                                            </svg>
-                                        </span>
-                                    </span>
+                                        <div className="flex items-center justify-between gap-2 px-2.5">
+                                            <span className="text-xl font-semibold uppercase leading-none text-black lg:text-2xl" style={{ fontFamily: '"Toyota Type"' }}>
+                                                {item.price ? formatCLP(item.price) : '—'}
+                                            </span>
+                                            <Link href={href} className="flex h-10 shrink-0 items-center gap-2.5 rounded-[60px] bg-black p-1 pl-3.5 transition-opacity hover:opacity-80">
+                                                <span className="pb-0.5 text-sm leading-none text-white" style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}>
+                                                    Ver más
+                                                </span>
+                                                <span className="flex size-7.5 items-center justify-center rounded-[60px] bg-white">
+                                                    <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
+                                                        <path d="M0.5 5.5L13.5 5.5M13.5 5.5L8.625 10.5M13.5 5.5L8.625 0.5" stroke="black" strokeLinecap="round" strokeLinejoin="round"/>
+                                                    </svg>
+                                                </span>
+                                            </Link>
+                                        </div>
+                                    </div>
                                 </div>
-                            </Link>
-                        ))}
-                        {merch.filter(m => merchCategoria === 'Todos' || m.category === merchCategoria).length === 0 && (
-                            <p className="col-span-full py-10 text-center text-black/50">No hay productos en esta categoría.</p>
-                        )}
+                            );
+                        })}
                     </div>
                 </section>
-                )}
 
                 <ContactCtaBanner />
                 <BranchesSection />

@@ -517,10 +517,29 @@ class SiteSectionsSeeder extends Seeder
             'order' => 33,
         ]);
 
+        // Carrusel "Servicio técnico Musalem" — sección independiente para
+        // que en /admin/paginas/mantencion sea un acordeón aparte. Estructura
+        // dinámica: cards es un arreglo de bloques de tipo 'image' o 'text';
+        // se pueden agregar/quitar/reordenar desde el admin.
+        SiteSection::updateOrCreate(['section' => 'mantencion_carrusel'], [
+            'data' => [
+                'carousel_title'       => 'Servicio técnico Musalem',
+                'carousel_description' => 'Nuestro objetivo está enfocado en ofrecer y entregar a nuestros clientes un servicio de alto nivel en calidad y seguridad en cada reparación que realizamos.',
+                'cards' => [
+                    ['type' => 'image', 'desktop' => '', 'mobile' => ''],
+                    ['type' => 'text',  'titulo' => 'Los inicios', 'subtitulo' => '1968', 'desc' => 'Camal Musalem nace en 1968 con un taller mecánico en Ovalle, dando inicio a su desarrollo en el rubro automotriz en Ovalle y La Serena.'],
+                    ['type' => 'image', 'desktop' => '', 'mobile' => ''],
+                    ['type' => 'text',  'titulo' => 'Reparaciones, revisión y diagnóstico', 'subtitulo' => 'Servicio autorizado y atención experta', 'desc' => 'Contamos con repuestos originales y personal técnico calificado para revisar, diagnosticar y reparar tu vehículo con la confianza y respaldo que necesitas.'],
+                    ['type' => 'image', 'desktop' => '', 'mobile' => ''],
+                    ['type' => 'text',  'titulo' => "Desabolladura\ny pintura", 'subtitulo' => 'Terminaciones de calidad para tu vehículo', 'desc' => 'Realizamos trabajos de desabolladura, cuadratura y pintura con terminaciones óptimas, utilizando equipamiento especializado y tecnología adecuada para cada reparación.'],
+                ],
+            ],
+            'is_visible' => true,
+            'order' => 33,
+        ]);
+
         SiteSection::updateOrCreate(['section' => 'mantencion_reserva'], [
             'data' => [
-                'carousel_title'        => 'Servicio técnico Musalem',
-                'carousel_description'  => 'Nuestro objetivo está enfocado en ofrecer y entregar a nuestros clientes un servicio de alto nivel en calidad y seguridad en cada reparación que realizamos.',
                 'title'                 => 'Reserva tu hora',
                 'description'           => 'Ahorra tiempo programando el servicio aquí mismo. Después de enviar el formulario, nos pondremos en contacto para confirmar su cita de servicio.',
                 'button_text'           => 'Ir a agendar servicio',

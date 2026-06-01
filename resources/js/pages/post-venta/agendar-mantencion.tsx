@@ -40,36 +40,14 @@ type BranchLite = BranchMapData & { id: number; name: string; city: string | nul
 type ServiceLite = { id: number; name: string; slug: string };
 type VehicleModelLite = { id: number; name: string };
 
-const carouselCards: (
+type CarouselCard =
     | { type: 'image'; image: string }
-    | { type: 'text'; titulo: string; subtitulo: string; desc: string }
-)[] = [
-    { type: 'image', image: card1Img },
-    {
-        type: 'text',
-        titulo: 'Los inicios',
-        subtitulo: '1968',
-        desc: 'Camal Musalem nace en 1968 con un taller mecánico en Ovalle, dando inicio a su desarrollo en el rubro automotriz en Ovalle y La Serena.',
-    },
-    { type: 'image', image: card2Img },
-    {
-        type: 'text',
-        titulo: 'Reparaciones, revisión y diagnóstico',
-        subtitulo: 'Servicio autorizado y atención experta',
-        desc: 'Contamos con repuestos originales y personal técnico calificado para revisar, diagnosticar y reparar tu vehículo con la confianza y respaldo que necesitas.',
-    },
-    { type: 'image', image: card3Img },
-    {
-        type: 'text',
-        titulo: 'Desabolladura\ny pintura',
-        subtitulo: 'Terminaciones de calidad para tu vehículo',
-        desc: 'Realizamos trabajos de desabolladura, cuadratura y pintura con terminaciones óptimas, utilizando equipamiento especializado y tecnología adecuada para cada reparación.',
-    },
-];
+    | { type: 'text'; titulo: string; subtitulo: string; desc: string };
 
 export default function AgendarMantencion({
     footer,
     mantencion_hero,
+    mantencion_carrusel,
     mantencion_reserva,
     branches = [],
     services = [],
@@ -77,18 +55,49 @@ export default function AgendarMantencion({
 }: {
     footer: any | null;
     mantencion_hero?: any | null;
+    mantencion_carrusel?: any | null;
     mantencion_reserva?: any | null;
     branches?: BranchLite[];
     services?: ServiceLite[];
     vehicle_models?: VehicleModelLite[];
 }) {
     const hero = mantencion_hero ?? {};
+    const carrusel = mantencion_carrusel ?? {};
     const reserva = mantencion_reserva ?? {};
     const isMobile = useIsMobile();
     const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
     const reservaImg = pickResponsiveImage(reserva.image, reserva.image_mobile, isMobile) || thirdSectionImg;
     const reservaStep2Img = pickResponsiveImage(reserva.step2_image, reserva.step2_image_mobile, isMobile) || step2Img;
     const reservaStep4Img = pickResponsiveImage(reserva.step4_image, reserva.step4_image_mobile, isMobile) || step4Img;
+    // Cards del carrusel "Servicio técnico Musalem". Estructura dinámica:
+    // `carrusel.cards` es un arreglo de bloques (imagen o texto) editable desde
+    // /admin/paginas/mantencion. Si no existe (instalación sin migrar), se
+    // arma el set hardcodeado original como fallback.
+    const fallbackImgs = [card1Img, card2Img, card3Img];
+    const cardsRaw: any[] = Array.isArray(carrusel.cards) ? carrusel.cards : [];
+    let imgCount = 0;
+    const carouselCards: CarouselCard[] = cardsRaw.length > 0
+        ? cardsRaw.map((c) => {
+            if (c?.type === 'image') {
+                const url = pickResponsiveImage(c.desktop, c.mobile, isMobile) || fallbackImgs[imgCount % fallbackImgs.length];
+                imgCount++;
+                return { type: 'image' as const, image: url };
+            }
+            return {
+                type: 'text' as const,
+                titulo: c?.titulo ?? '',
+                subtitulo: c?.subtitulo ?? '',
+                desc: c?.desc ?? '',
+            };
+        })
+        : [
+            { type: 'image', image: card1Img },
+            { type: 'text', titulo: 'Los inicios', subtitulo: '1968', desc: 'Camal Musalem nace en 1968 con un taller mecánico en Ovalle, dando inicio a su desarrollo en el rubro automotriz en Ovalle y La Serena.' },
+            { type: 'image', image: card2Img },
+            { type: 'text', titulo: 'Reparaciones, revisión y diagnóstico', subtitulo: 'Servicio autorizado y atención experta', desc: 'Contamos con repuestos originales y personal técnico calificado para revisar, diagnosticar y reparar tu vehículo con la confianza y respaldo que necesitas.' },
+            { type: 'image', image: card3Img },
+            { type: 'text', titulo: 'Desabolladura\ny pintura', subtitulo: 'Terminaciones de calidad para tu vehículo', desc: 'Realizamos trabajos de desabolladura, cuadratura y pintura con terminaciones óptimas, utilizando equipamiento especializado y tecnología adecuada para cada reparación.' },
+        ];
     const { flash, horariosAtencion: horariosShared } = usePage<{
         flash: { success?: string; error?: string };
         horariosAtencion?: { label: string; value: string }[];
@@ -252,10 +261,10 @@ export default function AgendarMantencion({
                 <section className="flex w-full flex-col items-start bg-white px-5 pt-10 lg:px-15 lg:pt-20">
                     <div className="flex w-full flex-col items-start gap-5 lg:flex-row lg:items-end lg:justify-between lg:gap-0">
                         <h2 className="text-left text-2xl leading-[120%] font-semibold text-black lg:w-115.25 lg:text-[40px]">
-                            {reserva.carousel_title || 'Servicio técnico Musalem'}
+                            {carrusel.carousel_title || reserva.carousel_title || 'Servicio técnico Musalem'}
                         </h2>
                         <p className="text-left text-sm leading-[120%] font-normal text-black lg:w-130 lg:text-base">
-                            {reserva.carousel_description || 'Nuestro objetivo está enfocado en ofrecer y entregar a nuestros clientes un servicio de alto nivel en calidad y seguridad en cada reparación que realizamos.'}
+                            {carrusel.carousel_description || reserva.carousel_description || 'Nuestro objetivo está enfocado en ofrecer y entregar a nuestros clientes un servicio de alto nivel en calidad y seguridad en cada reparación que realizamos.'}
                         </p>
                     </div>
 

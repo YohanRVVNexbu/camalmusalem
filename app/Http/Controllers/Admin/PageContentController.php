@@ -24,7 +24,7 @@ class PageContentController extends Controller
         'seminuevos'   => ['seminuevos_hero'],
         'repuestos'    => ['repuestos_hero', 'repuestos_seccion'],
         'accesorios'   => ['accesorios_hero', 'accesorios_seccion', 'accesorios_whatsapp'],
-        'mantencion'   => ['mantencion_hero', 'mantencion_reserva'],
+        'mantencion'   => ['mantencion_hero', 'mantencion_carrusel', 'mantencion_reserva'],
         'compliance'   => ['compliance_hero', 'compliance_descargas', 'compliance_canales'],
         'banner-cta'   => ['contact_cta_banner'],
         'whatsapp'     => ['whatsapp_button'],

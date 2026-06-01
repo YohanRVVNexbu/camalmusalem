@@ -127,6 +127,10 @@ Route::middleware('admin')->group(function () {
     // Replicar los colores (con fotos 360) de esta versión a otras del mismo modelo.
     Route::post('vehicle-versions/{vehicleVersion}/replicate-colors', [VehicleVersionController::class, 'replicateColors'])
         ->name('admin.vehicle-versions.replicate-colors');
+    Route::post('vehicle-versions/{vehicleVersion}/replicate-multimedia', [VehicleVersionController::class, 'replicateMultimedia'])
+        ->name('admin.vehicle-versions.replicate-multimedia');
+    Route::post('vehicle-versions/{vehicleVersion}/replicate-features', [VehicleVersionController::class, 'replicateFeatures'])
+        ->name('admin.vehicle-versions.replicate-features');
     Route::resource('vehicle-versions', VehicleVersionController::class)
         ->except(['show'])
         ->parameters(['vehicle-versions' => 'vehicleVersion'])
