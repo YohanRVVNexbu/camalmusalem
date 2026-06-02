@@ -17,13 +17,12 @@ export function Hero({ image, imageMobile, sectionTitle, title, description }: H
     const media = pickResponsiveImage(image ?? '', imageMobile ?? '', isMobile);
     const finalSectionTitle = sectionTitle?.trim() || 'Seminuevos certificados por Musalem';
 
-    // El Hero rompe lateralmente la padding del wrapper de la página
-    // (-mx-5 / lg:-mx-15) para ser full-bleed horizontal, y usa el alto del
-    // viewport menos la padding superior del wrapper (pt-25 mobile / lg:pt-15)
-    // para llenar exactamente lo visible debajo del navbar.
+    // Card de 85vh respetando el layout original (padding lateral del wrapper
+    // en desktop con rounded corners + full-bleed lateral en mobile). La
+    // imagen siempre object-cover para no deformarse con cualquier ratio.
     return (
-        <section className="flex flex-col items-center">
-            <div className="relative -mx-5 w-[calc(100%+2.5rem)] h-[calc(100dvh-6.25rem)] overflow-hidden lg:-mx-15 lg:w-[calc(100%+7.5rem)] lg:h-[calc(100dvh-3.75rem)]">
+        <section className="flex flex-col items-center lg:mt-20">
+            <div className="relative -mx-5 h-[85vh] w-[calc(100%+2.5rem)] overflow-hidden lg:mx-0 lg:w-full lg:rounded-[20px]">
                 {media && isVideoUrl(media) ? (
                     <video
                         src={media}
