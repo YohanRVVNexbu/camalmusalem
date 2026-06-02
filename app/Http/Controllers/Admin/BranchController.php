@@ -79,6 +79,17 @@ class BranchController extends Controller
 
     private function handleImageUpload(Request $request, ?Branch $branch): ?string
     {
+        // Path nuevo: el front sube la imagen vía Base64 a /admin/upload-image
+        // (sortea el 403 del WAF en uploads multipart) y solo envía la URL ya
+        // resuelta en image_path. El borrado del archivo viejo lo hace el
+        // ImageUploadController cuando se le pasa old_url.
+        if ($request->has('image_path')) {
+            $newPath = $request->input('image_path');
+            return $newPath ?: null;
+        }
+
+        // Path legacy: si por algún motivo viene un file en `image` (multipart),
+        // se procesa con el flujo viejo.
         if ($request->hasFile('image')) {
             if ($branch?->image_path) {
                 $this->settingsService->deleteOldFile($branch->image_path);
@@ -104,6 +115,7 @@ class BranchController extends Controller
             'phones_servicio_tecnico' => ['nullable', 'array'],
             'phones_servicio_tecnico.*' => ['string', 'max:50'],
             'image' => ['nullable', 'image', 'max:5120'],
+            'image_path' => ['nullable', 'string', 'max:500'],
             'salesforce_dealer_id' => ['nullable', 'string', 'max:32'],
             'is_active' => ['boolean'],
             'display_order' => ['integer'],

@@ -1,12 +1,14 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import AdminLayout from '@/layouts/admin-layout';
 import { BranchMapPicker } from '@/components/admin/branch-map-picker';
+import { uploadImageBase64 } from '@/lib/image-upload';
 import fallback1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import fallback2 from '@images/seminuevos/visitanos_2.png?format=webp';
 
@@ -42,10 +44,28 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
         salesforce_dealer_id: null,
         is_active: true, display_order: 0,
     });
-    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [processing, setProcessing] = useState(false);
 
     const set = (field: keyof Branch, val: any) => setData({ ...data, [field]: val });
+
+    // Sube la imagen vía Base64 (JSON) al endpoint /admin/upload-image, así
+    // sortea el bloqueo del WAF/ModSecurity que rechaza con 403 los uploads
+    // multipart de imágenes. La URL devuelta se guarda directo en image_path
+    // y queda lista para el submit del form.
+    const handleImagePick = async (file: File | null) => {
+        if (!file) return;
+        setUploadingImage(true);
+        try {
+            const url = await uploadImageBase64(file, 'branches', data.image_path);
+            setData({ ...data, image_path: url });
+        } catch (err) {
+            console.error('Falló subida de imagen de sucursal:', err);
+            toast.error('No se pudo subir la imagen. ' + (err instanceof Error ? err.message : ''));
+        } finally {
+            setUploadingImage(false);
+        }
+    };
 
     const handleMapPick = (lat: number, lng: number) => {
         setData({
@@ -60,22 +80,24 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
-        const fd = new FormData();
+        // image_path ya viene como URL (subida vía Base64 al elegir archivo),
+        // así que se envía como un campo más, no como file. El submit
+        // completo es JSON-friendly — no necesita multipart.
+        const payload: Record<string, any> = {};
         Object.entries(data).forEach(([k, v]) => {
-            if (k === 'image_path') return;
             if (Array.isArray(v)) {
-                v.forEach((item, i) => fd.append(`${k}[${i}]`, String(item)));
+                payload[k] = v;
             } else if (v !== null && v !== undefined) {
-                fd.append(k, typeof v === 'boolean' ? (v ? '1' : '0') : String(v));
+                payload[k] = typeof v === 'boolean' ? (v ? '1' : '0') : v;
+            } else {
+                payload[k] = '';
             }
         });
-        if (imageFile) fd.append('image', imageFile);
 
         if (isEdit) {
-            fd.append('_method', 'PUT');
-            router.post(`/admin/branches/${branch!.id}`, fd, { forceFormData: true, onFinish: () => setProcessing(false) });
+            router.put(`/admin/branches/${branch!.id}`, payload, { onFinish: () => setProcessing(false) });
         } else {
-            router.post('/admin/branches', fd, { forceFormData: true, onFinish: () => setProcessing(false) });
+            router.post('/admin/branches', payload, { onFinish: () => setProcessing(false) });
         }
     };
 
@@ -187,14 +209,6 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
                         <Label>Imagen de la sucursal</Label>
                         {(() => {
                             const fallback = FALLBACK_IMAGES[fallbackPosition % FALLBACK_IMAGES.length];
-                            if (imageFile) {
-                                return (
-                                    <div className="relative">
-                                        <img src={URL.createObjectURL(imageFile)} className="h-40 w-full rounded-lg object-cover ring-2 ring-primary" alt="" />
-                                        <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">Nueva imagen</span>
-                                    </div>
-                                );
-                            }
                             if (data.image_path) {
                                 return <img src={data.image_path} className="h-40 w-full rounded-lg object-cover" alt="" />;
                             }
@@ -205,7 +219,13 @@ export default function BranchForm({ branch, fallbackPosition = 0 }: { branch: B
                                 </div>
                             );
                         })()}
-                        <Input type="file" accept="image/*" onChange={(e) => setImageFile(e.target.files?.[0] ?? null)} />
+                        <Input type="file" accept="image/*" disabled={uploadingImage} onChange={(e) => handleImagePick(e.target.files?.[0] ?? null)} />
+                        {uploadingImage && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
+                        {data.image_path && !uploadingImage && (
+                            <button type="button" onClick={() => set('image_path', null)} className="text-xs text-destructive underline self-start">
+                                Quitar imagen (usar default)
+                            </button>
+                        )}
                         <p className="text-xs text-muted-foreground">Aparece en la sección "Visítanos en nuestras sucursales" del sitio público. Si no subes una imagen, se mostrará la imagen default.</p>
                     </div>
 
