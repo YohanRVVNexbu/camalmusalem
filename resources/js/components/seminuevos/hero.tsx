@@ -17,19 +17,17 @@ export function Hero({ image, imageMobile, sectionTitle, title, description }: H
     const media = pickResponsiveImage(image ?? '', imageMobile ?? '', isMobile);
     const finalSectionTitle = sectionTitle?.trim() || 'Seminuevos certificados por Musalem';
 
-    // Alto fijo proporcional al viewport en desktop (90vh, con tope de 900px en
-    // monitores muy grandes y un piso de 500px) + object-cover para que recorte
-    // si la imagen es más alta. Sin esto, una imagen con dimensiones grandes
-    // se desbordaba a su tamaño natural y rompía el layout.
-    const mediaClass = 'h-64 w-full object-cover sm:h-96 lg:h-[90vh] lg:max-h-[900px] lg:min-h-[500px] lg:rounded-[20px]';
-
+    // El Hero rompe lateralmente la padding del wrapper de la página
+    // (-mx-5 / lg:-mx-15) para ser full-bleed horizontal, y usa el alto del
+    // viewport menos la padding superior del wrapper (pt-25 mobile / lg:pt-15)
+    // para llenar exactamente lo visible debajo del navbar.
     return (
-        <section className="flex flex-col items-center lg:mt-20">
-            <div className="-mx-5 w-[calc(100%+2.5rem)] lg:mx-0 lg:w-full">
+        <section className="flex flex-col items-center">
+            <div className="relative -mx-5 w-[calc(100%+2.5rem)] h-[calc(100dvh-6.25rem)] overflow-hidden lg:-mx-15 lg:w-[calc(100%+7.5rem)] lg:h-[calc(100dvh-3.75rem)]">
                 {media && isVideoUrl(media) ? (
                     <video
                         src={media}
-                        className={mediaClass}
+                        className="absolute inset-0 size-full object-cover"
                         autoPlay
                         muted
                         loop
@@ -39,7 +37,7 @@ export function Hero({ image, imageMobile, sectionTitle, title, description }: H
                     <img
                         src={media || defaultHeroImage}
                         alt={title || 'Seminuevos Musalem'}
-                        className={mediaClass}
+                        className="absolute inset-0 size-full object-cover"
                     />
                 )}
             </div>
