@@ -1,5 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -7,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
+import { uploadImageBase64 } from '@/lib/image-upload';
 import AdminLayout from '@/layouts/admin-layout';
 
 type MerchItem = {
@@ -38,39 +40,57 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
         price: null, price_offer: null, status: 'disponible',
         branch: null, images: [], is_visible: true, order: 0,
     });
-    const [newImages, setNewImages] = useState<File[]>([]);
-    const [removeImages, setRemoveImages] = useState<string[]>([]);
+    const [uploadingCount, setUploadingCount] = useState(0);
     const [processing, setProcessing] = useState(false);
 
     const set = (field: keyof MerchItem) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) =>
         setData({ ...data, [field]: e.target.value });
 
+    const handlePickImages = async (files: File[]) => {
+        if (files.length === 0) return;
+        setUploadingCount((c) => c + files.length);
+        for (const file of files) {
+            try {
+                const url = await uploadImageBase64(file, `merch/${merch?.id ?? 'new'}`);
+                setData((d) => ({ ...d, images: [...d.images, url] }));
+            } catch (err) {
+                console.error('Falló subir imagen de merch:', err);
+                toast.error('No se pudo subir una imagen. ' + (err instanceof Error ? err.message : ''));
+            } finally {
+                setUploadingCount((c) => c - 1);
+            }
+        }
+    };
+
+    const removeImage = (url: string) => {
+        setData({ ...data, images: data.images.filter((u) => u !== url) });
+    };
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
-        const fd = new FormData();
-        fd.append('sku', data.sku ?? '');
-        fd.append('name', data.name);
-        fd.append('description', data.description ?? '');
-        fd.append('description_tech', data.description_tech ?? '');
-        fd.append('comentarios', data.comentarios ?? '');
-        fd.append('category', data.category);
-        fd.append('subcategory', data.subcategory ?? '');
-        fd.append('size', data.size ?? '');
-        fd.append('price', data.price ?? '');
-        fd.append('price_offer', data.price_offer ?? '');
-        fd.append('status', data.status);
-        fd.append('branch', data.branch ?? '');
-        fd.append('is_visible', data.is_visible ? '1' : '0');
-        fd.append('order', String(data.order));
-        newImages.forEach((f) => fd.append('images_new[]', f));
-        removeImages.forEach((u) => fd.append('images_remove[]', u));
-        if (isEdit) fd.append('_method', 'PUT');
-
-        router.post(isEdit ? `/admin/merch/${merch!.id}` : '/admin/merch', fd, {
-            forceFormData: true,
-            onFinish: () => setProcessing(false),
-        });
+        const payload = {
+            sku: data.sku ?? '',
+            name: data.name,
+            description: data.description ?? '',
+            description_tech: data.description_tech ?? '',
+            comentarios: data.comentarios ?? '',
+            category: data.category,
+            subcategory: data.subcategory ?? '',
+            size: data.size ?? '',
+            price: data.price ?? '',
+            price_offer: data.price_offer ?? '',
+            status: data.status,
+            branch: data.branch ?? '',
+            is_visible: data.is_visible ? '1' : '0',
+            order: data.order,
+            images: data.images,
+        };
+        if (isEdit) {
+            router.put(`/admin/merch/${merch!.id}`, payload, { onFinish: () => setProcessing(false) });
+        } else {
+            router.post('/admin/merch', payload, { onFinish: () => setProcessing(false) });
+        }
     };
 
     return (
@@ -164,34 +184,29 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
                                         <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
                                         <button
                                             type="button"
-                                            onClick={() => {
-                                                setRemoveImages([...removeImages, url]);
-                                                setData({ ...data, images: data.images.filter((u) => u !== url) });
-                                            }}
+                                            onClick={() => removeImage(url)}
                                             className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs"
                                         >✕</button>
                                     </div>
                                 ))}
                             </div>
                         )}
-                        <Input type="file" accept="image/*" multiple onChange={(e) => {
-                            setNewImages([...newImages, ...Array.from(e.target.files ?? [])]);
-                            e.target.value = '';
-                        }} />
-                        {newImages.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {newImages.map((f, i) => (
-                                    <div key={i} className="relative">
-                                        <img src={URL.createObjectURL(f)} className="h-24 w-32 rounded-lg object-cover ring-2 ring-primary" alt="" />
-                                        <button type="button" onClick={() => setNewImages(newImages.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs" title="Quitar">✕</button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            disabled={uploadingCount > 0}
+                            onChange={(e) => {
+                                const files = Array.from(e.target.files ?? []);
+                                handlePickImages(files);
+                                e.target.value = '';
+                            }}
+                        />
+                        {uploadingCount > 0 && <p className="text-xs text-muted-foreground">Subiendo {uploadingCount} imagen{uploadingCount === 1 ? '' : 'es'}…</p>}
                     </div>
 
                     <div className="flex gap-3">
-                        <Button type="submit" disabled={processing}>{processing ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear merch'}</Button>
+                        <Button type="submit" disabled={processing || uploadingCount > 0}>{processing ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear merch'}</Button>
                         <Button variant="outline" asChild><Link href="/admin/merch">Cancelar</Link></Button>
                     </div>
                 </form>

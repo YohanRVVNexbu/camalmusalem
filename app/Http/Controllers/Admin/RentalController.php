@@ -55,7 +55,9 @@ class RentalController extends Controller
 
         $rental = Rental::create($data);
 
-        if ($request->hasFile('card_image')) {
+        if ($request->filled('card_image_url')) {
+            $rental->update(['card_image' => $request->input('card_image_url')]);
+        } elseif ($request->hasFile('card_image')) {
             $rental->update([
                 'card_image' => $this->settings->uploadFile($request->file('card_image'), 'rentals/'.$rental->id),
             ]);
@@ -97,7 +99,9 @@ class RentalController extends Controller
             $data['slug'] = $this->uniqueSlug($data['name'], $rental->id);
         }
 
-        if ($request->hasFile('card_image')) {
+        if ($request->has('card_image_url')) {
+            $data['card_image'] = $request->input('card_image_url') ?: null;
+        } elseif ($request->hasFile('card_image')) {
             $this->settings->deleteOldFile($rental->card_image);
             $data['card_image'] = $this->settings->uploadFile($request->file('card_image'), 'rentals/'.$rental->id);
         } elseif ($request->boolean('card_image_remove')) {

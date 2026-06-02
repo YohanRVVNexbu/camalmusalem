@@ -160,9 +160,21 @@ export default function VehicleVersionForm({ version, models, features, enums, s
             multimedia: version.multimedia ?? [],
         };
     });
-    const [heroFile, setHeroFile] = useState<File | null>(null);
-    const [removeHero, setRemoveHero] = useState(false);
+    const [uploadingHero, setUploadingHero] = useState(false);
     const [processing, setProcessing] = useState(false);
+
+    const handlePickHero = async (file: File | null) => {
+        if (!file) return;
+        setUploadingHero(true);
+        try {
+            const url = await uploadImageBase64(file, `vehicle-versions/${version?.id ?? 'new'}/hero`, data.hero_image);
+            setData((d) => ({ ...d, hero_image: url }));
+        } catch (err) {
+            toast.error('No se pudo subir el hero. ' + (err instanceof Error ? err.message : ''));
+        } finally {
+            setUploadingHero(false);
+        }
+    };
     const [section, setSection] = useState<SectionKey>('basico');
 
     const showElectric = useMemo(
@@ -422,8 +434,8 @@ export default function VehicleVersionForm({ version, models, features, enums, s
             fd.append(`multimedia[${i}][url]`, m.url);
         });
 
-        if (heroFile) fd.append('hero_image', heroFile);
-        if (removeHero && !heroFile) fd.append('hero_image_remove', '1');
+        // hero_image ya es URL (subida vía Base64). null/''  = quitar.
+        fd.append('hero_image_url', data.hero_image ?? '');
         if (isEdit) fd.append('_method', 'PUT');
 
         router.post(
@@ -617,26 +629,16 @@ export default function VehicleVersionForm({ version, models, features, enums, s
 
                             <div className="grid gap-1.5">
                                 <Label>Imagen hero de la versión</Label>
-                                {heroFile ? (
-                                    <div className="relative w-fit">
-                                        <img src={URL.createObjectURL(heroFile)} className="h-32 w-auto rounded-lg object-cover" alt="" />
-                                        <button type="button" onClick={() => setHeroFile(null)} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white" title="Quitar selección">
-                                            <X className="size-3.5" />
-                                        </button>
-                                    </div>
-                                ) : data.hero_image && !removeHero ? (
+                                {data.hero_image && (
                                     <div className="relative w-fit">
                                         <img src={data.hero_image} className="h-32 w-auto rounded-lg object-cover" alt="" />
-                                        <button type="button" onClick={() => setRemoveHero(true)} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white" title="Eliminar imagen">
+                                        <button type="button" onClick={() => setData({ ...data, hero_image: null })} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white" title="Quitar imagen">
                                             <X className="size-3.5" />
                                         </button>
                                     </div>
-                                ) : removeHero ? (
-                                    <p className="text-sm text-destructive">Imagen marcada para eliminar al guardar.{' '}
-                                        <button type="button" className="underline" onClick={() => setRemoveHero(false)}>Cancelar</button>
-                                    </p>
-                                ) : null}
-                                <Input type="file" accept="image/*" onChange={(e) => { setHeroFile(e.target.files?.[0] ?? null); setRemoveHero(false); }} />
+                                )}
+                                <Input type="file" accept="image/*" disabled={uploadingHero} onChange={(e) => handlePickHero(e.target.files?.[0] ?? null)} />
+                                {uploadingHero && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
                             </div>
                         </div>
                     )}

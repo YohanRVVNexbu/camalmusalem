@@ -32,7 +32,9 @@ class BrandController extends Controller
 
         $brand = Brand::create($data);
 
-        if ($request->hasFile('logo')) {
+        if ($request->has('logo_path')) {
+            $brand->update(['logo_path' => $request->input('logo_path') ?: null]);
+        } elseif ($request->hasFile('logo')) {
             $brand->update([
                 'logo_path' => $this->settings->uploadFile($request->file('logo'), 'brands/'.$brand->id),
             ]);
@@ -51,7 +53,10 @@ class BrandController extends Controller
         $data = $this->validated($request);
         $data['slug'] = Str::slug($data['name']);
 
-        if ($request->hasFile('logo')) {
+        if ($request->has('logo_path')) {
+            // URL ya subida vía Base64
+            $data['logo_path'] = $request->input('logo_path') ?: null;
+        } elseif ($request->hasFile('logo')) {
             $this->settings->deleteOldFile($brand->logo_path);
             $data['logo_path'] = $this->settings->uploadFile($request->file('logo'), 'brands/'.$brand->id);
         } elseif ($request->boolean('logo_remove')) {

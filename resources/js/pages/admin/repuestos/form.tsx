@@ -1,6 +1,6 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCLP } from '@/lib/format';
+import { uploadImageBase64 } from '@/lib/image-upload';
 import AdminLayout from '@/layouts/admin-layout';
 
 type Repuesto = {
@@ -24,32 +25,50 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
         name: '', sku: null, description: null, comentarios: null, price: null, category: 'General',
         images: [], stock_la_serena: true, stock_ovalle: true, is_visible: true, order: 0,
     });
-    const [newImages, setNewImages] = useState<File[]>([]);
-    const [removeImages, setRemoveImages] = useState<string[]>([]);
+    const [uploadingCount, setUploadingCount] = useState(0);
     const [processing, setProcessing] = useState(false);
+
+    const handlePickImages = async (files: File[]) => {
+        if (files.length === 0) return;
+        setUploadingCount((c) => c + files.length);
+        for (const file of files) {
+            try {
+                const url = await uploadImageBase64(file, `repuestos/${repuesto?.id ?? 'new'}`);
+                setData((d) => ({ ...d, images: [...d.images, url] }));
+            } catch (err) {
+                console.error('Falló subir imagen de repuesto:', err);
+                toast.error('No se pudo subir una imagen. ' + (err instanceof Error ? err.message : ''));
+            } finally {
+                setUploadingCount((c) => c - 1);
+            }
+        }
+    };
+
+    const removeImage = (url: string) => {
+        setData({ ...data, images: data.images.filter((u) => u !== url) });
+    };
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
-        const formData = new FormData();
-        formData.append('name', data.name);
-        formData.append('sku', data.sku ?? '');
-        formData.append('description', data.description ?? '');
-        formData.append('comentarios', data.comentarios ?? '');
-        formData.append('price', data.price ?? '');
-        formData.append('category', data.category);
-        formData.append('stock_la_serena', data.stock_la_serena ? '1' : '0');
-        formData.append('stock_ovalle', data.stock_ovalle ? '1' : '0');
-        formData.append('is_visible', data.is_visible ? '1' : '0');
-        formData.append('order', String(data.order));
-        newImages.forEach((f) => formData.append('images_new[]', f));
-        removeImages.forEach((u) => formData.append('images_remove[]', u));
-        if (isEdit) formData.append('_method', 'PUT');
-
-        router.post(isEdit ? `/admin/repuestos/${repuesto!.id}` : '/admin/repuestos', formData, {
-            forceFormData: true,
-            onFinish: () => setProcessing(false),
-        });
+        const payload = {
+            name: data.name,
+            sku: data.sku ?? '',
+            description: data.description ?? '',
+            comentarios: data.comentarios ?? '',
+            price: data.price ?? '',
+            category: data.category,
+            stock_la_serena: data.stock_la_serena ? '1' : '0',
+            stock_ovalle: data.stock_ovalle ? '1' : '0',
+            is_visible: data.is_visible ? '1' : '0',
+            order: data.order,
+            images: data.images,
+        };
+        if (isEdit) {
+            router.put(`/admin/repuestos/${repuesto!.id}`, payload, { onFinish: () => setProcessing(false) });
+        } else {
+            router.post('/admin/repuestos', payload, { onFinish: () => setProcessing(false) });
+        }
     };
 
     return (
@@ -122,31 +141,26 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
                                 {data.images.map((url) => (
                                     <div key={url} className="relative">
                                         <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
-                                        <button type="button" onClick={() => {
-                                            setRemoveImages([...removeImages, url]);
-                                            setData({ ...data, images: data.images.filter((u) => u !== url) });
-                                        }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
+                                        <button type="button" onClick={() => removeImage(url)} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
                                     </div>
                                 ))}
                             </div>
                         )}
-                        <Input type="file" accept="image/*" multiple onChange={(e) => {
-                            setNewImages([...newImages, ...Array.from(e.target.files ?? [])]);
-                            e.target.value = '';
-                        }} />
-                        {newImages.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {newImages.map((f, i) => (
-                                    <div key={i} className="relative">
-                                        <img src={URL.createObjectURL(f)} className="h-24 w-32 rounded-lg object-cover ring-2 ring-primary" alt="" />
-                                        <button type="button" onClick={() => setNewImages(newImages.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs" title="Quitar">✕</button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            disabled={uploadingCount > 0}
+                            onChange={(e) => {
+                                const files = Array.from(e.target.files ?? []);
+                                handlePickImages(files);
+                                e.target.value = '';
+                            }}
+                        />
+                        {uploadingCount > 0 && <p className="text-xs text-muted-foreground">Subiendo {uploadingCount} imagen{uploadingCount === 1 ? '' : 'es'}…</p>}
                     </div>
                     <div className="flex gap-3">
-                        <Button type="submit" disabled={processing}>{processing ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear repuesto'}</Button>
+                        <Button type="submit" disabled={processing || uploadingCount > 0}>{processing ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear repuesto'}</Button>
                         <Button variant="outline" asChild><Link href="/admin/repuestos">Cancelar</Link></Button>
                     </div>
                 </form>

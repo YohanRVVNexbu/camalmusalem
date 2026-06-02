@@ -79,14 +79,29 @@ class MerchController extends Controller
 
     private function handleImages(Request $request, Merch $merch): void
     {
-        $images = $merch->images ?? [];
+        // Path nuevo (Base64): el front sube cada imagen vía /admin/upload-image
+        // y manda el array final de URLs en `images`. Borramos archivos viejos
+        // que ya no están en el set nuevo.
+        if ($request->has('images')) {
+            $oldImages = $merch->images ?? [];
+            $newImages = $request->input('images', []);
+            $newImages = is_array($newImages)
+                ? array_values(array_filter($newImages, fn ($u) => is_string($u) && $u !== ''))
+                : [];
+            foreach (array_diff($oldImages, $newImages) as $url) {
+                $this->settings->deleteOldFile($url);
+            }
+            $merch->update(['images' => $newImages]);
+            return;
+        }
 
+        // Path legacy multipart.
+        $images = $merch->images ?? [];
         if ($request->hasFile('images_new')) {
             foreach ($request->file('images_new') as $file) {
                 $images[] = $this->settings->uploadFile($file, 'merch/'.$merch->id);
             }
         }
-
         if ($request->has('images_remove')) {
             $toRemove = $request->input('images_remove', []);
             foreach ($toRemove as $url) {
@@ -94,7 +109,6 @@ class MerchController extends Controller
             }
             $images = array_values(array_filter($images, fn ($u) => ! in_array($u, $toRemove)));
         }
-
         $merch->update(['images' => $images]);
     }
 

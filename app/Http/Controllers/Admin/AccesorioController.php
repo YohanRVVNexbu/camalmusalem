@@ -79,14 +79,30 @@ class AccesorioController extends Controller
 
     private function handleImages(Request $request, Accesorio $accesorio): void
     {
-        $images = $accesorio->images ?? [];
+        // Path nuevo (Base64): el front sube cada imagen vía /admin/upload-image
+        // y manda el array final de URLs en `images`. Comparamos contra las
+        // existentes para borrar las que ya no están.
+        if ($request->has('images')) {
+            $oldImages = $accesorio->images ?? [];
+            $newImages = $request->input('images', []);
+            $newImages = is_array($newImages)
+                ? array_values(array_filter($newImages, fn ($u) => is_string($u) && $u !== ''))
+                : [];
+            foreach (array_diff($oldImages, $newImages) as $url) {
+                $this->settings->deleteOldFile($url);
+            }
+            $accesorio->update(['images' => $newImages]);
+            return;
+        }
 
+        // Path legacy (multipart): se mantiene por compatibilidad si llega un
+        // upload con images_new (files) + images_remove.
+        $images = $accesorio->images ?? [];
         if ($request->hasFile('images_new')) {
             foreach ($request->file('images_new') as $file) {
                 $images[] = $this->settings->uploadFile($file, 'accesorios/' . $accesorio->id);
             }
         }
-
         if ($request->has('images_remove')) {
             $toRemove = $request->input('images_remove', []);
             foreach ($toRemove as $url) {
@@ -94,7 +110,6 @@ class AccesorioController extends Controller
             }
             $images = array_values(array_filter($images, fn($u) => !in_array($u, $toRemove)));
         }
-
         $accesorio->update(['images' => $images]);
     }
 

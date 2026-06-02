@@ -62,13 +62,18 @@ class VehicleModelController extends Controller
 
         $model = VehicleModel::create($data);
 
-        if ($request->hasFile('hero_image')) {
+        // hero_image / detail_hero_image vienen como URL (subidas vía Base64).
+        if ($request->filled('hero_image_url')) {
+            $model->update(['hero_image' => $request->input('hero_image_url')]);
+        } elseif ($request->hasFile('hero_image')) {
             $model->update([
                 'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-models/'.$model->id),
             ]);
         }
 
-        if ($request->hasFile('detail_hero_image')) {
+        if ($request->filled('detail_hero_image_url')) {
+            $model->update(['detail_hero_image' => $request->input('detail_hero_image_url')]);
+        } elseif ($request->hasFile('detail_hero_image')) {
             $model->update([
                 'detail_hero_image' => $this->settings->uploadFile($request->file('detail_hero_image'), 'vehicle-models/'.$model->id),
             ]);
@@ -117,7 +122,12 @@ class VehicleModelController extends Controller
         unset($data['datasheet_file']);
         $data['shorts'] = $this->normalizeShorts($data['shorts'] ?? []);
 
-        if ($request->hasFile('hero_image')) {
+        // hero_image y detail_hero_image vienen como URL (subidas vía Base64).
+        // El borrado del archivo viejo lo hace el ImageUploadController.
+        if ($request->has('hero_image_url')) {
+            $data['hero_image'] = $request->input('hero_image_url') ?: null;
+        } elseif ($request->hasFile('hero_image')) {
+            // Path legacy.
             $this->settings->deleteOldFile($vehicleModel->hero_image);
             $data['hero_image'] = $this->settings->uploadFile($request->file('hero_image'), 'vehicle-models/'.$vehicleModel->id);
         } elseif ($request->boolean('hero_image_remove')) {
@@ -125,7 +135,9 @@ class VehicleModelController extends Controller
             $data['hero_image'] = null;
         }
 
-        if ($request->hasFile('detail_hero_image')) {
+        if ($request->has('detail_hero_image_url')) {
+            $data['detail_hero_image'] = $request->input('detail_hero_image_url') ?: null;
+        } elseif ($request->hasFile('detail_hero_image')) {
             $this->settings->deleteOldFile($vehicleModel->detail_hero_image);
             $data['detail_hero_image'] = $this->settings->uploadFile($request->file('detail_hero_image'), 'vehicle-models/'.$vehicleModel->id);
         } elseif ($request->boolean('detail_hero_image_remove')) {

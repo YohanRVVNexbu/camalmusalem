@@ -1,6 +1,7 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { FileText, Plus, Trash2 } from 'lucide-react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -9,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { formatCLP } from '@/lib/format';
+import { uploadImageBase64 } from '@/lib/image-upload';
 import AdminLayout from '@/layouts/admin-layout';
 
 type SpecRow = { label: string; value: string };
@@ -209,13 +211,31 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
     });
     const specs = data.specs ?? emptySpecs();
 
-    const [newGallery, setNewGallery] = useState<File[]>([]);
-    const [removeGallery, setRemoveGallery] = useState<string[]>([]);
-    const [newFeatured, setNewFeatured] = useState<File[]>([]);
-    const [removeFeatured, setRemoveFeatured] = useState<string[]>([]);
+    const [uploadingGallery, setUploadingGallery] = useState(0);
+    const [uploadingFeatured, setUploadingFeatured] = useState(0);
     const [newDownloads, setNewDownloads] = useState<NewDownload[]>([]);
     const [removedDownloads, setRemovedDownloads] = useState<string[]>([]);
     const [processing, setProcessing] = useState(false);
+
+    // Sube las imágenes vía Base64 al elegirlas (sortea el 403 del WAF en
+    // multipart) y agrega las URLs al array correspondiente.
+    const handlePickGallery = async (files: File[], target: 'gallery' | 'featured_gallery') => {
+        if (files.length === 0) return;
+        const setUploading = target === 'gallery' ? setUploadingGallery : setUploadingFeatured;
+        const subdir = target === 'gallery' ? 'gallery' : 'featured';
+        setUploading((c) => c + files.length);
+        for (const file of files) {
+            try {
+                const url = await uploadImageBase64(file, `seminuevos/${seminuevo?.id ?? 'new'}/${subdir}`);
+                setData((d) => ({ ...d, [target]: [...((d as any)[target] ?? []), url] }));
+            } catch (err) {
+                console.error('Falló subir imagen de seminuevo:', err);
+                toast.error('No se pudo subir una imagen. ' + (err instanceof Error ? err.message : ''));
+            } finally {
+                setUploading((c) => c - 1);
+            }
+        }
+    };
 
     const set = (field: keyof Seminuevo, val: any) => setData({ ...data, [field]: val });
     const setSpecs = (section: keyof Specs, rows: any) =>
@@ -249,12 +269,11 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
         formData.set('certified', data.certified ? '1' : '0');
         formData.append('specs', JSON.stringify(specs));
 
+        // Gallery + featured ya son arrays finales de URLs (subidas vía Base64).
+        // El backend hace diff vs lo que tiene en BD para borrar los archivos
+        // que el admin quitó.
         (data.gallery ?? []).forEach((u) => formData.append('gallery_order[]', u));
         (data.featured_gallery ?? []).forEach((u) => formData.append('featured_order[]', u));
-        newGallery.forEach((f) => formData.append('gallery_new[]', f));
-        removeGallery.forEach((u) => formData.append('gallery_remove[]', u));
-        newFeatured.forEach((f) => formData.append('featured_new[]', f));
-        removeFeatured.forEach((u) => formData.append('featured_remove[]', u));
 
         newDownloads.forEach((d, i) => {
             if (d.file) {
@@ -455,7 +474,6 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                                                     <span className="absolute left-1 top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase leading-none text-primary-foreground">Portada</span>
                                                 )}
                                                 <button type="button" onClick={() => {
-                                                    setRemoveGallery([...removeGallery, url]);
                                                     setData({ ...data, gallery: data.gallery.filter((u) => u !== url) });
                                                 }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
                                             </div>
@@ -468,20 +486,18 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                                 </div>
                             </>
                         )}
-                        <Input type="file" accept="image/*" multiple onChange={(e) => {
-                            setNewGallery([...newGallery, ...Array.from(e.target.files ?? [])]);
-                            e.target.value = '';
-                        }} />
-                        {newGallery.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {newGallery.map((f, i) => (
-                                    <div key={i} className="relative">
-                                        <img src={URL.createObjectURL(f)} className="h-24 w-32 rounded-lg object-cover ring-2 ring-primary" alt="" />
-                                        <button type="button" onClick={() => setNewGallery(newGallery.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs" title="Quitar">✕</button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            disabled={uploadingGallery > 0}
+                            onChange={(e) => {
+                                const files = Array.from(e.target.files ?? []);
+                                handlePickGallery(files, 'gallery');
+                                e.target.value = '';
+                            }}
+                        />
+                        {uploadingGallery > 0 && <p className="text-xs text-muted-foreground">Subiendo {uploadingGallery} imagen{uploadingGallery === 1 ? '' : 'es'}…</p>}
                     </div>
 
                     {/* Featured gallery */}
@@ -495,7 +511,6 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                                         <div className="relative">
                                             <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
                                             <button type="button" onClick={() => {
-                                                setRemoveFeatured([...removeFeatured, url]);
                                                 setData({ ...data, featured_gallery: data.featured_gallery.filter((u) => u !== url) });
                                             }} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
                                         </div>
@@ -507,20 +522,18 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                                 ))}
                             </div>
                         )}
-                        <Input type="file" accept="image/*" multiple onChange={(e) => {
-                            setNewFeatured([...newFeatured, ...Array.from(e.target.files ?? [])]);
-                            e.target.value = '';
-                        }} />
-                        {newFeatured.length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {newFeatured.map((f, i) => (
-                                    <div key={i} className="relative">
-                                        <img src={URL.createObjectURL(f)} className="h-24 w-32 rounded-lg object-cover ring-2 ring-primary" alt="" />
-                                        <button type="button" onClick={() => setNewFeatured(newFeatured.filter((_, j) => j !== i))} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs" title="Quitar">✕</button>
-                                    </div>
-                                ))}
-                            </div>
-                        )}
+                        <Input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            disabled={uploadingFeatured > 0}
+                            onChange={(e) => {
+                                const files = Array.from(e.target.files ?? []);
+                                handlePickGallery(files, 'featured_gallery');
+                                e.target.value = '';
+                            }}
+                        />
+                        {uploadingFeatured > 0 && <p className="text-xs text-muted-foreground">Subiendo {uploadingFeatured} imagen{uploadingFeatured === 1 ? '' : 'es'}…</p>}
                     </div>
 
                     <Separator />

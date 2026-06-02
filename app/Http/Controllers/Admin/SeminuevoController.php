@@ -115,45 +115,32 @@ class SeminuevoController extends Controller
 
     private function handleGallery(Request $request, Seminuevo $seminuevo): void
     {
-        $gallery = $this->reorderExisting($seminuevo->gallery ?? [], $request->input('gallery_order'));
-
-        if ($request->has('gallery_remove')) {
-            $toRemove = $request->input('gallery_remove', []);
-            foreach ($toRemove as $url) {
-                $this->settings->deleteOldFile($url);
-            }
-            $gallery = array_values(array_filter($gallery, fn($u) => !in_array($u, $toRemove)));
+        // gallery_order ahora es la lista FINAL de URLs (el front sube por
+        // Base64 al elegir, así que ya viene con todas las URLs en el orden
+        // que el admin definió). Diff vs lo que está en BD para borrar lo
+        // que el admin quitó.
+        $newGallery = $request->input('gallery_order', null);
+        if (! is_array($newGallery)) {
+            return;
         }
-
-        // Las fotos nuevas se agregan al final del orden ya definido.
-        if ($request->hasFile('gallery_new')) {
-            foreach ($request->file('gallery_new') as $file) {
-                $gallery[] = $this->settings->uploadFile($file, 'seminuevos/' . $seminuevo->id);
-            }
+        $newGallery = array_values(array_filter($newGallery, fn ($u) => is_string($u) && $u !== ''));
+        foreach (array_diff($seminuevo->gallery ?? [], $newGallery) as $url) {
+            $this->settings->deleteOldFile($url);
         }
-
-        $seminuevo->update(['gallery' => $gallery]);
+        $seminuevo->update(['gallery' => $newGallery]);
     }
 
     private function handleFeaturedGallery(Request $request, Seminuevo $seminuevo): void
     {
-        $featured = $this->reorderExisting($seminuevo->featured_gallery ?? [], $request->input('featured_order'));
-
-        if ($request->has('featured_remove')) {
-            $toRemove = $request->input('featured_remove', []);
-            foreach ($toRemove as $url) {
-                $this->settings->deleteOldFile($url);
-            }
-            $featured = array_values(array_filter($featured, fn($u) => !in_array($u, $toRemove)));
+        $newFeatured = $request->input('featured_order', null);
+        if (! is_array($newFeatured)) {
+            return;
         }
-
-        if ($request->hasFile('featured_new')) {
-            foreach ($request->file('featured_new') as $file) {
-                $featured[] = $this->settings->uploadFile($file, 'seminuevos/' . $seminuevo->id . '/featured');
-            }
+        $newFeatured = array_values(array_filter($newFeatured, fn ($u) => is_string($u) && $u !== ''));
+        foreach (array_diff($seminuevo->featured_gallery ?? [], $newFeatured) as $url) {
+            $this->settings->deleteOldFile($url);
         }
-
-        $seminuevo->update(['featured_gallery' => $featured]);
+        $seminuevo->update(['featured_gallery' => $newFeatured]);
     }
 
     /**

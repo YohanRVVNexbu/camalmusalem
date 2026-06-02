@@ -91,7 +91,9 @@ class VehicleVersionController extends Controller
             return $version;
         });
 
-        if ($request->hasFile('hero_image')) {
+        if ($request->filled('hero_image_url')) {
+            $version->update(['hero_image' => $request->input('hero_image_url')]);
+        } elseif ($request->hasFile('hero_image')) {
             $version->update([
                 'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-versions/'.$version->id),
             ]);
@@ -138,7 +140,9 @@ class VehicleVersionController extends Controller
             $this->syncColors($vehicleVersion, $request->input('colors', []));
         });
 
-        if ($request->hasFile('hero_image')) {
+        if ($request->has('hero_image_url')) {
+            $vehicleVersion->update(['hero_image' => $request->input('hero_image_url') ?: null]);
+        } elseif ($request->hasFile('hero_image')) {
             $this->settings->deleteOldFile($vehicleVersion->hero_image);
             $vehicleVersion->update([
                 'hero_image' => $this->settings->uploadFile($request->file('hero_image'), 'vehicle-versions/'.$vehicleVersion->id),

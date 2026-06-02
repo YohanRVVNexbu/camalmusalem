@@ -104,10 +104,10 @@ export default function VehicleModelForm({
         };
         return { ...base, detail_content: base.detail_content ?? defaultDetail(), shorts: base.shorts ?? [] };
     });
-    const [heroFile, setHeroFile] = useState<File | null>(null);
-    const [removeHero, setRemoveHero] = useState(false);
-    const [detailHeroFile, setDetailHeroFile] = useState<File | null>(null);
-    const [removeDetailHero, setRemoveDetailHero] = useState(false);
+    // hero_image y detail_hero_image se suben vía Base64 al elegir archivo y
+    // se guardan directo como URL en data. Sin estado de "archivo pendiente".
+    const [uploadingHero, setUploadingHero] = useState(false);
+    const [uploadingDetailHero, setUploadingDetailHero] = useState(false);
     const [datasheetFile, setDatasheetFile] = useState<File | null>(null);
     const [removeDatasheet, setRemoveDatasheet] = useState(false);
     const [detailFiles, setDetailFiles] = useState<Record<string, File>>({});
@@ -171,39 +171,44 @@ export default function VehicleModelForm({
         });
     };
 
-    // Sube la miniatura de un short (imagen) al endpoint de media del modelo,
-    // con compresión + reintentos (mismo patrón anti-403 que el resto).
-    const uploadShortThumb = async (i: number, file: File) => {
-        if (! isEdit) { toast.error('Guardá el vehículo primero para subir miniaturas.'); return; }
-        setShortThumbUploading(i);
-        const csrfToken = document.querySelector<HTMLMetaElement>('meta[name="csrf-token"]')?.content ?? '';
-        const BACKOFF_MS = [0, 800, 2000];
-        const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+    // Sube el hero / detail hero vía Base64 al elegir el archivo.
+    const handlePickHero = async (file: File | null) => {
+        if (!file) return;
+        setUploadingHero(true);
         try {
-            const compressed = await compressUntilUnder(file, 1.5 * 1024 * 1024);
-            let url: string | null = null;
-            let lastError = '';
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                if (BACKOFF_MS[attempt - 1] > 0) await sleep(BACKOFF_MS[attempt - 1]);
-                try {
-                    const fd = new FormData();
-                    fd.append('file', compressed);
-                    const res = await fetch(`/admin/vehicle-models/${model!.id}/media`, {
-                        method: 'POST', body: fd,
-                        headers: { 'X-CSRF-TOKEN': csrfToken, 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                        credentials: 'same-origin',
-                    });
-                    if (! res.ok) throw new Error(`HTTP ${res.status}`);
-                    url = (await res.json()).url ?? null;
-                    break;
-                } catch (err) { lastError = err instanceof Error ? err.message : String(err); }
-            }
-            if (url) {
-                setData((d) => { const s = [...d.shorts]; s[i] = { ...s[i], thumbnail: url }; return { ...d, shorts: s }; });
-                toast.success('Miniatura subida.');
-            } else {
-                toast.error(`No se pudo subir la miniatura. ${lastError}`);
-            }
+            const url = await uploadImageBase64(file, `vehicle-models/${model?.id ?? 'new'}/hero`, data.hero_image ?? null);
+            setData((d) => ({ ...d, hero_image: url }));
+        } catch (err) {
+            toast.error('No se pudo subir el hero. ' + (err instanceof Error ? err.message : ''));
+        } finally {
+            setUploadingHero(false);
+        }
+    };
+    const handlePickDetailHero = async (file: File | null) => {
+        if (!file) return;
+        setUploadingDetailHero(true);
+        try {
+            const url = await uploadImageBase64(file, `vehicle-models/${model?.id ?? 'new'}/detail-hero`, data.detail_hero_image ?? null);
+            setData((d) => ({ ...d, detail_hero_image: url }));
+        } catch (err) {
+            toast.error('No se pudo subir la imagen del hero detalle. ' + (err instanceof Error ? err.message : ''));
+        } finally {
+            setUploadingDetailHero(false);
+        }
+    };
+
+    // Sube la miniatura de un short (imagen) al endpoint de media del modelo,
+    // vía Base64 (sortea el 403 del WAF en uploads multipart).
+    const uploadShortThumb = async (i: number, file: File) => {
+        if (! isEdit) { toast.error('Guarda el vehículo primero para subir miniaturas.'); return; }
+        setShortThumbUploading(i);
+        try {
+            const url = await uploadImageBase64(file, `vehicle-models/${model!.id}/shorts`);
+            setData((d) => { const s = [...d.shorts]; s[i] = { ...s[i], thumbnail: url }; return { ...d, shorts: s }; });
+            toast.success('Miniatura subida.');
+        } catch (err) {
+            const msg = err instanceof Error ? err.message : String(err);
+            toast.error(`No se pudo subir la miniatura. ${msg}`);
         } finally {
             setShortThumbUploading(null);
         }
@@ -373,10 +378,10 @@ export default function VehicleModelForm({
         formData.append('datasheet_url', data.datasheet_url ?? '');
         formData.append('is_active', data.is_active ? '1' : '0');
         formData.append('display_order', String(data.display_order));
-        if (heroFile) formData.append('hero_image', heroFile);
-        if (removeHero && !heroFile) formData.append('hero_image_remove', '1');
-        if (detailHeroFile) formData.append('detail_hero_image', detailHeroFile);
-        if (removeDetailHero && !detailHeroFile) formData.append('detail_hero_image_remove', '1');
+        // hero_image y detail_hero_image ya son URLs (subidas vía Base64).
+        // Se mandan como string normal. null se traduce a '' = remover.
+        formData.append('hero_image_url', data.hero_image ?? '');
+        formData.append('detail_hero_image_url', data.detail_hero_image ?? '');
         if (datasheetFile) formData.append('datasheet_file', datasheetFile);
         if (removeDatasheet && !datasheetFile) formData.append('datasheet_file_remove', '1');
         if (addVersionAfter) formData.append('add_version_after', '1');
@@ -609,36 +614,21 @@ export default function VehicleModelForm({
                                 separado en la pestaña <strong>Detalle</strong> (puede ser una foto distinta,
                                 más escenográfica).
                             </p>
-                            {heroFile ? (
-                                <div className="relative w-fit">
-                                    <img src={URL.createObjectURL(heroFile)} className="h-32 w-auto rounded-lg object-cover" alt="" />
-                                    <button
-                                        type="button"
-                                        onClick={() => setHeroFile(null)}
-                                        className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white"
-                                        title="Quitar selección"
-                                    >
-                                        <X className="size-3.5" />
-                                    </button>
-                                </div>
-                            ) : data.hero_image && !removeHero ? (
+                            {data.hero_image && (
                                 <div className="relative w-fit">
                                     <img src={data.hero_image} className="h-32 w-auto rounded-lg object-cover" alt="" />
                                     <button
                                         type="button"
-                                        onClick={() => setRemoveHero(true)}
+                                        onClick={() => setData((d) => ({ ...d, hero_image: null }))}
                                         className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white"
-                                        title="Eliminar imagen"
+                                        title="Quitar imagen"
                                     >
                                         <X className="size-3.5" />
                                     </button>
                                 </div>
-                            ) : removeHero ? (
-                                <p className="text-sm text-destructive">Imagen marcada para eliminar al guardar.{' '}
-                                    <button type="button" className="underline" onClick={() => setRemoveHero(false)}>Cancelar</button>
-                                </p>
-                            ) : null}
-                            <Input type="file" accept="image/*" onChange={(e) => { setHeroFile(e.target.files?.[0] ?? null); setRemoveHero(false); }} />
+                            )}
+                            <Input type="file" accept="image/*" disabled={uploadingHero} onChange={(e) => handlePickHero(e.target.files?.[0] ?? null)} />
+                            {uploadingHero && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -682,43 +672,26 @@ export default function VehicleModelForm({
                                     Si la dejás vacía, se usa la imagen del card de la pestaña Básico como
                                     fallback. Recomendado: foto escenográfica panorámica, 1920×1080 px o similar.
                                 </p>
-                                {detailHeroFile ? (
-                                    <div className="relative w-fit">
-                                        <img src={URL.createObjectURL(detailHeroFile)} className="h-32 w-auto rounded-lg object-cover" alt="" />
-                                        <button
-                                            type="button"
-                                            onClick={() => setDetailHeroFile(null)}
-                                            className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white"
-                                            title="Quitar selección"
-                                        >
-                                            <X className="size-3.5" />
-                                        </button>
-                                    </div>
-                                ) : data.detail_hero_image && !removeDetailHero ? (
+                                {data.detail_hero_image && (
                                     <div className="relative w-fit">
                                         <img src={data.detail_hero_image} className="h-32 w-auto rounded-lg object-cover" alt="" />
                                         <button
                                             type="button"
-                                            onClick={() => setRemoveDetailHero(true)}
+                                            onClick={() => setData((d) => ({ ...d, detail_hero_image: null }))}
                                             className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white"
-                                            title="Eliminar imagen"
+                                            title="Quitar imagen"
                                         >
                                             <X className="size-3.5" />
                                         </button>
                                     </div>
-                                ) : removeDetailHero ? (
-                                    <p className="text-sm text-destructive">Imagen marcada para eliminar al guardar.{' '}
-                                        <button type="button" className="underline" onClick={() => setRemoveDetailHero(false)}>Cancelar</button>
-                                    </p>
-                                ) : null}
+                                )}
                                 <Input
                                     type="file"
                                     accept="image/*"
-                                    onChange={(e) => {
-                                        setDetailHeroFile(e.target.files?.[0] ?? null);
-                                        setRemoveDetailHero(false);
-                                    }}
+                                    disabled={uploadingDetailHero}
+                                    onChange={(e) => handlePickDetailHero(e.target.files?.[0] ?? null)}
                                 />
+                                {uploadingDetailHero && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
                             </div>
 
                             <div className="grid gap-2">

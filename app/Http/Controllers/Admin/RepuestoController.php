@@ -79,14 +79,29 @@ class RepuestoController extends Controller
 
     private function handleImages(Request $request, Repuesto $repuesto): void
     {
-        $images = $repuesto->images ?? [];
+        // Path nuevo (Base64): el front sube cada imagen vía /admin/upload-image
+        // y manda el array final de URLs en `images`. Borramos archivos viejos
+        // que ya no están en el set nuevo.
+        if ($request->has('images')) {
+            $oldImages = $repuesto->images ?? [];
+            $newImages = $request->input('images', []);
+            $newImages = is_array($newImages)
+                ? array_values(array_filter($newImages, fn ($u) => is_string($u) && $u !== ''))
+                : [];
+            foreach (array_diff($oldImages, $newImages) as $url) {
+                $this->settings->deleteOldFile($url);
+            }
+            $repuesto->update(['images' => $newImages]);
+            return;
+        }
 
+        // Path legacy multipart.
+        $images = $repuesto->images ?? [];
         if ($request->hasFile('images_new')) {
             foreach ($request->file('images_new') as $file) {
                 $images[] = $this->settings->uploadFile($file, 'repuestos/' . $repuesto->id);
             }
         }
-
         if ($request->has('images_remove')) {
             $toRemove = $request->input('images_remove', []);
             foreach ($toRemove as $url) {
@@ -94,7 +109,6 @@ class RepuestoController extends Controller
             }
             $images = array_values(array_filter($images, fn($u) => !in_array($u, $toRemove)));
         }
-
         $repuesto->update(['images' => $images]);
     }
 

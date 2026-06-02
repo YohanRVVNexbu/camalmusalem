@@ -1,10 +1,12 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
 import { X } from 'lucide-react';
 import { useMemo, useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { uploadImageBase64 } from '@/lib/image-upload';
 import {
     Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select';
@@ -54,9 +56,21 @@ export default function RentalForm({
     const isEdit = !!rental?.id;
 
     const [data, setData] = useState<Rental>(rental ?? empty);
-    const [imageFile, setImageFile] = useState<File | null>(null);
-    const [removeImage, setRemoveImage] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
     const [processing, setProcessing] = useState(false);
+
+    const handlePickImage = async (file: File | null) => {
+        if (!file) return;
+        setUploadingImage(true);
+        try {
+            const url = await uploadImageBase64(file, 'rentals', data.card_image ?? null);
+            setData((d) => ({ ...d, card_image: url }));
+        } catch (err) {
+            toast.error('No se pudo subir la imagen. ' + (err instanceof Error ? err.message : ''));
+        } finally {
+            setUploadingImage(false);
+        }
+    };
 
     const selectedVehicle = useMemo(
         () => vehicle_models.find((v) => v.id === data.vehicle_model_id) ?? null,
@@ -111,8 +125,8 @@ export default function RentalForm({
         fd.append('display_order', String(data.display_order));
         data.branch_ids.forEach((id) => fd.append('branch_ids[]', String(id)));
 
-        if (imageFile) fd.append('card_image', imageFile);
-        if (removeImage && !imageFile) fd.append('card_image_remove', '1');
+        // card_image ya es URL (subida vía Base64). '' = quitar.
+        fd.append('card_image_url', data.card_image ?? '');
         if (isEdit) fd.append('_method', 'PUT');
 
         router.post(
@@ -197,21 +211,14 @@ export default function RentalForm({
 
                         <div className="grid gap-2">
                             <Label>Imagen card {selectedVehicle && '(override)'}</Label>
-                            {imageFile ? (
-                                <div className="relative w-fit">
-                                    <img src={URL.createObjectURL(imageFile)} className="h-32 w-auto rounded-lg object-cover ring-2 ring-primary" alt="" />
-                                    <button type="button" onClick={() => setImageFile(null)} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white">
-                                        <X className="size-3.5" />
-                                    </button>
-                                </div>
-                            ) : data.card_image && !removeImage ? (
+                            {data.card_image ? (
                                 <div className="relative w-fit">
                                     <img src={data.card_image} className="h-32 w-auto rounded-lg object-cover" alt="" />
-                                    <button type="button" onClick={() => setRemoveImage(true)} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white">
+                                    <button type="button" onClick={() => setData({ ...data, card_image: null })} className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-destructive text-white">
                                         <X className="size-3.5" />
                                     </button>
                                 </div>
-                            ) : selectedVehicle?.hero_image && !data.card_image ? (
+                            ) : selectedVehicle?.hero_image ? (
                                 <div className="relative w-fit opacity-70">
                                     <img src={selectedVehicle.hero_image} className="h-32 w-auto rounded-lg object-cover" alt="" />
                                     <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1.5 py-0.5 text-[10px] text-white">Heredada del vehículo</span>
@@ -220,8 +227,10 @@ export default function RentalForm({
                             <Input
                                 type="file"
                                 accept="image/*"
-                                onChange={(e) => { setImageFile(e.target.files?.[0] ?? null); setRemoveImage(false); }}
+                                disabled={uploadingImage}
+                                onChange={(e) => handlePickImage(e.target.files?.[0] ?? null)}
                             />
+                            {uploadingImage && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
                         </div>
                     </section>
 

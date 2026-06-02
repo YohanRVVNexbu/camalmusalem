@@ -2,7 +2,9 @@ import { Head, Link, router, usePage } from '@inertiajs/react';
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { Bold, Italic, List, ListOrdered, Heading2, Minus, Trash2, Plus, ChevronUp, ChevronDown, GripVertical, Image as ImageIcon, Type, LayoutGrid } from 'lucide-react';
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
+import { toast } from 'sonner';
+import { uploadImageBase64 } from '@/lib/image-upload';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -13,9 +15,9 @@ import AdminLayout from '@/layouts/admin-layout';
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type HeroSection   = { id: string; type: 'hero';    images: string[]; newFiles: File[] };
+type HeroSection   = { id: string; type: 'hero';    images: string[] };
 type TextSection   = { id: string; type: 'text';    content: string };
-type GallerySection = { id: string; type: 'gallery'; images: string[]; newFiles: File[] };
+type GallerySection = { id: string; type: 'gallery'; images: string[] };
 type Section = HeroSection | TextSection | GallerySection;
 
 type Noticia = {
@@ -81,53 +83,32 @@ function uid() { return Math.random().toString(36).slice(2); }
 function ImageSectionEditor({
     label,
     images,
-    newFiles,
+    uploading,
     onRemoveExisting,
-    onRemoveNew,
     onAddFiles,
 }: {
     label: string;
     images: string[];
-    newFiles: File[];
+    uploading: boolean;
     onRemoveExisting: (url: string) => void;
-    onRemoveNew: (index: number) => void;
     onAddFiles: (files: File[]) => void;
 }) {
     const hint = label === 'Imágenes del hero'
         ? 'Si subes más de una imagen, se mostrará como carrusel.'
         : 'Si hay más de 2 imágenes, se mostrará como carrusel.';
 
-    const totalCount = images.length + newFiles.length;
-
     return (
         <div className="flex flex-col gap-3">
             <Label>{label}</Label>
 
-            {totalCount > 0 && (
+            {images.length > 0 && (
                 <div className="flex flex-wrap gap-2">
-                    {/* Existing (saved) images */}
                     {images.map((url) => (
                         <div key={url} className="relative">
                             <img src={url} className="h-28 w-36 rounded-lg object-cover" alt="" />
                             <button
                                 type="button"
                                 onClick={() => onRemoveExisting(url)}
-                                className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs"
-                            >✕</button>
-                        </div>
-                    ))}
-                    {/* New files preview */}
-                    {newFiles.map((file, i) => (
-                        <div key={i} className="relative">
-                            <img
-                                src={URL.createObjectURL(file)}
-                                className="h-28 w-36 rounded-lg object-cover ring-2 ring-blue-400"
-                                alt=""
-                            />
-                            <span className="absolute bottom-1 left-1 rounded bg-black/60 px-1 py-0.5 text-[10px] text-white">Nuevo</span>
-                            <button
-                                type="button"
-                                onClick={() => onRemoveNew(i)}
                                 className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs"
                             >✕</button>
                         </div>
@@ -139,11 +120,13 @@ function ImageSectionEditor({
                 type="file"
                 accept="image/*"
                 multiple
+                disabled={uploading}
                 onChange={(e) => {
                     onAddFiles(Array.from(e.target.files ?? []));
                     e.target.value = '';
                 }}
             />
+            {uploading && <p className="text-xs text-muted-foreground">Subiendo imágenes…</p>}
             <p className="text-xs text-muted-foreground">{hint}</p>
         </div>
     );
@@ -159,7 +142,10 @@ export default function NoticiaForm({ noticia }: { noticia: (Noticia & { id?: nu
 
     // Normalize incoming sections (add id if missing)
     const normalizeSections = (secs: any[] | null): Section[] =>
-        (secs ?? []).map((s) => ({ ...s, id: s.id ?? uid(), newFiles: s.newFiles ?? [] }));
+        (secs ?? []).map((s) => {
+            const { newFiles: _ignored, ...rest } = s ?? {};
+            return { ...rest, id: rest.id ?? uid() };
+        });
 
     const [title, setTitle] = useState(noticia?.title ?? '');
     const [categoria, setCategoria] = useState(noticia?.categoria ?? '');
@@ -183,7 +169,7 @@ export default function NoticiaForm({ noticia }: { noticia: (Noticia & { id?: nu
     const addSection = (type: Section['type']) => {
         const id = uid();
         if (type === 'text') setSections((s) => [...s, { id, type: 'text', content: '' }]);
-        else setSections((s) => [...s, { id, type, images: [], newFiles: [] } as any]);
+        else setSections((s) => [...s, { id, type, images: [] } as any]);
         setAddingSection(false);
     };
 
@@ -208,18 +194,30 @@ export default function NoticiaForm({ noticia }: { noticia: (Noticia & { id?: nu
             return { ...sec, images: sec.images.filter((u) => u !== url) } as any;
         }));
 
-    const removeNewFile = (id: string, index: number) =>
-        setSections((s) => s.map((sec) => {
-            if (sec.id !== id || sec.type === 'text') return sec;
-            const newFiles = (sec as any).newFiles.filter((_: File, i: number) => i !== index);
-            return { ...sec, newFiles } as any;
-        }));
+    const [uploadingSections, setUploadingSections] = useState<Record<string, boolean>>({});
 
-    const addFiles = (id: string, files: File[]) =>
-        setSections((s) => s.map((sec) => {
-            if (sec.id !== id || sec.type === 'text') return sec;
-            return { ...sec, newFiles: [...(sec as any).newFiles, ...files] } as any;
-        }));
+    // Sube cada imagen vía Base64 al instante y la agrega como URL a la
+    // sección. Sortea el bloqueo del WAF que rechaza con 403 los uploads
+    // multipart de imágenes (mismo problema que el 360).
+    const addFiles = async (id: string, files: File[]) => {
+        if (files.length === 0) return;
+        setUploadingSections((prev) => ({ ...prev, [id]: true }));
+        try {
+            for (const file of files) {
+                try {
+                    const url = await uploadImageBase64(file, `noticias/${noticia?.id ?? 'new'}`);
+                    setSections((s) => s.map((sec) => {
+                        if (sec.id !== id || sec.type === 'text') return sec;
+                        return { ...sec, images: [...sec.images, url] } as any;
+                    }));
+                } catch (err) {
+                    toast.error('No se pudo subir una imagen. ' + (err instanceof Error ? err.message : ''));
+                }
+            }
+        } finally {
+            setUploadingSections((prev) => ({ ...prev, [id]: false }));
+        }
+    };
 
     // ── Submit ──
 
@@ -227,34 +225,27 @@ export default function NoticiaForm({ noticia }: { noticia: (Noticia & { id?: nu
         e.preventDefault();
         setProcessing(true);
 
-        const formData = new FormData();
-        formData.append('title', title);
-        formData.append('categoria', categoria);
-        formData.append('excerpt', excerpt);
-        formData.append('published_at', publishedAt);
-        formData.append('is_visible', isVisible ? '1' : '0');
-        formData.append('order', String(order));
-
-        // Serialize sections without File objects
+        // Las imágenes ya están subidas vía Base64 (URLs dentro de sec.images),
+        // así que el form va como JSON normal, sin multipart.
         const sectionsJson = sections.map((sec) => {
             if (sec.type === 'text') return { id: sec.id, type: 'text', content: sec.content };
             return { id: sec.id, type: sec.type, images: sec.images };
         });
-        formData.append('sections', JSON.stringify(sectionsJson));
+        const payload = {
+            title,
+            categoria,
+            excerpt,
+            published_at: publishedAt,
+            is_visible: isVisible ? '1' : '0',
+            order,
+            sections: JSON.stringify(sectionsJson),
+        };
 
-        // Append new image files per section index
-        sections.forEach((sec, idx) => {
-            if (sec.type !== 'text' && sec.newFiles.length > 0) {
-                sec.newFiles.forEach((f) => formData.append(`section_images[${idx}][]`, f));
-            }
-        });
-
-        if (isEdit) formData.append('_method', 'PUT');
-
-        router.post(isEdit ? `/admin/noticias/${noticia!.id}` : '/admin/noticias', formData, {
-            forceFormData: true,
-            onFinish: () => setProcessing(false),
-        });
+        if (isEdit) {
+            router.put(`/admin/noticias/${noticia!.id}`, payload, { onFinish: () => setProcessing(false) });
+        } else {
+            router.post('/admin/noticias', payload, { onFinish: () => setProcessing(false) });
+        }
     };
 
     // ── Section labels/icons ──
@@ -351,9 +342,8 @@ export default function NoticiaForm({ noticia }: { noticia: (Noticia & { id?: nu
                                     <ImageSectionEditor
                                         label="Imágenes del hero"
                                         images={sec.images}
-                                        newFiles={sec.newFiles}
+                                        uploading={!!uploadingSections[sec.id]}
                                         onRemoveExisting={(url) => removeImage(sec.id, url)}
-                                        onRemoveNew={(i) => removeNewFile(sec.id, i)}
                                         onAddFiles={(files) => addFiles(sec.id, files)}
                                     />
                                 )}
@@ -362,9 +352,8 @@ export default function NoticiaForm({ noticia }: { noticia: (Noticia & { id?: nu
                                     <ImageSectionEditor
                                         label="Imágenes de galería"
                                         images={sec.images}
-                                        newFiles={sec.newFiles}
+                                        uploading={!!uploadingSections[sec.id]}
                                         onRemoveExisting={(url) => removeImage(sec.id, url)}
-                                        onRemoveNew={(i) => removeNewFile(sec.id, i)}
                                         onAddFiles={(files) => addFiles(sec.id, files)}
                                     />
                                 )}
