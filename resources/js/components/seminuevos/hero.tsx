@@ -22,7 +22,7 @@ export function Hero({ image, imageMobile, sectionTitle, title, description }: H
     // imagen siempre object-cover para no deformarse con cualquier ratio.
     return (
         <section className="flex flex-col items-center lg:mt-20">
-            <div className="relative -mx-5 h-[85vh] w-[calc(100%+2.5rem)] overflow-hidden lg:mx-0 lg:w-full lg:rounded-[20px]">
+            <div className="relative -mx-5 h-64 w-[calc(100%+2.5rem)] overflow-hidden lg:mx-0 lg:h-100 lg:w-full lg:rounded-[20px]">
                 {media && isVideoUrl(media) ? (
                     <video
                         src={media}
