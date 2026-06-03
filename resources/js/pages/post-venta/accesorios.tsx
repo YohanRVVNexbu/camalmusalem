@@ -8,6 +8,10 @@ import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { formatCLP } from '@/lib/format';
 import { useEffect } from 'react';
+import { Pagination } from '@/components/seminuevos/pagination';
+import { LazyImage } from '@/components/ui/lazy-image';
+
+const PER_PAGE_OPTIONS = [10, 25, 50, 100] as const;
 
 const ordenarOpciones = ['Menor precio', 'Mayor precio', 'Más reciente'];
 import heroImg from '@images/navbar/accesorios.png?format=webp';
@@ -49,6 +53,8 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
     const [tipo, setTipo] = useState<'Todos' | 'Accesorios' | 'Merch'>('Todos');
     const [categoria, setCategoria] = useState('Todos');
     const [ordenar, setOrdenar] = useState<'' | 'menor' | 'mayor'>('');
+    const [perPage, setPerPage] = useState<number>(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Las categorías disponibles dependen del tipo seleccionado.
     const categorias = useMemo(() => {
@@ -66,6 +72,17 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
         else if (ordenar === 'mayor') list = [...list].sort((a, b) => price(b.price) - price(a.price));
         return list;
     }, [allItems, tipo, categoria, ordenar]);
+
+    // Paginación: cualquier cambio de filtros/orden/cantidad vuelve a página 1.
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [tipo, categoria, ordenar, perPage]);
+
+    const totalPages = Math.max(1, Math.ceil(filtered.length / perPage));
+    const paginated = useMemo(() => {
+        const start = (currentPage - 1) * perPage;
+        return filtered.slice(start, start + perPage);
+    }, [filtered, currentPage, perPage]);
 
     useEffect(() => {
         const html = document.documentElement;
@@ -201,6 +218,23 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
                                     <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                                 </svg>
                             </div>
+                            {/* Mostrar por página */}
+                            <div className="relative lg:w-40">
+                                <select
+                                    value={perPage}
+                                    onChange={(e) => setPerPage(Number(e.target.value))}
+                                    className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
+                                    style={{ fontFamily: '"Toyota Type"' }}
+                                    aria-label="Productos por página"
+                                >
+                                    {PER_PAGE_OPTIONS.map((n) => (
+                                        <option key={n} value={n}>Mostrar {n}</option>
+                                    ))}
+                                </select>
+                                <svg className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
+                                    <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                            </div>
                         </div>
                     </div>
 
@@ -208,14 +242,19 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
                         {filtered.length === 0 && (
                             <p className="col-span-full py-10 text-center text-black/50">No hay productos para los filtros seleccionados.</p>
                         )}
-                        {filtered.map((item) => {
+                        {paginated.map((item) => {
                             const href = item.type === 'accesorio'
                                 ? `/post-venta/accesorios/${item.id}`
                                 : `/post-venta/merch/${item.id}`;
                             return (
                                 <div key={`${item.type}-${item.id}`} className="flex flex-col overflow-hidden rounded-[20px] border border-black/5 bg-white">
                                     {item.images?.[0] ? (
-                                        <img src={item.images[0]} alt={item.name} className="aspect-3/2 w-full rounded-t-[14px] object-cover lg:aspect-auto lg:h-59.5" />
+                                        <LazyImage
+                                            src={item.images[0]}
+                                            alt={item.name}
+                                            className="aspect-3/2 w-full rounded-t-[14px] object-cover lg:aspect-auto lg:h-59.5"
+                                            wrapperClassName="aspect-3/2 w-full lg:aspect-auto lg:h-59.5"
+                                        />
                                     ) : (
                                         <div className="aspect-3/2 w-full rounded-t-[14px] bg-gray-100 lg:aspect-auto lg:h-59.5" />
                                     )}
@@ -256,6 +295,16 @@ export default function Accesorios({ footer, accesorios_hero, accesorios_seccion
                             );
                         })}
                     </div>
+
+                    {totalPages > 1 && (
+                        <div className="w-full">
+                            <Pagination
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                            />
+                        </div>
+                    )}
                 </section>
 
                 <ContactCtaBanner />

@@ -1,6 +1,7 @@
 import { usePage } from '@inertiajs/react';
 import fallback1 from '@images/seminuevos/visitanos_1.png?format=webp';
 import fallback2 from '@images/seminuevos/visitanos_2.png?format=webp';
+import { LazyImage } from '@/components/ui/lazy-image';
 
 export type BranchData = {
     id?: number;
@@ -55,7 +56,7 @@ export function BranchesSection({ title, background, backgroundStyle, textColor 
                     return (
                         <div key={branch.id ?? branch.name} className="group relative flex-1 overflow-hidden rounded-[20px]">
                             {img && (
-                                <img src={img} alt={`Sucursal ${branch.name}`} className="h-100 w-full object-cover lg:h-135" />
+                                <LazyImage src={img} alt={`Sucursal ${branch.name}`} className="h-100 w-full object-cover lg:h-135" wrapperClassName="h-100 w-full lg:h-135" />
                             )}
 
                             {/* Card acordeón */}

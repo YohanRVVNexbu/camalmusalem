@@ -65,7 +65,9 @@ function formatKm(km: number) {
 
 type DetailsTab = 'general' | 'equipment' | 'downloads';
 
-export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Seminuevo; footer: any | null }) {
+export default function SeminuevosShow({ seminuevo, footer, certificateBadge }: { seminuevo: Seminuevo; footer: any | null; certificateBadge?: string | null }) {
+    // El logo de certificado lo administra el cliente desde /admin/paginas/seminuevos.
+    const certBadge = certificateBadge || certificateImg;
     const [currentImage, setCurrentImage] = useState(0);
     const [detailsTab, setDetailsTab] = useState<DetailsTab>('general');
     const [currentFeatured, setCurrentFeatured] = useState(0);
@@ -186,6 +188,9 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                 <img
                                     src={images[currentImage]}
                                     alt={title}
+                                    loading="eager"
+                                    decoding="sync"
+                                    fetchPriority="high"
                                     className="aspect-3/2 w-full object-cover transition-all duration-500"
                                 />
                             ) : (
@@ -195,7 +200,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                 Seminuevo
                             </span>
                             {seminuevo.certified && (
-                                <img src={certificateImg} alt="Seminuevo Certificado Toyota Musalem" className="absolute right-3 top-3 h-16 w-auto drop-shadow-lg" />
+                                <img src={certBadge} alt="Seminuevo Certificado Toyota Musalem" className="absolute right-3 top-3 h-16 w-auto drop-shadow-lg" />
                             )}
                         </div>
 
@@ -218,7 +223,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                                 i === currentImage ? 'ring-2 ring-black' : 'opacity-60'
                                             }`}
                                         >
-                                            <img src={img} alt="" className="size-full object-cover" />
+                                            <img src={img} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
                                         </button>
                                     ))}
                                 </div>
@@ -410,6 +415,9 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                     <img
                                         src={images[currentImage]}
                                         alt={title}
+                                        loading="eager"
+                                        decoding="sync"
+                                        fetchPriority="high"
                                         className="h-120 w-full object-cover transition-all duration-500"
                                     />
                                 ) : (
@@ -419,7 +427,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                     Seminuevo
                                 </span>
                                 {seminuevo.certified && (
-                                    <img src={certificateImg} alt="Seminuevo Certificado Toyota Musalem" className="absolute right-5 top-5 h-24 w-auto drop-shadow-lg" />
+                                    <img src={certBadge} alt="Seminuevo Certificado Toyota Musalem" className="absolute right-5 top-5 h-24 w-auto drop-shadow-lg" />
                                 )}
                                 {images.length > 1 && (
                                     <>
@@ -451,7 +459,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                                 i === currentImage ? 'ring-2 ring-black' : 'opacity-60 hover:opacity-100'
                                             }`}
                                         >
-                                            <img src={img} alt="" className="size-full object-cover" />
+                                            <img src={img} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
                                         </button>
                                     ))}
                                 </div>
@@ -703,7 +711,7 @@ export default function SeminuevosShow({ seminuevo, footer }: { seminuevo: Semin
                                                 i === currentFeatured ? 'ring-2 ring-black' : 'opacity-60 hover:opacity-100'
                                             }`}
                                         >
-                                            <img src={img} alt="" className="size-full object-cover" />
+                                            <img src={img} alt="" loading="lazy" decoding="async" className="size-full object-cover" />
                                         </button>
                                     ))}
                                 </div>

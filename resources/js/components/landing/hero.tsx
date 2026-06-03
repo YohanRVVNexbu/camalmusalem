@@ -30,7 +30,7 @@ export function Hero({ data }: { data: HeroData }) {
                     <source src={media} />
                 </video>
             ) : media ? (
-                <img src={media} alt="" className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center" />
+                <img src={media} alt="" loading="eager" decoding="sync" fetchPriority="high" className="absolute inset-0 size-full object-cover object-[50%_30%] lg:object-center" />
             ) : null}
 
             {/* Gradient overlay */}

@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { LazyImage } from '@/components/ui/lazy-image';
 import { formatCLP } from '@/lib/format';
 import { FuelElectricIcon } from '@/components/icons/fuel-electric-icon';
 import { FuelGasIcon } from '@/components/icons/fuel-gas-icon';
@@ -46,11 +47,14 @@ export function ProductListItem({
     return (
         <div className="relative flex w-full overflow-hidden rounded-[20px] border border-black/5 bg-white">
             {/* Image */}
-            <div
-                className="relative h-50 w-75 shrink-0 rounded-l-[14px] bg-cover bg-center bg-no-repeat p-2.5"
-                style={{ backgroundImage: `url(${image})` }}
-            >
-                <span className="inline-block rounded-full bg-black/50 px-2.5 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
+            <div className="relative h-50 w-75 shrink-0 overflow-hidden rounded-l-[14px] p-2.5">
+                <LazyImage
+                    src={image}
+                    alt={name}
+                    wrapperClassName="absolute inset-0"
+                    className="absolute inset-0 h-full w-full object-cover"
+                />
+                <span className="relative inline-block rounded-full bg-black/50 px-2.5 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
                     {badge}
                 </span>
                 {certificateBadge && (

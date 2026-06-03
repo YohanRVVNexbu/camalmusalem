@@ -36,6 +36,9 @@ export function Hero({ image, imageMobile, sectionTitle, title, description }: H
                     <img
                         src={media || defaultHeroImage}
                         alt={title || 'Seminuevos Musalem'}
+                        loading="eager"
+                        decoding="sync"
+                        fetchPriority="high"
                         className="absolute inset-0 size-full object-cover"
                     />
                 )}

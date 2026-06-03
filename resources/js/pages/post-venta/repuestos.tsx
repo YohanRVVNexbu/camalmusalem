@@ -12,6 +12,7 @@ import heroImg from '@images/repuestos/hero_image.png?format=webp';
 import section2Img from '@images/repuestos/image_section2.jpg?format=webp';
 import section3Img from '@images/repuestos/image_section3.jpg?format=webp';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
+import { LazyImage } from '@/components/ui/lazy-image';
 
 
 type SolicitudStep = 'default' | 'form' | 'success';
@@ -221,7 +222,12 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                                     className="flex flex-col overflow-hidden rounded-[20px] border border-black/5 bg-white"
                                 >
                                     {item.images?.[0] ? (
-                                        <img src={item.images[0]} alt={item.name} className="aspect-3/2 w-full rounded-t-[14px] object-cover lg:aspect-auto lg:h-59.5" />
+                                        <LazyImage
+                                            src={item.images[0]}
+                                            alt={item.name}
+                                            className="aspect-3/2 w-full rounded-t-[14px] object-cover lg:aspect-auto lg:h-59.5"
+                                            wrapperClassName="aspect-3/2 w-full lg:aspect-auto lg:h-59.5"
+                                        />
                                     ) : (
                                         <div className="aspect-3/2 w-full rounded-t-[14px] bg-gray-100 lg:aspect-auto lg:h-59.5" />
                                     )}

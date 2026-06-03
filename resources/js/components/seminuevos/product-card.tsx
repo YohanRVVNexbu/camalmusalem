@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
+import { LazyImage } from '@/components/ui/lazy-image';
 import { formatCLP } from '@/lib/format';
 import { FuelElectricIcon } from '@/components/icons/fuel-electric-icon';
 import { FuelGasIcon } from '@/components/icons/fuel-gas-icon';
@@ -47,11 +48,14 @@ export function ProductCard({
         <>
             {/* ── Mobile: layout horizontal (imagen izq, contenido der) ── */}
             <div className="flex h-65 w-full overflow-hidden rounded-[20px] border border-black/5 bg-white p-3 lg:hidden">
-                <div
-                    className="relative h-full w-[42%] shrink-0 rounded-[14px] bg-cover bg-center bg-no-repeat p-2"
-                    style={{ backgroundImage: `url(${image})` }}
-                >
-                    <span className="inline-block rounded-full bg-black/50 px-2 py-1 text-xs leading-none text-white backdrop-blur-[10px]">
+                <div className="relative h-full w-[42%] shrink-0 overflow-hidden rounded-[14px] p-2">
+                    <LazyImage
+                        src={image}
+                        alt={name}
+                        wrapperClassName="absolute inset-0"
+                        className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    <span className="relative inline-block rounded-full bg-black/50 px-2 py-1 text-xs leading-none text-white backdrop-blur-[10px]">
                         {badge}
                     </span>
                     {certificateBadge && (
@@ -118,11 +122,14 @@ export function ProductCard({
 
             {/* ── Desktop: layout vertical original con altura fija ── */}
             <div className="relative hidden w-full flex-col rounded-[20px] border border-black/5 bg-white lg:flex lg:h-130 lg:w-81.75">
-                <div
-                    className="relative h-59.25 shrink-0 rounded-t-[14px] bg-cover bg-center bg-no-repeat p-2.5"
-                    style={{ backgroundImage: `url(${image})` }}
-                >
-                    <span className="inline-block rounded-full bg-black/50 px-2.5 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
+                <div className="relative h-59.25 shrink-0 overflow-hidden rounded-t-[14px] p-2.5">
+                    <LazyImage
+                        src={image}
+                        alt={name}
+                        wrapperClassName="absolute inset-0"
+                        className="absolute inset-0 h-full w-full object-cover"
+                    />
+                    <span className="relative inline-block rounded-full bg-black/50 px-2.5 py-1.5 text-sm leading-none text-white backdrop-blur-[10px]">
                         {badge}
                     </span>
                     {certificateBadge && (
