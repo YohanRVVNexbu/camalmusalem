@@ -9,7 +9,7 @@ import { FuelGasIcon } from '@/components/icons/fuel-gas-icon';
 import { FuelHybridIcon } from '@/components/icons/fuel-hybrid-icon';
 import { ShareIcon } from '@/components/icons/share-icon';
 import certificateImg from '@images/seminuevos/certificate-toyota.png?format=webp';
-import ejemploVideo from '@images/seminuevos/ejemplo-video.png?format=webp';
+import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { X } from 'lucide-react';
 import { useEffect, useMemo, useRef, useState } from 'react';
 
@@ -434,24 +434,6 @@ export default function Compare({ preselected, catalog, sections, footer }: Prop
                             </div>
                         )}
 
-                        {/* Contact CTA */}
-                        <div className="mt-15 flex flex-col items-start justify-end rounded-[30px] p-7.5"
-                            style={{
-                                backgroundImage: `linear-gradient(0deg, rgba(0,0,0,0.20) 0%, rgba(0,0,0,0.20) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.60) 100%), url(${ejemploVideo})`,
-                                backgroundSize: 'cover', backgroundPosition: 'center', height: '340px',
-                            }}>
-                            <div className="flex flex-col gap-7.5">
-                                <p className="w-89.25 text-2xl leading-[120%] text-white">Contáctanos para recibir asesoría personalizada</p>
-                                <a href="#" className="flex w-fit cursor-pointer items-center gap-2.5 rounded-[60px] bg-white p-1 pl-3.5 text-base leading-none text-black transition hover:bg-white/90">
-                                    Contactar ventas
-                                    <span className="flex size-10 items-center justify-center rounded-full bg-black">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
-                                            <path d="M0.75 6.75L16.75 6.75M16.75 6.75L10.75 12.75M16.75 6.75L10.75 0.75" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                                        </svg>
-                                    </span>
-                                </a>
-                            </div>
-                        </div>
                     </div>
 
                     {/* Comparison view */}
@@ -576,6 +558,12 @@ export default function Compare({ preselected, catalog, sections, footer }: Prop
                         </div>
                     </div>
                 </div>
+
+                {/* CTA Contáctanos compartido con el resto del sitio. Fuera del
+                    wrapper con padding 60px para que use el ancho completo igual
+                    que en /nuevos/show. Se administra desde /admin/paginas/banner-cta. */}
+                <ContactCtaBanner />
+
                 {footer && <Footer data={footer} />}
             </div>
 
