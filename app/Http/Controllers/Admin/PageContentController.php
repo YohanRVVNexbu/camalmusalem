@@ -18,7 +18,7 @@ class PageContentController extends Controller
         'kinto'        => ['kinto_hero', 'kinto_pasos', 'kinto_vehiculos', 'kinto_formulario'],
         'nosotros'     => ['nosotros_hero', 'nosotros_historia', 'nosotros_mision', 'nosotros_vision', 'nosotros_equipo', 'nosotros_reconocimientos'],
         'contacto'     => ['contacto_info'],
-        'programas'    => ['programas_hero', 'programas_grid'],
+        'programas'    => ['programas_hero', 'programas_grid', 'programas_mantenimiento'],
         'noticias'     => ['noticias_hero'],
         'shorts'       => ['shorts_hero'],
         'seminuevos'   => ['seminuevos_hero'],

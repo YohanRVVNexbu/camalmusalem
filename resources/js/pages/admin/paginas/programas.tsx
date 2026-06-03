@@ -14,6 +14,7 @@ import defaultGrid3 from '@images/programas-toyota/grid_3.png?format=webp';
 import defaultGrid4 from '@images/programas-toyota/grid_4.jpg?format=webp';
 import defaultGrid5 from '@images/programas-toyota/grid_5.png?format=webp';
 import defaultGrid6 from '@images/programas-toyota/grid_6.png?format=webp';
+import defaultMantenimientoImg from '@images/programas-toyota/card_2_image.png?format=webp';
 
 const DEFAULT_GRID_IMGS = [defaultGrid1, defaultGrid2, defaultGrid3, defaultGrid4, defaultGrid5, defaultGrid6];
 
@@ -37,6 +38,7 @@ export default function ProgramasPage({ sections }: { sections: Record<string, S
                 )}
                 <ProgramasHeroSection page={page} s={sections['programas_hero']} />
                 <ProgramasGridSection page={page} s={sections['programas_grid']} />
+                <ProgramasMantenimientoSection page={page} s={sections['programas_mantenimiento']} />
             </div>
         </AdminLayout>
     );
@@ -66,6 +68,37 @@ function ProgramasHeroSection({ page, s }: { page: string; s: SectionProp }) {
                 onChangeMobile={setMobileFile}
             />
             <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} />
+        </SectionCard>
+    );
+}
+
+function ProgramasMantenimientoSection({ page, s }: { page: string; s: SectionProp }) {
+    const [data, setData] = useState(s.data);
+    const [visible, setVisible] = useState(s.is_visible);
+    const [desktopFile, setDesktopFile] = useState<File | null>(null);
+    const [mobileFile, setMobileFile] = useState<File | null>(null);
+    const [processing, setProcessing] = useState(false);
+    const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
+
+    return (
+        <SectionCard page={page} sectionKey="programas_mantenimiento" label="Card ¿Buscas mantenimiento?" isVisible={visible}
+            processing={processing}
+            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'programas_mantenimiento', data, visible, { image: desktopFile, image_mobile: mobileFile }, setProcessing); }}
+            onReset={() => resetSection(page, 'programas_mantenimiento')}>
+            <VisibilityField checked={visible} onChange={setVisible} />
+            <Separator />
+            <ResponsiveMediaField
+                label="Imagen del card"
+                currentDesktopUrl={data.image ?? ''}
+                currentMobileUrl={data.image_mobile ?? ''}
+                defaultDesktopUrl={defaultMantenimientoImg}
+                onChangeDesktop={setDesktopFile}
+                onChangeMobile={setMobileFile}
+            />
+            <TextField label="Título" value={data.title ?? ''} onChange={(v) => set('title', v)} placeholder="¿Buscas mantenimiento?" />
+            <TextareaField label="Descripción" value={data.description ?? ''} onChange={(v) => set('description', v)} rows={5} />
+            <TextField label="Texto del botón" value={data.button_label ?? ''} onChange={(v) => set('button_label', v)} placeholder="Ir a reservar" />
+            <TextField label="Destino del botón (URL)" value={data.button_href ?? ''} onChange={(v) => set('button_href', v)} placeholder="/post-venta/agendar-mantencion" />
         </SectionCard>
     );
 }

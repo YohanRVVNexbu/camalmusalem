@@ -22,10 +22,11 @@ class PagesController extends Controller
     public function programas()
     {
         return Inertia::render('programas', [
-            'footer'         => $this->section('footer'),
-            'programas'      => $this->section('programas'),
-            'programas_hero' => $this->section('programas_hero'),
-            'programas_grid' => $this->section('programas_grid'),
+            'footer'                  => $this->section('footer'),
+            'programas'               => $this->section('programas'),
+            'programas_hero'          => $this->section('programas_hero'),
+            'programas_grid'          => $this->section('programas_grid'),
+            'programas_mantenimiento' => $this->section('programas_mantenimiento'),
         ]);
     }
 

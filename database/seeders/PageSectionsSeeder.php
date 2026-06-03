@@ -126,6 +126,14 @@ class PageSectionsSeeder extends Seeder
                     ['img' => '', 'title' => 'Llamado a revisión', 'desc' => 'Campañas de revisión y reemplazo preventivo para ciertos modelos Toyota, realizadas con repuestos originales y orientadas a mantener la seguridad de tu vehículo.', 'link' => '#'],
                 ],
             ],
+            'programas_mantenimiento' => [
+                'image'        => '',
+                'image_mobile' => '',
+                'title'        => '¿Buscas mantenimiento?',
+                'description'  => "Reserva tu hora aquí mismo\n\nRealizamos los chequeos y cambios necesarios según el kilometraje indicado para mantener tu vehículo en óptimas condiciones y conservar la garantía vigente.",
+                'button_label' => 'Ir a reservar',
+                'button_href'  => '/post-venta/agendar-mantencion',
+            ],
 
             // ─── NOTICIAS ────────────────────────────────────────────────────
             'noticias_hero' => [

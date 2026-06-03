@@ -17,11 +17,25 @@ import grid5 from '@images/programas-toyota/grid_5.png?format=webp';
 import grid6 from '@images/programas-toyota/grid_6.png?format=webp';
 import ctaImg from '@images/seminuevos/ejemplo-video.png?format=webp';
 
-export default function ProgramasPage({ footer, programas, programas_hero, programas_grid }: { footer: any | null; programas: any | null; programas_hero?: any | null; programas_grid?: any | null }) {
+export default function ProgramasPage({
+    footer, programas, programas_hero, programas_grid, programas_mantenimiento,
+}: {
+    footer: any | null;
+    programas: any | null;
+    programas_hero?: any | null;
+    programas_grid?: any | null;
+    programas_mantenimiento?: any | null;
+}) {
     const hero = programas_hero ?? {};
     const grid = programas_grid ?? {};
+    const mantenimiento = programas_mantenimiento ?? null;
     const isMobile = useIsMobile();
     const heroMedia = pickResponsiveImage(hero.hero_image, hero.hero_image_mobile, isMobile);
+    const mantenimientoMedia = pickResponsiveImage(
+        mantenimiento?.image,
+        mantenimiento?.image_mobile,
+        isMobile,
+    );
     const heroInView = useInView(0.1);
     const gridInView = useInView(0.05);
     const cardInView = useInView(0.1);
@@ -118,7 +132,14 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                                     className={`flex flex-col gap-5 transition-all duration-700 ease-out lg:h-150 lg:flex-row ${gridInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}
                                     style={{ transitionDelay: gridInView.visible ? `${ri * 150}ms` : '0ms' }}
                                 >
-                                    {row.map((item) => (
+                                    {row.map((item) => {
+                                        // El enlace lo administra el cliente desde
+                                        // /admin/paginas/programas. Si está vacío o es "#",
+                                        // no mostramos el botón (no lleva a ningún lado).
+                                        const link = (item.link ?? '').trim();
+                                        const hasLink = link !== '' && link !== '#';
+                                        const isExternal = /^https?:\/\//i.test(link);
+                                        return (
                                         <div key={item.title} className="flex flex-1 flex-col overflow-hidden rounded-[30px]">
                                             <img
                                                 src={item.img || item._fallback}
@@ -138,9 +159,12 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                                                         {item.desc}
                                                     </p>
                                                 </div>
+                                                {hasLink && (
                                                 <a
-                                                    href={item.link ?? '#'}
-                                                    className="flex w-full items-center justify-between rounded-[60px] bg-black p-1 lg:w-38"
+                                                    href={link}
+                                                    target={isExternal ? '_blank' : undefined}
+                                                    rel={isExternal ? 'noopener noreferrer' : undefined}
+                                                    className="flex w-full items-center justify-between rounded-[60px] bg-black p-1 transition hover:bg-black/85 lg:w-38"
                                                 >
                                                     <span className="pl-2.5 text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
                                                         Ver más
@@ -151,9 +175,11 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                                                         </svg>
                                                     </span>
                                                 </a>
+                                                )}
                                             </div>
                                         </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             ))}
                         </div>
@@ -161,13 +187,14 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                 </section>
                 )}
 
-                {/* Card mantenimiento */}
+                {/* Card mantenimiento — administrable desde /admin/paginas/programas */}
+                {mantenimiento && (
                 <section ref={cardInView.ref} className="px-5 py-10 lg:px-15 lg:py-15" style={{ background: 'linear-gradient(180deg, #ffffff 0%, #EAEAF1 100%)' }}>
                     <div className={`flex flex-col overflow-hidden rounded-[30px] bg-black transition-all duration-700 ease-out lg:flex-row ${cardInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
                         <div
                             className="flex aspect-3/2 w-full shrink-0 flex-col items-start justify-end gap-2.5 self-stretch p-5 lg:aspect-auto lg:basis-[55%] lg:p-7.5"
                             style={{
-                                background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${card2Img}) center / cover no-repeat`,
+                                background: `linear-gradient(0deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 100%), linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.20) 100%), url(${mantenimientoMedia || card2Img}) center / cover no-repeat`,
                             }}
                         />
                         <div className="flex w-full shrink-0 flex-col items-start justify-center gap-7.5 bg-black p-7.5 lg:h-120.75 lg:w-[45%] lg:gap-10 lg:px-10 lg:py-15">
@@ -175,19 +202,17 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                                 className="text-2xl font-semibold leading-[120%] text-white lg:text-[32px]"
                                 style={{ fontFamily: '"Toyota Type"' }}
                             >
-                                ¿Buscas mantenimiento?
+                                {mantenimiento.title || '¿Buscas mantenimiento?'}
                             </h2>
-                            <p className="self-stretch text-sm leading-[120%] text-white lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
-                                Reserva tu hora aquí mismo
-                                <br /><br />
-                                Realizamos los chequeos y cambios necesarios según el kilometraje indicado para mantener tu vehículo en óptimas condiciones y conservar la garantía vigente.
+                            <p className="self-stretch whitespace-pre-line text-sm leading-[120%] text-white lg:text-base" style={{ fontFamily: '"Toyota Type"' }}>
+                                {mantenimiento.description || "Reserva tu hora aquí mismo\n\nRealizamos los chequeos y cambios necesarios según el kilometraje indicado para mantener tu vehículo en óptimas condiciones y conservar la garantía vigente."}
                             </p>
                             <a
-                                href="/post-venta/agendar-mantencion"
+                                href={mantenimiento.button_href || '/post-venta/agendar-mantencion'}
                                 className="flex w-full items-center justify-between rounded-[60px] bg-white p-1 lg:w-auto"
                             >
                                 <span className="pl-2.5 text-base leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
-                                    Ir a reservar
+                                    {mantenimiento.button_label || 'Ir a reservar'}
                                 </span>
                                 <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-black lg:ml-2.5">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">
@@ -198,6 +223,7 @@ export default function ProgramasPage({ footer, programas, programas_hero, progr
                         </div>
                     </div>
                 </section>
+                )}
 
                 <ContactCtaBanner />
                 <BranchesSection />
