@@ -19,6 +19,11 @@ type Vehicle = {
     image: string;
     video: string | null;
     video_mobile: string | null;
+    /**
+     * URL de YouTube opcional. Si está presente, tiene prioridad sobre los
+     * videos subidos (.mp4) y se reproduce como iframe autoplay-muted-loop.
+     */
+    video_youtube: string | null;
     background_image: string | null;
     background_image_mobile: string | null;
     duration: number | null;
@@ -173,8 +178,24 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
 
                         <div className="grid gap-3">
                             <Label>Video</Label>
+
+                            {/* URL de YouTube — si está, tiene prioridad sobre archivos subidos */}
+                            <div className="grid gap-1 rounded-md border border-dashed bg-muted/30 p-3">
+                                <Label className="text-sm font-normal">URL de YouTube (opcional)</Label>
+                                <Input
+                                    type="url"
+                                    value={vehicle.video_youtube ?? ''}
+                                    placeholder="https://www.youtube.com/watch?v=..."
+                                    onChange={(e) => updateVehicle(i, 'video_youtube', e.target.value || null)}
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                    Si pegas una URL aquí, se mostrará el video de YouTube y se ignoran los archivos
+                                    de abajo. Acepta cualquier link de YouTube (watch, youtu.be, shorts, embed).
+                                </p>
+                            </div>
+
                             <p className="text-xs text-muted-foreground">
-                                Máximo 70 MB por archivo. Si pesa más, comprímelo antes (HandBrake / ffmpeg).
+                                O subir un archivo (máx. 70 MB). Si pesa más, comprímelo antes (HandBrake / ffmpeg).
                             </p>
                             <div className="grid gap-4 md:grid-cols-2">
                                 <VideoField
@@ -183,6 +204,7 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
                                     uploading={isUploading(i, 'video')}
                                     onPick={(file) => handlePickVideo(i, 'video', file)}
                                     onClear={() => updateVehicle(i, 'video', null)}
+                                    disabled={!!vehicle.video_youtube}
                                 />
                                 <VideoField
                                     label="Mobile (opcional)"
@@ -191,6 +213,7 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
                                     onPick={(file) => handlePickVideo(i, 'video_mobile', file)}
                                     onClear={() => updateVehicle(i, 'video_mobile', null)}
                                     hint="Si lo dejas vacío, se usará el video desktop."
+                                    disabled={!!vehicle.video_youtube}
                                 />
                             </div>
                         </div>
@@ -249,6 +272,7 @@ function VideoField({
     onPick,
     onClear,
     hint,
+    disabled = false,
 }: {
     label: string;
     value: string | null;
@@ -256,14 +280,15 @@ function VideoField({
     onPick: (file: File | null) => void;
     onClear: () => void;
     hint?: string;
+    disabled?: boolean;
 }) {
     return (
-        <div className="grid gap-2">
+        <div className={`grid gap-2 ${disabled ? 'opacity-50' : ''}`}>
             <Label className="text-sm font-normal text-muted-foreground">{label}</Label>
             {value && (
                 <div className="flex items-center gap-2">
                     <video src={value} className="h-20 rounded" muted controls />
-                    <Button type="button" variant="outline" size="sm" onClick={onClear}>
+                    <Button type="button" variant="outline" size="sm" onClick={onClear} disabled={disabled}>
                         Quitar
                     </Button>
                 </div>
@@ -271,11 +296,16 @@ function VideoField({
             <Input
                 type="file"
                 accept="video/mp4,video/webm,video/quicktime,video/ogg"
-                disabled={uploading}
+                disabled={uploading || disabled}
                 onChange={(e) => onPick(e.target.files?.[0] ?? null)}
             />
             {uploading && <p className="text-xs text-muted-foreground">Subiendo video…</p>}
             {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+            {disabled && (
+                <p className="text-xs text-amber-600">
+                    Desactivado porque hay una URL de YouTube definida arriba.
+                </p>
+            )}
         </div>
     );
 }

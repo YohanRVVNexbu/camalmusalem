@@ -3,6 +3,7 @@ import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { useInView } from '@/hooks/use-in-view';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { pickResponsiveImage } from '@/lib/media';
+import { isYoutubeUrl, youtubeBackgroundEmbedSrc } from '@/lib/video-embed';
 
 type Vehicle = {
     name: string;
@@ -11,6 +12,7 @@ type Vehicle = {
     image: string;
     video?: string | null;
     video_mobile?: string | null;
+    video_youtube?: string | null;
     background_image?: string | null;
     background_image_mobile?: string | null;
     duration?: number | null;
@@ -49,7 +51,15 @@ export function About({ data }: { data: AboutData }) {
 
     const activeVehicle = vehicles[activeIndex];
     const isMobile      = useIsMobile();
-    const activeVideoSrc = pickResponsiveImage(activeVehicle?.video, activeVehicle?.video_mobile, isMobile);
+
+    // Prioridad de fondo: YouTube > MP4 subido > imagen estática.
+    // YouTube se reproduce vía iframe (no expone tiempo) → usamos timer
+    // basado en `duration` para mover el progress ring igual que para imágenes.
+    const youtubeEmbed   = youtubeBackgroundEmbedSrc(activeVehicle?.video_youtube);
+    const hasYoutube     = !!youtubeEmbed;
+    const activeVideoSrc = hasYoutube
+        ? null
+        : pickResponsiveImage(activeVehicle?.video, activeVehicle?.video_mobile, isMobile);
     const activeBgSrc    = pickResponsiveImage(activeVehicle?.background_image, activeVehicle?.background_image_mobile, isMobile);
     const hasVideo      = !!activeVideoSrc;
 
@@ -76,7 +86,11 @@ export function About({ data }: { data: AboutData }) {
     useEffect(() => {
         setProgress(0);
         elapsedRef.current = 0;
-        if (hasVideo) {
+        if (hasYoutube) {
+            // YouTube no expone progress → usamos el mismo timer que para imágenes.
+            clearImageTimer();
+            if (isPlaying) startImageTimer();
+        } else if (hasVideo) {
             clearImageTimer();
             const video = videoRef.current;
             if (!video) return;
@@ -100,6 +114,8 @@ export function About({ data }: { data: AboutData }) {
     }, [vehicles.length]);
 
     const togglePlayPause = () => {
+        // Para video MP4 nativo: control real del element.
+        // Para YouTube e imagen: pausamos/reanudamos el timer del progress.
         if (hasVideo) {
             const video = videoRef.current;
             if (!video) return;
@@ -140,7 +156,21 @@ export function About({ data }: { data: AboutData }) {
 
     const Background = () => (
         <>
-            {hasVideo ? (
+            {hasYoutube ? (
+                // YouTube como fondo: lo escalamos con vw/vh + 56.25vw min para
+                // que cubra cualquier viewport sin franjas (object-cover de iframes
+                // no existe, así que usamos el truco de aspect-ratio + cover).
+                <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                    <iframe
+                        key={youtubeEmbed}
+                        src={youtubeEmbed!}
+                        title={activeVehicle.name}
+                        allow="autoplay; encrypted-media; picture-in-picture"
+                        allowFullScreen={false}
+                        className="absolute left-1/2 top-1/2 h-[max(100%,56.25vw)] w-[max(100%,177.78vh)] -translate-x-1/2 -translate-y-1/2 border-0"
+                    />
+                </div>
+            ) : hasVideo ? (
                 <video key={activeVideoSrc} ref={videoRef} muted playsInline onTimeUpdate={handleTimeUpdate} onEnded={handleEnded}
                     className="absolute inset-0 size-full object-cover">
                     <source src={activeVideoSrc} type="video/mp4" />

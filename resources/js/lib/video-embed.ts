@@ -20,9 +20,38 @@ export function detectPlatform(url: string): Platform {
     return 'other';
 }
 
+export function isYoutubeUrl(url: string | null | undefined): boolean {
+    return !!url && /youtube\.com|youtu\.be/.test(url);
+}
+
 function youtubeId(url: string): string | null {
     const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([A-Za-z0-9_-]{11})/);
     return m ? m[1] : null;
+}
+
+/**
+ * URL para usar un video de YouTube como FONDO autoplay loop muteado, sin
+ * controles ni branding visible. Para reproducción "tipo banner" en
+ * secciones tipo Hero o About. Devuelve null si la URL no es de YouTube.
+ */
+export function youtubeBackgroundEmbedSrc(url: string | null | undefined): string | null {
+    if (!url) return null;
+    const id = youtubeId(url);
+    if (!id) return null;
+    const params = new URLSearchParams({
+        autoplay: '1',
+        mute: '1',
+        loop: '1',
+        playlist: id, // necesario para que `loop=1` funcione
+        controls: '0',
+        showinfo: '0',
+        modestbranding: '1',
+        rel: '0',
+        playsinline: '1',
+        iv_load_policy: '3',
+        disablekb: '1',
+    });
+    return `https://www.youtube-nocookie.com/embed/${id}?${params.toString()}`;
 }
 
 // Instagram: /reel/CODE/, /p/CODE/, /tv/CODE/ → { type, code }
