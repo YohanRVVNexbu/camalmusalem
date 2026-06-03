@@ -46,6 +46,11 @@ Route::middleware('admin')->group(function () {
     Route::post('upload-image', [\App\Http\Controllers\Admin\ImageUploadController::class, 'store'])
         ->name('admin.upload-image');
 
+    // Subida de videos vía Base64 (JSON) — uno por petición. Sortea el límite
+    // de 100 MB del proxy de Cloudflare al subir cada video por separado.
+    Route::post('upload-video', [\App\Http\Controllers\Admin\VideoUploadController::class, 'store'])
+        ->name('admin.upload-video');
+
     // Página de inicio
     Route::get('home', [HomeContentController::class, 'index'])->name('admin.home');
     Route::put('home/{section}', [HomeContentController::class, 'update'])->name('admin.home.update');

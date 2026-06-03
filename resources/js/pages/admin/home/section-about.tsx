@@ -1,5 +1,6 @@
 import { router } from '@inertiajs/react';
 import { useState } from 'react';
+import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
@@ -7,8 +8,9 @@ import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Textarea } from '@/components/ui/textarea';
 import { ResetSectionButton } from '@/components/admin/reset-section-button';
-import { appendNested, dotToBracket } from '@/lib/form-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { uploadImageBase64 } from '@/lib/image-upload';
+import { uploadVideoBase64 } from '@/lib/video-upload';
 
 type Vehicle = {
     name: string;
@@ -31,11 +33,14 @@ type Props = {
     extra?: { vehicle_models: VehicleModelLite[] };
 };
 
+// Campos del Vehicle que aceptan archivo/URL.
+type MediaField = 'image' | 'video' | 'video_mobile' | 'background_image' | 'background_image_mobile';
+
 export function SectionAbout({ data: initialData, isVisible: initialVisible, extra }: Props) {
     const vehicleModels = extra?.vehicle_models ?? [];
     const [data, setData] = useState(initialData);
     const [isVisible, setIsVisible] = useState(initialVisible);
-    const [files, setFiles] = useState<Record<string, File>>({});
+    const [uploading, setUploading] = useState<Record<string, boolean>>({});
     const [processing, setProcessing] = useState(false);
 
     const updateVehicle = (index: number, field: keyof Vehicle, value: any) => {
@@ -44,21 +49,53 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
         setData({ ...data, vehicles });
     };
 
+    const uploadKey = (i: number, field: MediaField) => `${i}.${field}`;
+    const isUploading = (i: number, field: MediaField) => !!uploading[uploadKey(i, field)];
+    const setUploadingFor = (i: number, field: MediaField, value: boolean) =>
+        setUploading((prev) => ({ ...prev, [uploadKey(i, field)]: value }));
+
+    const handlePickImage = async (i: number, field: 'image' | 'background_image' | 'background_image_mobile', file: File | null) => {
+        if (!file) return;
+        setUploadingFor(i, field, true);
+        try {
+            const url = await uploadImageBase64(file, 'home/about', data.vehicles[i][field] ?? null);
+            updateVehicle(i, field, url);
+        } catch (err) {
+            toast.error('No se pudo subir la imagen. ' + (err instanceof Error ? err.message : ''));
+        } finally {
+            setUploadingFor(i, field, false);
+        }
+    };
+
+    const handlePickVideo = async (i: number, field: 'video' | 'video_mobile', file: File | null) => {
+        if (!file) return;
+        setUploadingFor(i, field, true);
+        try {
+            // Si el campo apuntaba a un archivo subido por nosotros (path /storage/),
+            // lo borramos. Si era una URL externa (YouTube/Vimeo/CDN del cliente), no.
+            const oldUrl = data.vehicles[i][field];
+            const ownsOld = oldUrl && oldUrl.startsWith('/storage/');
+            const url = await uploadVideoBase64(file, 'home/about', ownsOld ? oldUrl : null);
+            updateVehicle(i, field, url);
+        } catch (err) {
+            toast.error('No se pudo subir el video. ' + (err instanceof Error ? err.message : ''));
+        } finally {
+            setUploadingFor(i, field, false);
+        }
+    };
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
 
-        const fd = new FormData();
-        fd.append('_method', 'PUT');
-        fd.append('is_visible', isVisible ? '1' : '0');
-        appendNested(fd, 'data', data);
-        Object.entries(files).forEach(([key, file]) => {
-            fd.append(dotToBracket(key), file);
-        });
-
-        router.post('/admin/home/about', fd, {
+        // Todos los archivos ya están subidos (las URLs viven en data). El form
+        // principal viaja como JSON normal, sin multipart → no toca el límite
+        // de Cloudflare ni el WAF.
+        router.put(`/admin/home/about`, {
+            is_visible: isVisible ? '1' : '0',
+            data: data,
+        }, {
             onFinish: () => setProcessing(false),
-            forceFormData: true,
         });
     };
 
@@ -119,74 +156,73 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
                                 <Input type="number" value={vehicle.duration ?? ''} onChange={(e) => updateVehicle(i, 'duration', e.target.value ? Number(e.target.value) : null)} />
                             </div>
                         </div>
+
                         <div className="grid gap-2">
                             <Label>Imagen (miniatura)</Label>
-                            {files[`vehicles.${i}.image`] ? (
-                                <img src={URL.createObjectURL(files[`vehicles.${i}.image`])} className="h-20 rounded object-contain ring-2 ring-primary" alt="" />
-                            ) : vehicle.image ? (
+                            {vehicle.image && (
                                 <img src={vehicle.image} className="h-20 rounded object-contain" alt="" />
-                            ) : null}
-                            <Input type="file" accept="image/*" onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) setFiles({ ...files, [`vehicles.${i}.image`]: file });
-                            }} />
+                            )}
+                            <Input
+                                type="file"
+                                accept="image/*"
+                                disabled={isUploading(i, 'image')}
+                                onChange={(e) => handlePickImage(i, 'image', e.target.files?.[0] ?? null)}
+                            />
+                            {isUploading(i, 'image') && <p className="text-xs text-muted-foreground">Subiendo miniatura…</p>}
                         </div>
+
                         <div className="grid gap-3">
                             <Label>Video</Label>
+                            <p className="text-xs text-muted-foreground">
+                                Subí el archivo (máx. 70 MB) <strong>o</strong> pega una URL externa (.mp4 público en Drive/S3/CDN).
+                            </p>
                             <div className="grid gap-4 md:grid-cols-2">
-                                <div className="grid gap-2">
-                                    <Label className="text-sm font-normal text-muted-foreground">Desktop</Label>
-                                    {files[`vehicles.${i}.video`] ? (
-                                        <video src={URL.createObjectURL(files[`vehicles.${i}.video`])} className="h-20 rounded ring-2 ring-primary" muted controls />
-                                    ) : vehicle.video ? (
-                                        <video src={vehicle.video} className="h-20 rounded" muted controls />
-                                    ) : null}
-                                    <Input type="file" accept="video/mp4,video/webm" onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) setFiles({ ...files, [`vehicles.${i}.video`]: file });
-                                    }} />
-                                </div>
-                                <div className="grid gap-2">
-                                    <Label className="text-sm font-normal text-muted-foreground">Mobile (opcional)</Label>
-                                    {files[`vehicles.${i}.video_mobile`] ? (
-                                        <video src={URL.createObjectURL(files[`vehicles.${i}.video_mobile`])} className="h-20 rounded ring-2 ring-primary" muted controls />
-                                    ) : vehicle.video_mobile ? (
-                                        <video src={vehicle.video_mobile} className="h-20 rounded" muted controls />
-                                    ) : null}
-                                    <Input type="file" accept="video/mp4,video/webm" onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) setFiles({ ...files, [`vehicles.${i}.video_mobile`]: file });
-                                    }} />
-                                    <p className="text-xs text-muted-foreground">Si lo dejas vacío, se usará el video desktop.</p>
-                                </div>
+                                <VideoField
+                                    label="Desktop"
+                                    value={vehicle.video}
+                                    uploading={isUploading(i, 'video')}
+                                    onPick={(file) => handlePickVideo(i, 'video', file)}
+                                    onUrl={(url) => updateVehicle(i, 'video', url)}
+                                />
+                                <VideoField
+                                    label="Mobile (opcional)"
+                                    value={vehicle.video_mobile}
+                                    uploading={isUploading(i, 'video_mobile')}
+                                    onPick={(file) => handlePickVideo(i, 'video_mobile', file)}
+                                    onUrl={(url) => updateVehicle(i, 'video_mobile', url)}
+                                    hint="Si lo dejas vacío, se usará el video desktop."
+                                />
                             </div>
                         </div>
+
                         <div className="grid gap-3">
                             <Label>Imagen de fondo (sin video)</Label>
                             <div className="grid gap-4 md:grid-cols-2">
                                 <div className="grid gap-2">
                                     <Label className="text-sm font-normal text-muted-foreground">Desktop</Label>
-                                    {files[`vehicles.${i}.background_image`] ? (
-                                        <img src={URL.createObjectURL(files[`vehicles.${i}.background_image`])} className="h-20 rounded object-cover ring-2 ring-primary" alt="" />
-                                    ) : vehicle.background_image ? (
+                                    {vehicle.background_image && (
                                         <img src={vehicle.background_image} className="h-20 rounded object-cover" alt="" />
-                                    ) : null}
-                                    <Input type="file" accept="image/*" onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) setFiles({ ...files, [`vehicles.${i}.background_image`]: file });
-                                    }} />
+                                    )}
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        disabled={isUploading(i, 'background_image')}
+                                        onChange={(e) => handlePickImage(i, 'background_image', e.target.files?.[0] ?? null)}
+                                    />
+                                    {isUploading(i, 'background_image') && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
                                 </div>
                                 <div className="grid gap-2">
                                     <Label className="text-sm font-normal text-muted-foreground">Mobile (opcional)</Label>
-                                    {files[`vehicles.${i}.background_image_mobile`] ? (
-                                        <img src={URL.createObjectURL(files[`vehicles.${i}.background_image_mobile`])} className="h-20 rounded object-cover ring-2 ring-primary" alt="" />
-                                    ) : vehicle.background_image_mobile ? (
+                                    {vehicle.background_image_mobile && (
                                         <img src={vehicle.background_image_mobile} className="h-20 rounded object-cover" alt="" />
-                                    ) : null}
-                                    <Input type="file" accept="image/*" onChange={(e) => {
-                                        const file = e.target.files?.[0];
-                                        if (file) setFiles({ ...files, [`vehicles.${i}.background_image_mobile`]: file });
-                                    }} />
+                                    )}
+                                    <Input
+                                        type="file"
+                                        accept="image/*"
+                                        disabled={isUploading(i, 'background_image_mobile')}
+                                        onChange={(e) => handlePickImage(i, 'background_image_mobile', e.target.files?.[0] ?? null)}
+                                    />
+                                    {isUploading(i, 'background_image_mobile') && <p className="text-xs text-muted-foreground">Subiendo imagen…</p>}
                                     <p className="text-xs text-muted-foreground">Si lo dejas vacío, se usará la imagen desktop.</p>
                                 </div>
                             </div>
@@ -202,5 +238,48 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
                 <ResetSectionButton section="about" />
             </div>
         </form>
+    );
+}
+
+// ─── Subcomponente: Video con upload + URL externa ─────────────────────────
+function VideoField({
+    label,
+    value,
+    uploading,
+    onPick,
+    onUrl,
+    hint,
+}: {
+    label: string;
+    value: string | null;
+    uploading: boolean;
+    onPick: (file: File | null) => void;
+    onUrl: (url: string) => void;
+    hint?: string;
+}) {
+    return (
+        <div className="grid gap-2">
+            <Label className="text-sm font-normal text-muted-foreground">{label}</Label>
+            {value && (
+                <video src={value} className="h-20 rounded" muted controls />
+            )}
+            <Input
+                type="file"
+                accept="video/mp4,video/webm,video/quicktime,video/ogg"
+                disabled={uploading}
+                onChange={(e) => onPick(e.target.files?.[0] ?? null)}
+            />
+            {uploading && <p className="text-xs text-muted-foreground">Subiendo video…</p>}
+            <div className="grid gap-1">
+                <Label className="text-xs font-normal text-muted-foreground">…o URL externa</Label>
+                <Input
+                    type="url"
+                    value={value ?? ''}
+                    placeholder="https://… .mp4"
+                    onChange={(e) => onUrl(e.target.value)}
+                />
+            </div>
+            {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+        </div>
     );
 }
