@@ -40,8 +40,16 @@ export function LazyImage({
         setLoaded(false);
     }
 
+    // Si el caller pasa una clase de posicionamiento (absolute/fixed/sticky)
+    // en wrapperClassName, NO sumamos `relative` por arriba — porque hacerlo
+    // genera el conflicto CSS `relative absolute` y rompe el layout (la imagen
+    // queda invisible). En cualquier otro caso, el wrapper necesita
+    // `position: relative` para que el skeleton absolute sit on top.
+    const hasOwnPositioning = /\b(absolute|fixed|sticky)\b/.test(wrapperClassName);
+    const wrapperPos = hasOwnPositioning ? '' : 'relative';
+
     return (
-        <div className={`relative ${wrapperClassName}`}>
+        <div className={`${wrapperPos} ${wrapperClassName}`}>
             {!loaded && (
                 <div
                     aria-hidden
