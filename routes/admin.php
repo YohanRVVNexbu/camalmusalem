@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\VehicleVersionController;
 use App\Http\Controllers\Admin\ComplianceController as AdminComplianceController;
 use App\Http\Controllers\Admin\ContactoController;
 use App\Http\Controllers\Admin\CotizacionAccesorioController;
+use App\Http\Controllers\Admin\CotizacionMerchController;
 use App\Http\Controllers\Admin\CotizacionRepuestoController;
 use App\Http\Controllers\Admin\CrossReferenceImportController;
 use App\Http\Controllers\Admin\CotizacionVehiculoController;
@@ -219,6 +220,11 @@ Route::middleware('admin')->group(function () {
     Route::get('cotizaciones-repuestos', [CotizacionRepuestoController::class, 'index'])->name('admin.cotizaciones-repuestos');
     Route::patch('cotizaciones-repuestos/{cotizacion}/leido', [CotizacionRepuestoController::class, 'marcarLeido'])->name('admin.cotizaciones-repuestos.leido');
     Route::delete('cotizaciones-repuestos/{cotizacion}', [CotizacionRepuestoController::class, 'destroy'])->name('admin.cotizaciones-repuestos.destroy');
+
+    // Cotizaciones de merch
+    Route::get('cotizaciones-merch', [CotizacionMerchController::class, 'index'])->name('admin.cotizaciones-merch');
+    Route::patch('cotizaciones-merch/{cotizacion}/leido', [CotizacionMerchController::class, 'marcarLeido'])->name('admin.cotizaciones-merch.leido');
+    Route::delete('cotizaciones-merch/{cotizacion}', [CotizacionMerchController::class, 'destroy'])->name('admin.cotizaciones-merch.destroy');
 
     // Solicitudes de encargo de repuestos
     Route::get('solicitudes-encargo', [SolicitudEncargoRepuestoController::class, 'index'])->name('admin.solicitudes-encargo');

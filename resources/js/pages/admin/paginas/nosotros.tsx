@@ -220,6 +220,22 @@ function ReconocimientosSection({ page, s }: { page: string; s: SectionProp }) {
         setItemFiles((f) => f.filter((_, idx) => idx !== i));
     };
 
+    const moveItem = (i: number, dir: -1 | 1) => {
+        const j = i + dir;
+        if (j < 0 || j >= (data.items?.length ?? 0)) return;
+        const items = [...(data.items ?? [])];
+        [items[i], items[j]] = [items[j], items[i]];
+        setData((d: any) => ({ ...d, items }));
+        // Mantenemos el binding de archivos pendientes sincronizado con el orden
+        // de items. Si no swappeáramos también `itemFiles`, una imagen recién
+        // elegida quedaría pegada al índice viejo y no acompaña la tarjeta.
+        setItemFiles((f) => {
+            const next = [...f];
+            [next[i], next[j]] = [next[j], next[i]];
+            return next;
+        });
+    };
+
     return (
         <SectionCard page={page} sectionKey="nosotros_reconocimientos" label="Reconocimientos" isVisible={visible}
             processing={processing}
@@ -238,7 +254,23 @@ function ReconocimientosSection({ page, s }: { page: string; s: SectionProp }) {
                     <div key={i} className="grid gap-3 rounded-lg border p-4">
                         <div className="flex items-center justify-between">
                             <p className="font-medium text-sm">Reconocimiento {i + 1}</p>
-                            <button type="button" onClick={() => removeItem(i)} className="text-xs text-destructive hover:underline">Eliminar</button>
+                            <div className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    onClick={() => moveItem(i, -1)}
+                                    disabled={i === 0}
+                                    className="rounded-md border bg-background px-2 py-0.5 text-sm leading-none hover:bg-muted disabled:opacity-30"
+                                    title="Subir"
+                                >↑</button>
+                                <button
+                                    type="button"
+                                    onClick={() => moveItem(i, 1)}
+                                    disabled={i === (data.items?.length ?? 0) - 1}
+                                    className="rounded-md border bg-background px-2 py-0.5 text-sm leading-none hover:bg-muted disabled:opacity-30"
+                                    title="Bajar"
+                                >↓</button>
+                                <button type="button" onClick={() => removeItem(i)} className="ml-2 text-xs text-destructive hover:underline">Eliminar</button>
+                            </div>
                         </div>
                         <div className="grid gap-2">
                             <Label>Imagen</Label>

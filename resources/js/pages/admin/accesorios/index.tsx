@@ -16,7 +16,7 @@ import AdminLayout from '@/layouts/admin-layout';
 type Accesorio = { id: number; name: string; price: string | null; category: string; is_visible: boolean; order: number; };
 
 export default function AccesoriosIndex({ accesorios }: { accesorios: Accesorio[] }) {
-    const { flash } = usePage<{ flash: { success?: string } }>().props;
+    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [query, setQuery] = useState('');
 
@@ -44,6 +44,7 @@ export default function AccesoriosIndex({ accesorios }: { accesorios: Accesorio[
                     </div>
                 </div>
                 {flash?.success && <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>}
+                {flash?.error && <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{flash.error}</div>}
                 <div className="relative max-w-sm">
                     <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                     <Input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nombre o categoría…" className="pl-9" />

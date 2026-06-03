@@ -56,6 +56,7 @@ const solicitudesItems: NavItem[] = [
     { title: 'Cotizaciones vehículos',     href: '/admin/cotizaciones-vehiculos',    icon: Receipt },
     { title: 'Cotizaciones accesorios',    href: '/admin/cotizaciones-accesorios',   icon: Receipt },
     { title: 'Cotizaciones repuestos',     href: '/admin/cotizaciones-repuestos',    icon: Receipt },
+    { title: 'Cotizaciones merch',         href: '/admin/cotizaciones-merch',        icon: Receipt },
     { title: 'Encargos repuestos',         href: '/admin/solicitudes-encargo',       icon: ClipboardList },
 ];
 

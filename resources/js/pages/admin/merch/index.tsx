@@ -27,7 +27,7 @@ type MerchItem = {
 };
 
 export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
-    const { flash } = usePage<{ flash: { success?: string } }>().props;
+    const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
     const [deleteId, setDeleteId] = useState<number | null>(null);
     const [query, setQuery] = useState('');
 
@@ -62,6 +62,9 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
 
                 {flash?.success && (
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
+                )}
+                {flash?.error && (
+                    <div className="rounded-md border border-red-200 bg-red-50 p-3 text-sm text-red-700">{flash.error}</div>
                 )}
 
                 <div className="relative max-w-sm">

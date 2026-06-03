@@ -47,6 +47,14 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
         setData({ ...data, images: (data.images ?? []).filter((u) => u !== url) });
     };
 
+    const moveImage = (i: number, dir: -1 | 1) => {
+        const arr = [...(data.images ?? [])];
+        const j = i + dir;
+        if (j < 0 || j >= arr.length) return;
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+        setData({ ...data, images: arr });
+    };
+
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
         setProcessing(true);
@@ -112,13 +120,22 @@ export default function AccesorioForm({ accesorio }: { accesorio: Accesorio | nu
                         </div>
                     </div>
                     <div className="grid gap-2">
-                        <Label>Imágenes</Label>
+                        <Label>Imágenes <span className="text-xs text-muted-foreground">(la primera es la portada; usa las flechas para reordenar)</span></Label>
                         {(data.images ?? []).length > 0 && (
-                            <div className="flex flex-wrap gap-2">
-                                {data.images.map((url) => (
-                                    <div key={url} className="relative">
-                                        <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
-                                        <button type="button" onClick={() => removeImage(url)} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
+                            <div className="flex flex-wrap gap-3">
+                                {data.images.map((url, i) => (
+                                    <div key={url} className="flex flex-col items-center gap-1">
+                                        <div className={`relative ${i === 0 ? 'ring-2 ring-primary' : ''} rounded-lg`}>
+                                            <img src={url} className="h-24 w-32 rounded-lg object-cover" alt="" />
+                                            {i === 0 && (
+                                                <span className="absolute left-1 top-1 rounded-full bg-primary px-2 py-0.5 text-[10px] font-semibold uppercase leading-none text-primary-foreground">Portada</span>
+                                            )}
+                                            <button type="button" onClick={() => removeImage(url)} className="absolute -right-1 -top-1 flex size-5 items-center justify-center rounded-full bg-destructive text-white text-xs">✕</button>
+                                        </div>
+                                        <div className="flex w-32 items-stretch gap-1">
+                                            <button type="button" onClick={() => moveImage(i, -1)} disabled={i === 0} className="flex flex-1 items-center justify-center rounded-md border bg-background py-1 text-base leading-none hover:bg-muted disabled:opacity-30" title="Mover a la izquierda">←</button>
+                                            <button type="button" onClick={() => moveImage(i, 1)} disabled={i === data.images.length - 1} className="flex flex-1 items-center justify-center rounded-md border bg-background py-1 text-base leading-none hover:bg-muted disabled:opacity-30" title="Mover a la derecha">→</button>
+                                        </div>
                                     </div>
                                 ))}
                             </div>

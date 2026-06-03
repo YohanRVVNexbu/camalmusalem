@@ -12,7 +12,13 @@ class CrossReferenceImportController extends Controller
     {
         $request->validate(['file' => ['required', 'file', 'mimes:xlsx,xls']]);
 
-        $r = (new CrossReferenceImporter)->import($request->file('file'));
+        try {
+            $r = (new CrossReferenceImporter)->import($request->file('file'));
+        } catch (\RuntimeException $e) {
+            // Errores controlados (ej. archivo sin la pestaña 'Data') vuelven
+            // como flash error legible para el cliente, sin pantalla 500.
+            return back()->with('error', $e->getMessage());
+        }
 
         $msg = "Sincronización de precios: {$r['updated']} productos actualizados "
             ."({$r['matched_skus']} SKU encontrados de {$r['rows']} en la pestaña Data).";

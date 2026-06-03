@@ -27,10 +27,33 @@ class CrossReferenceImporter
     {
         $reader = IOFactory::createReaderForFile($file->getPathname());
         $reader->setReadDataOnly(true); // ignora imágenes/estilos → rápido y liviano
+
+        // Antes de filtrar por la hoja "Data" verificamos que exista. Si pedimos
+        // setLoadSheetsOnly(['Data']) en un archivo que no la tiene, PhpSpreadsheet
+        // carga 0 hojas y luego revienta con "out of bounds index: 0".
+        $availableSheets = [];
         try {
-            $reader->setLoadSheetsOnly(['Data']); // solo la hoja tabular
+            $availableSheets = $reader->listWorksheetNames($file->getPathname());
         } catch (\Throwable $e) {
-            // si el reader no soporta filtrar hojas, se carga completo igual
+            // si el reader no soporta listar (ej. CSV), seguimos con el flujo
+            // normal y el error termina siendo capturado más abajo
+        }
+
+        if (! empty($availableSheets)) {
+            $hasData = in_array('Data', $availableSheets, true);
+            if (! $hasData) {
+                $names = implode(', ', $availableSheets);
+                throw new \RuntimeException(
+                    "El archivo no tiene la pestaña 'Data' (requerida por el formato Cross Reference de Toyota). "
+                    . "Hojas encontradas: {$names}. "
+                    . "Verifica que estés subiendo el archivo Cross Reference original sin renombrar la pestaña."
+                );
+            }
+            try {
+                $reader->setLoadSheetsOnly(['Data']);
+            } catch (\Throwable $e) {
+                // si el reader no soporta filtrar, se carga completo igual
+            }
         }
 
         $spreadsheet = $reader->load($file->getPathname());

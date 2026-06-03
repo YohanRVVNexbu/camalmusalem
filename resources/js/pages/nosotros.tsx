@@ -26,6 +26,7 @@ function ReconocimientosCarousel({ items, title }: { items: any[]; title: string
     const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true, align: 'start' });
     const [selectedIndex, setSelectedIndex] = useState(0);
     const [scrollSnaps, setScrollSnaps] = useState<number[]>([]);
+    const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
     const { ref, visible } = useInView(0.1);
     const scrollTo = useCallback((index: number) => emblaApi?.scrollTo(index), [emblaApi]);
     const onSelect = useCallback(() => { if (!emblaApi) return; setSelectedIndex(emblaApi.selectedScrollSnap()); }, [emblaApi]);
@@ -35,6 +36,25 @@ function ReconocimientosCarousel({ items, title }: { items: any[]; title: string
         emblaApi.on('select', onSelect); onSelect();
         return () => { emblaApi.off('select', onSelect); };
     }, [emblaApi, onSelect]);
+
+    // Cierre con Esc y bloqueo del scroll del body mientras el lightbox está abierto.
+    useEffect(() => {
+        if (lightboxIndex === null) return;
+        const onKey = (e: KeyboardEvent) => {
+            if (e.key === 'Escape') setLightboxIndex(null);
+            else if (e.key === 'ArrowRight') setLightboxIndex((i) => i === null ? null : (i + 1) % items.length);
+            else if (e.key === 'ArrowLeft') setLightboxIndex((i) => i === null ? null : (i - 1 + items.length) % items.length);
+        };
+        document.addEventListener('keydown', onKey);
+        const prevOverflow = document.body.style.overflow;
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.removeEventListener('keydown', onKey);
+            document.body.style.overflow = prevOverflow;
+        };
+    }, [lightboxIndex, items.length]);
+
+    const lightboxItem = lightboxIndex !== null ? items[lightboxIndex] : null;
 
     return (
         <section ref={ref} className="flex flex-col items-center gap-7.5 rounded-t-[30px] bg-[#EAEAF1] px-5 py-10 lg:gap-10 lg:px-15 lg:py-20">
@@ -46,7 +66,14 @@ function ReconocimientosCarousel({ items, title }: { items: any[]; title: string
                     <div className="flex">
                         {items.map((item: any, i: number) => (
                             <div key={i} className="mr-5 flex shrink-0 flex-col items-start gap-0">
-                                <div className="aspect-262/180 w-65.5 rounded-[10px]" style={{ background: item.img ? `url(${item.img}) lightgray 50% / cover no-repeat` : '#ccc' }} />
+                                <button
+                                    type="button"
+                                    onClick={() => item.img && setLightboxIndex(i)}
+                                    disabled={!item.img}
+                                    className="aspect-262/180 w-65.5 cursor-pointer rounded-[10px] transition hover:opacity-90 disabled:cursor-default disabled:hover:opacity-100"
+                                    style={{ background: item.img ? `url(${item.img}) lightgray 50% / cover no-repeat` : '#ccc' }}
+                                    aria-label={item.img ? `Ver imagen de ${item.nombre || 'reconocimiento'}` : undefined}
+                                />
                                 <div className="w-65.5 overflow-hidden rounded-2xl p-2.5" style={{ backdropFilter: 'blur(5px)' }}>
                                     <div className="flex flex-col gap-2.5">
                                         <span className="text-base font-semibold leading-[120%] text-black" style={{ fontFamily: '"Toyota Type"' }}>{item.nombre}</span>
@@ -65,6 +92,50 @@ function ReconocimientosCarousel({ items, title }: { items: any[]; title: string
                     </div>
                 </div>
             </div>
+
+            {/* Lightbox: imagen a tamaño completo. Click fuera o Esc para cerrar.
+                Flechas izquierda/derecha cambian de imagen sin cerrar. */}
+            {lightboxItem && (
+                <div
+                    onClick={() => setLightboxIndex(null)}
+                    className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-5 backdrop-blur-sm"
+                    role="dialog"
+                    aria-modal="true"
+                    aria-label="Vista ampliada del reconocimiento"
+                >
+                    <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); setLightboxIndex(null); }}
+                        className="absolute right-5 top-5 flex size-10 cursor-pointer items-center justify-center rounded-full bg-white/20 text-white transition hover:bg-white/30"
+                        aria-label="Cerrar"
+                    >✕</button>
+                    {items.length > 1 && (
+                        <>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => i === null ? null : (i - 1 + items.length) % items.length); }}
+                                className="absolute left-5 top-1/2 flex size-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/20 text-2xl text-white transition hover:bg-white/30"
+                                aria-label="Anterior"
+                            >‹</button>
+                            <button
+                                type="button"
+                                onClick={(e) => { e.stopPropagation(); setLightboxIndex((i) => i === null ? null : (i + 1) % items.length); }}
+                                className="absolute right-5 top-1/2 flex size-12 -translate-y-1/2 cursor-pointer items-center justify-center rounded-full bg-white/20 text-2xl text-white transition hover:bg-white/30"
+                                aria-label="Siguiente"
+                            >›</button>
+                        </>
+                    )}
+                    <div onClick={(e) => e.stopPropagation()} className="flex max-h-full max-w-full flex-col items-center gap-4">
+                        <img src={lightboxItem.img} alt={lightboxItem.nombre ?? ''} className="max-h-[80vh] max-w-full rounded-lg object-contain" />
+                        {(lightboxItem.nombre || lightboxItem['año']) && (
+                            <div className="text-center text-white">
+                                {lightboxItem.nombre && <p className="text-lg font-semibold">{lightboxItem.nombre}</p>}
+                                {lightboxItem['año'] && <p className="text-sm opacity-80">{lightboxItem['año']}</p>}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
         </section>
     );
 }
@@ -182,7 +253,7 @@ export default function Nosotros({ footer, nosotros_hero, nosotros_historia, nos
                 {/* Nuestra historia */}
                 {nosotros_historia && (
                     <section ref={historiaInView.ref} className="self-stretch bg-white px-5 py-10 lg:py-15">
-                        <div className="mx-auto flex w-full max-w-3xl flex-col items-start justify-center gap-7.5 text-left lg:gap-15">
+                        <div className="mx-auto flex w-full max-w-3xl flex-col items-center justify-center gap-7.5 text-center lg:gap-15">
                             <h2 className={`shrink-0 text-2xl font-semibold leading-[120%] text-black transition-all duration-700 ease-out lg:text-[28px] ${historiaInView.visible ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`} style={{ fontFamily: '"Toyota Type"' }}>
                                 {historia.title ?? 'Nuestra historia'}
                             </h2>
