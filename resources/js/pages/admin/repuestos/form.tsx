@@ -21,10 +21,14 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!repuesto?.id;
 
-    const [data, setData] = useState<Repuesto>(repuesto ?? {
-        name: '', sku: null, description: null, comentarios: null, price: null, category: 'General',
-        images: [], stock_la_serena: true, stock_ovalle: true, is_visible: true, order: 0,
-    });
+    // Normaliza images a []: si viene de DB como null, el spread reventaba
+    // la página (pantalla en blanco) al subir la primera foto.
+    const [data, setData] = useState<Repuesto>(repuesto
+        ? { ...repuesto, images: repuesto.images ?? [] }
+        : {
+            name: '', sku: null, description: null, comentarios: null, price: null, category: 'General',
+            images: [], stock_la_serena: true, stock_ovalle: true, is_visible: true, order: 0,
+        });
     const [uploadingCount, setUploadingCount] = useState(0);
     const [processing, setProcessing] = useState(false);
 
@@ -34,7 +38,7 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
         for (const file of files) {
             try {
                 const url = await uploadImageBase64(file, `repuestos/${repuesto?.id ?? 'new'}`);
-                setData((d) => ({ ...d, images: [...d.images, url] }));
+                setData((d) => ({ ...d, images: [...(d.images ?? []), url] }));
             } catch (err) {
                 console.error('Falló subir imagen de repuesto:', err);
                 toast.error('No se pudo subir una imagen. ' + (err instanceof Error ? err.message : ''));
@@ -45,7 +49,7 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
     };
 
     const removeImage = (url: string) => {
-        setData({ ...data, images: data.images.filter((u) => u !== url) });
+        setData({ ...data, images: (data.images ?? []).filter((u) => u !== url) });
     };
 
     const submit = (e: React.FormEvent) => {

@@ -34,12 +34,17 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const isEdit = !!merch?.id;
 
-    const [data, setData] = useState<MerchItem>(merch ?? {
-        sku: null, name: '', description: null, description_tech: null, comentarios: null,
-        category: 'merch', subcategory: null, size: null,
-        price: null, price_offer: null, status: 'disponible',
-        branch: null, images: [], is_visible: true, order: 0,
-    });
+    // Normalizamos `images` a []: si el merch viene de DB con images=null, el
+    // spread `[...d.images, url]` en handlePickImages reventaba la página
+    // (pantalla en blanco) al subir la primera foto.
+    const [data, setData] = useState<MerchItem>(merch
+        ? { ...merch, images: merch.images ?? [] }
+        : {
+            sku: null, name: '', description: null, description_tech: null, comentarios: null,
+            category: 'merch', subcategory: null, size: null,
+            price: null, price_offer: null, status: 'disponible',
+            branch: null, images: [], is_visible: true, order: 0,
+        });
     const [uploadingCount, setUploadingCount] = useState(0);
     const [processing, setProcessing] = useState(false);
 
@@ -52,7 +57,7 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
         for (const file of files) {
             try {
                 const url = await uploadImageBase64(file, `merch/${merch?.id ?? 'new'}`);
-                setData((d) => ({ ...d, images: [...d.images, url] }));
+                setData((d) => ({ ...d, images: [...(d.images ?? []), url] }));
             } catch (err) {
                 console.error('Falló subir imagen de merch:', err);
                 toast.error('No se pudo subir una imagen. ' + (err instanceof Error ? err.message : ''));
@@ -63,7 +68,7 @@ export default function MerchForm({ merch }: { merch: MerchItem | null }) {
     };
 
     const removeImage = (url: string) => {
-        setData({ ...data, images: data.images.filter((u) => u !== url) });
+        setData({ ...data, images: (data.images ?? []).filter((u) => u !== url) });
     };
 
     const submit = (e: React.FormEvent) => {
