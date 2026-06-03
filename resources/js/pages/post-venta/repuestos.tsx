@@ -7,7 +7,7 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
 import { formatCLP } from '@/lib/format';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import heroImg from '@images/repuestos/hero_image.png?format=webp';
 import section2Img from '@images/repuestos/image_section2.jpg?format=webp';
 import section3Img from '@images/repuestos/image_section3.jpg?format=webp';
@@ -23,6 +23,8 @@ type Repuesto = {
     sku: string | null;
     price: string | null;
     category: string;
+    /** Texto libre separado por comas — ej. "Hilux, RAV4". Usado por el filtro. */
+    compatible_with: string | null;
     images: string[];
     stock_la_serena: boolean;
     stock_ovalle: boolean;
@@ -44,6 +46,48 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
     const [step, setStep] = useState<SolicitudStep>('default');
     const [visible, setVisible] = useState(true);
     const [formKey, setFormKey] = useState(0);
+
+    // ── Filtros del catálogo público ───────────────────────────────────────
+    // Modelo: matchea sobre `compatible_with` (texto libre separado por comas
+    // que carga el admin). Orden: por precio asc/desc.
+    const [filtroModelo, setFiltroModelo] = useState<string>('');
+    const [orden, setOrden] = useState<'' | 'menor' | 'mayor'>('');
+
+    // Modelos disponibles: derivamos de los repuestos reales (siempre en
+    // sync con lo que cargó el admin). Si ninguno tiene compatible_with,
+    // caemos a la lista hardcoded clásica para no quedar con un dropdown
+    // vacío.
+    const modelosDisponibles = useMemo(() => {
+        const set = new Set<string>();
+        for (const r of repuestos) {
+            (r.compatible_with ?? '')
+                .split(',')
+                .map((s) => s.trim())
+                .filter(Boolean)
+                .forEach((m) => set.add(m));
+        }
+        const arr = Array.from(set).sort((a, b) => a.localeCompare(b, 'es'));
+        return arr.length > 0 ? arr : modelos;
+    }, [repuestos]);
+
+    const repuestosFiltrados = useMemo(() => {
+        let list = repuestos;
+        if (filtroModelo) {
+            const target = filtroModelo.toLowerCase();
+            list = list.filter((r) => {
+                const compat = (r.compatible_with ?? '').toLowerCase();
+                if (!compat) return false;
+                // Substring match contra el texto completo, así "Hilux"
+                // también matchea "Hilux 2020+".
+                return compat.includes(target);
+            });
+        }
+        if (orden === 'menor' || orden === 'mayor') {
+            const price = (r: Repuesto) => Number(String(r.price ?? '').replace(/[^0-9]/g, '')) || 0;
+            list = [...list].sort((a, b) => orden === 'menor' ? price(a) - price(b) : price(b) - price(a));
+        }
+        return list;
+    }, [repuestos, filtroModelo, orden]);
 
     // Form state
     const [encargoNombre, setEncargoNombre] = useState('');
@@ -185,11 +229,13 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                             {/* Modelo de vehículo */}
                             <div className="relative w-full lg:w-80.5">
                                 <select
+                                    value={filtroModelo}
+                                    onChange={(e) => setFiltroModelo(e.target.value)}
                                     className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
                                     <option value="">Modelo de vehículo: Todos</option>
-                                    {modelos.map(m => <option key={m} value={m}>Modelo de vehículo: {m}</option>)}
+                                    {modelosDisponibles.map(m => <option key={m} value={m}>Modelo de vehículo: {m}</option>)}
                                 </select>
                                 <svg className="pointer-events-none absolute right-5 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
                                     <path d="M1 1L5 5L1 9" stroke="#000" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -198,6 +244,8 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                             {/* Ordenar */}
                             <div className="relative w-full lg:w-65">
                                 <select
+                                    value={orden}
+                                    onChange={(e) => setOrden(e.target.value as '' | 'menor' | 'mayor')}
                                     className="h-11 w-full cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] px-5 py-2.5 pr-10 text-base leading-none text-black outline-none"
                                     style={{ fontFamily: '"Toyota Type"' }}
                                 >
@@ -216,7 +264,10 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                             {repuestos.length === 0 && (
                                 <p className="col-span-full py-10 text-center text-black/50">No hay repuestos disponibles.</p>
                             )}
-                            {repuestos.map((item) => (
+                            {repuestos.length > 0 && repuestosFiltrados.length === 0 && (
+                                <p className="col-span-full py-10 text-center text-black/50">No hay repuestos para los filtros seleccionados.</p>
+                            )}
+                            {repuestosFiltrados.map((item) => (
                                 <div
                                     key={item.id}
                                     className="flex flex-col overflow-hidden rounded-[20px] border border-black/5 bg-white"

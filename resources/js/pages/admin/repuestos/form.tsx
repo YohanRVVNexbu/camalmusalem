@@ -13,6 +13,7 @@ import AdminLayout from '@/layouts/admin-layout';
 
 type Repuesto = {
     id?: number; name: string; sku: string | null; description: string | null; comentarios: string | null;
+    compatible_with: string | null;
     price: string | null; category: string; images: string[];
     stock_la_serena: boolean; stock_ovalle: boolean; is_visible: boolean; order: number;
 };
@@ -24,9 +25,10 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
     // Normaliza images a []: si viene de DB como null, el spread reventaba
     // la página (pantalla en blanco) al subir la primera foto.
     const [data, setData] = useState<Repuesto>(repuesto
-        ? { ...repuesto, images: repuesto.images ?? [] }
+        ? { ...repuesto, images: repuesto.images ?? [], compatible_with: repuesto.compatible_with ?? null }
         : {
-            name: '', sku: null, description: null, comentarios: null, price: null, category: 'General',
+            name: '', sku: null, description: null, comentarios: null, compatible_with: null,
+            price: null, category: 'General',
             images: [], stock_la_serena: true, stock_ovalle: true, is_visible: true, order: 0,
         });
     const [uploadingCount, setUploadingCount] = useState(0);
@@ -68,6 +70,7 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
             sku: data.sku ?? '',
             description: data.description ?? '',
             comentarios: data.comentarios ?? '',
+            compatible_with: data.compatible_with ?? '',
             price: data.price ?? '',
             category: data.category,
             stock_la_serena: data.stock_la_serena ? '1' : '0',
@@ -130,6 +133,18 @@ export default function RepuestoForm({ repuesto }: { repuesto: Repuesto | null }
                         <div className="grid gap-2 col-span-4">
                             <Label>Descripción</Label>
                             <Textarea value={data.description ?? ''} onChange={(e) => setData({ ...data, description: e.target.value })} rows={4} />
+                        </div>
+                        <div className="grid gap-2 col-span-4">
+                            <Label>Modelos compatibles <span className="text-muted-foreground text-xs">(usado para filtrar en la vista pública)</span></Label>
+                            <Input
+                                value={data.compatible_with ?? ''}
+                                onChange={(e) => setData({ ...data, compatible_with: e.target.value || null })}
+                                placeholder="Hilux, Land Cruiser, RAV4…"
+                            />
+                            <p className="text-xs text-muted-foreground">
+                                Separa los modelos con coma. El filtro de "Modelo de vehículo" en /post-venta/repuestos
+                                busca por coincidencia exacta de cada uno de estos nombres.
+                            </p>
                         </div>
                         <div className="grid gap-2 col-span-4">
                             <Label>Comentarios <span className="text-muted-foreground text-xs">(nota manual; aparece en la ficha del producto)</span></Label>
