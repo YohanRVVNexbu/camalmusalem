@@ -174,7 +174,7 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
                         <div className="grid gap-3">
                             <Label>Video</Label>
                             <p className="text-xs text-muted-foreground">
-                                Subí el archivo (máx. 70 MB) <strong>o</strong> pega una URL externa (.mp4 público en Drive/S3/CDN).
+                                Máximo 70 MB por archivo. Si pesa más, comprímelo antes (HandBrake / ffmpeg).
                             </p>
                             <div className="grid gap-4 md:grid-cols-2">
                                 <VideoField
@@ -182,14 +182,14 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
                                     value={vehicle.video}
                                     uploading={isUploading(i, 'video')}
                                     onPick={(file) => handlePickVideo(i, 'video', file)}
-                                    onUrl={(url) => updateVehicle(i, 'video', url)}
+                                    onClear={() => updateVehicle(i, 'video', null)}
                                 />
                                 <VideoField
                                     label="Mobile (opcional)"
                                     value={vehicle.video_mobile}
                                     uploading={isUploading(i, 'video_mobile')}
                                     onPick={(file) => handlePickVideo(i, 'video_mobile', file)}
-                                    onUrl={(url) => updateVehicle(i, 'video_mobile', url)}
+                                    onClear={() => updateVehicle(i, 'video_mobile', null)}
                                     hint="Si lo dejas vacío, se usará el video desktop."
                                 />
                             </div>
@@ -241,27 +241,32 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
     );
 }
 
-// ─── Subcomponente: Video con upload + URL externa ─────────────────────────
+// ─── Subcomponente: Video upload ────────────────────────────────────────────
 function VideoField({
     label,
     value,
     uploading,
     onPick,
-    onUrl,
+    onClear,
     hint,
 }: {
     label: string;
     value: string | null;
     uploading: boolean;
     onPick: (file: File | null) => void;
-    onUrl: (url: string) => void;
+    onClear: () => void;
     hint?: string;
 }) {
     return (
         <div className="grid gap-2">
             <Label className="text-sm font-normal text-muted-foreground">{label}</Label>
             {value && (
-                <video src={value} className="h-20 rounded" muted controls />
+                <div className="flex items-center gap-2">
+                    <video src={value} className="h-20 rounded" muted controls />
+                    <Button type="button" variant="outline" size="sm" onClick={onClear}>
+                        Quitar
+                    </Button>
+                </div>
             )}
             <Input
                 type="file"
@@ -270,15 +275,6 @@ function VideoField({
                 onChange={(e) => onPick(e.target.files?.[0] ?? null)}
             />
             {uploading && <p className="text-xs text-muted-foreground">Subiendo video…</p>}
-            <div className="grid gap-1">
-                <Label className="text-xs font-normal text-muted-foreground">…o URL externa</Label>
-                <Input
-                    type="url"
-                    value={value ?? ''}
-                    placeholder="https://… .mp4"
-                    onChange={(e) => onUrl(e.target.value)}
-                />
-            </div>
             {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
         </div>
     );
