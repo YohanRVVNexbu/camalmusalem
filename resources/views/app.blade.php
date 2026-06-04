@@ -5,8 +5,13 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
-        <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-        <link rel="apple-touch-icon" href="{{ asset('favicon.png') }}">
+        {{-- Favicons con cache-busting. El ?v= se incrementa cuando cambia
+             el archivo para forzar al navegador a refrescar (los favicons
+             son ultra-cacheados — sin esto el cliente sigue viendo el viejo). --}}
+        <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon.png') }}?v=2">
+        <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon.png') }}?v=2">
+        <link rel="shortcut icon" href="{{ asset('favicon.png') }}?v=2">
+        <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon.png') }}?v=2">
 
         {{-- Inline script to detect system dark mode preference and apply it immediately --}}
         <script>
