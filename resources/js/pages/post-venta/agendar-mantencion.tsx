@@ -742,8 +742,13 @@ export default function AgendarMantencion({
                                                         return;
                                                     }
                                                     setSubmitting(true);
+                                                    // Enviamos el NOMBRE de la sucursal (no el id). El backend lo
+                                                    // usa para mostrarlo en el correo y para enrutar la notificación
+                                                    // al taller correcto (NotificationRouter mapea por "serena"/"ovalle").
+                                                    const tallerNombre = branches.find((b) => String(b.id) === taller)?.name ?? taller;
                                                     router.post('/post-venta/agendar-mantencion', {
-                                                        servicio, taller,
+                                                        servicio,
+                                                        taller: tallerNombre,
                                                         fecha: selectedDate ? format(selectedDate, 'yyyy-MM-dd') : '',
                                                         hora: selectedTime,
                                                         modelo, anio, patente, comentario,

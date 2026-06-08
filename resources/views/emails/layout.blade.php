@@ -61,13 +61,12 @@
     <div class="wrap">
         <div class="card">
             @php
-                // Embed inline en base64 para que el logo aparezca tanto en
-                // entornos locales (Mailtrap no resuelve camalmusalem.test)
-                // como en producción y todos los clientes de correo.
-                $logoPath = public_path('images/logo_blanco.png');
-                $logoSrc = file_exists($logoPath)
-                    ? 'data:image/png;base64,'.base64_encode(file_get_contents($logoPath))
-                    : asset('images/logo_blanco.png');
+                // URL absoluta del logo (basada en APP_URL). NO usar base64
+                // data: — Gmail y Outlook BLOQUEAN las imágenes inline data:
+                // y se ven rotas. Una URL https pública sí se carga en todos
+                // los clientes. Requiere que public/images/logo_blanco.png sea
+                // accesible y que APP_URL esté bien seteado en producción.
+                $logoSrc = asset('images/logo_blanco.png');
             @endphp
             <div class="header">
                 <img src="{{ $logoSrc }}" alt="Toyota Musalem" />

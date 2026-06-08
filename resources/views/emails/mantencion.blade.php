@@ -13,7 +13,7 @@
         </div>
         <div class="summary-row">
             <span class="summary-label">Taller</span>
-            <span class="summary-value">{{ $mantencion->taller === 'la-serena' ? 'Musalem La Serena' : 'Musalem Ovalle' }}</span>
+            <span class="summary-value">{{ $mantencion->taller }}</span>
         </div>
         <div class="summary-row">
             <span class="summary-label">Fecha</span>
