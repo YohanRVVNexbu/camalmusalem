@@ -41,11 +41,14 @@ return [
     ],
 
     /*
-     * Google Tag Manager. Solo se inyecta el snippet si GTM_ID está definido
-     * en el .env (formato "GTM-XXXXXXX"). Si está vacío, no se carga nada.
+     * Etiqueta de Google (Analytics / Ads / Tag Manager). Solo se inyecta el
+     * snippet si GOOGLE_TAG_ID está definido en el .env. Acepta:
+     *   - GA4 / Google Ads: "G-XXXXXXX" / "AW-XXXXXXX" → snippet gtag.js
+     *   - Tag Manager:      "GTM-XXXXXXX"              → contenedor GTM
+     * El blade (app.blade.php) elige el snippet según el prefijo del ID.
      */
-    'gtm' => [
-        'id' => env('GTM_ID'),
+    'google_tag' => [
+        'id' => env('GOOGLE_TAG_ID'),
     ],
 
     /*
