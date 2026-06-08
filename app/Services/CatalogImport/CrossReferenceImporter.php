@@ -70,8 +70,22 @@ class CrossReferenceImporter
             }
         }
 
-        $spreadsheet = $reader->load($file->getPathname());
+        // Si el archivo está corrupto, vacío o no es un Excel real, PhpSpreadsheet
+        // revienta con errores poco claros ("out of bounds index: 0", etc.). Lo
+        // convertimos en un mensaje legible (el controller lo muestra como flash).
+        try {
+            $spreadsheet = $reader->load($file->getPathname());
+        } catch (\Throwable $e) {
+            throw new \RuntimeException(
+                'No se pudo leer el archivo Excel. Verifica que sea el Cross Reference original '
+                . '(.xlsx) y que no esté dañado ni vacío.'
+            );
+        }
+
         $sheet = $spreadsheet->getSheetByName('Data') ?? $spreadsheet->getActiveSheet();
+        if (! $sheet) {
+            throw new \RuntimeException("El archivo no tiene la pestaña 'Data' (requerida por el formato Cross Reference de Toyota).");
+        }
         $rows = $sheet->toArray(null, true, true, false);
 
         $updated = 0;
