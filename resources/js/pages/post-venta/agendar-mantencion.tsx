@@ -757,9 +757,17 @@ export default function AgendarMantencion({
                                                             setSubmitting(false);
                                                             toast.success('¡Agendamiento confirmado! Te contactaremos pronto.');
                                                         },
-                                                        onError: () => {
+                                                        onError: (errors) => {
                                                             setSubmitting(false);
-                                                            toast.error('Hubo un problema al enviar. Intenta nuevamente.');
+                                                            // Mostramos el motivo REAL del rechazo (ej. fecha con
+                                                            // menos de 48h, RUT inválido, teléfono incompleto) en vez
+                                                            // de un mensaje genérico, para que el cliente sepa qué corregir.
+                                                            const first = Object.values(errors ?? {})[0];
+                                                            toast.error(
+                                                                typeof first === 'string' && first
+                                                                    ? first
+                                                                    : 'Hubo un problema al enviar. Revisa los datos e intenta nuevamente.',
+                                                            );
                                                         },
                                                     });
                                                 }
