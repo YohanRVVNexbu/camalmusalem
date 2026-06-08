@@ -20,6 +20,17 @@ class SeminuevosController extends Controller
         return $section->data ?? [];
     }
 
+    /**
+     * Logo de certificado Toyota administrable desde /admin/paginas/seminuevos.
+     * Retorna null si el cliente no subió uno → el front usa el sello estático.
+     */
+    private function certificateBadge(): ?string
+    {
+        $section = SiteSection::where('section', 'seminuevos_hero')->first();
+
+        return $section->data['certificate_badge'] ?? null;
+    }
+
     public function index()
     {
         // El admin edita esta sección desde /admin/paginas/seminuevos
@@ -69,8 +80,10 @@ class SeminuevosController extends Controller
             ->firstOrFail();
 
         return Inertia::render('seminuevos/show', [
-            'seminuevo' => $seminuevo,
-            'footer'    => $this->visibleSection('footer'),
+            'seminuevo'        => $seminuevo,
+            'footer'           => $this->visibleSection('footer'),
+            'certificateBadge' => $this->certificateBadge(),
+            'whatsapp'         => $this->visibleSection('seminuevos_whatsapp'),
         ]);
     }
 

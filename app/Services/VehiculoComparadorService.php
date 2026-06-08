@@ -148,7 +148,7 @@ class VehiculoComparadorService
                 'version' => $v->trim_name,
                 'year'    => (int) $v->model_year,
                 'price'   => (int) ($v->msrp_clp ?? 0),
-                'image'   => $v->hero_image ? asset('storage/' . $v->hero_image) : null,
+                'image'   => $this->resolveImage($v->hero_image),
                 'slug'    => $v->slug,
                 'href'    => '/nuevos/' . ($v->model?->slug ?? $v->slug),
             ]);
@@ -316,7 +316,7 @@ class VehiculoComparadorService
             'version'   => $v->trim_name,
             'year'      => (int) $v->model_year,
             'price'     => (int) ($v->msrp_clp ?? 0),
-            'image'     => $v->hero_image ? asset('storage/' . $v->hero_image) : null,
+            'image'     => $this->resolveImage($v->hero_image),
             'slug'      => $v->slug,
             'href'      => '/nuevos/' . ($v->model?->slug ?? $v->slug),
             'km'        => '0 km',
@@ -330,9 +330,22 @@ class VehiculoComparadorService
     /** Primera imagen disponible — usa featured_gallery primero, luego gallery. */
     private function primeraImagen(?array $gallery, ?array $featured): ?string
     {
-        $candidate = ($featured[0] ?? null) ?: ($gallery[0] ?? null);
-        if (! $candidate) return null;
-        if (str_starts_with($candidate, 'http')) return $candidate;
-        return asset('storage/' . ltrim($candidate, '/'));
+        return $this->resolveImage(($featured[0] ?? null) ?: ($gallery[0] ?? null));
+    }
+
+    /**
+     * Normaliza una ruta de imagen a una URL pública usable por el front.
+     * Las imágenes subidas vía SiteSettingsService::uploadFile ya vienen con
+     * el prefijo `/storage/...`, así que NO hay que volver a anteponerlo (eso
+     * generaba `/storage/storage/...` → imagen rota en el comparador). Solo las
+     * rutas relativas "peladas" (sin storage) reciben el prefijo.
+     */
+    private function resolveImage(?string $path): ?string
+    {
+        if (! $path) return null;
+        if (str_starts_with($path, 'http')) return $path;
+        if (str_starts_with($path, '/storage/')) return $path;
+        if (str_starts_with($path, 'storage/')) return '/' . $path;
+        return asset('storage/' . ltrim($path, '/'));
     }
 }

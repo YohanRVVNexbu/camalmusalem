@@ -7,7 +7,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useInView } from '@/hooks/use-in-view';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { pickResponsiveImage } from '@/lib/media';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, formatTelefono, isValidTelefono } from '@/lib/format';
+import { isValidRut } from '@/lib/rut';
 import { DayPicker } from 'react-day-picker';
 import { es } from 'date-fns/locale';
 import { format } from 'date-fns';
@@ -156,7 +157,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
     const [formVehiculo, setFormVehiculo] = useState('');
     const [formNombre, setFormNombre] = useState('');
     const [formRut, setFormRut] = useState('');
-    const [formTelefono, setFormTelefono] = useState('+569');
+    const [formTelefono, setFormTelefono] = useState('');
     const [formCorreo, setFormCorreo] = useState('');
     const [formLicencia, setFormLicencia] = useState(false);
     const [formPrivacidad, setFormPrivacidad] = useState(false);
@@ -504,7 +505,7 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                             Volver a inicio
                                         </button>
                                         <button
-                                            onClick={() => { setFormSent(false); setFormStep(1); setFormSucursal(''); setFormFecha(''); setFormDuracion(''); setFormVehiculo(''); setFormNombre(''); setFormRut(''); setFormTelefono('+569'); setFormCorreo(''); setFormLicencia(false); }}
+                                            onClick={() => { setFormSent(false); setFormStep(1); setFormSucursal(''); setFormFecha(''); setFormDuracion(''); setFormVehiculo(''); setFormNombre(''); setFormRut(''); setFormTelefono(''); setFormCorreo(''); setFormLicencia(false); }}
                                             className="cursor-pointer rounded-[60px] border border-black bg-transparent px-8 py-4 text-base leading-none text-black transition-opacity hover:opacity-70 lg:px-15 lg:py-4.75"
                                             style={{ fontFamily: '"Toyota Type"' }}
                                         >
@@ -760,6 +761,9 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                         className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none text-black focus:outline-none placeholder:text-black/60"
                                                         style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}
                                                     />
+                                                    {formRut && !isValidRut(formRut) && (
+                                                        <span className="text-xs text-red-500">Ingresa un RUT válido (ej: 12.345.678-9).</span>
+                                                    )}
                                                 </div>
 
                                                 {/* Teléfono */}
@@ -768,10 +772,14 @@ export default function Kinto({ footer, kinto_hero, kinto_pasos, kinto_vehiculos
                                                     <input
                                                         type="tel"
                                                         value={formTelefono}
-                                                        onChange={e => setFormTelefono(e.target.value)}
-                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none text-black focus:outline-none"
+                                                        onChange={e => setFormTelefono(formatTelefono(e.target.value))}
+                                                        placeholder="+56 9 1234 5678"
+                                                        className="w-full h-10 rounded-[60px] bg-white border border-transparent pl-5 pr-5 text-sm leading-none text-black focus:outline-none placeholder:text-black/60"
                                                         style={{ fontFamily: '"Toyota Type Book", "Toyota Type", sans-serif' }}
                                                     />
+                                                    {formTelefono && !isValidTelefono(formTelefono) && (
+                                                        <span className="text-xs text-red-500">Ingresa un teléfono válido (ej: +56 9 1234 5678).</span>
+                                                    )}
                                                 </div>
 
                                                 {/* Correo */}

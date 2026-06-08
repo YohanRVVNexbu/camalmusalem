@@ -33,6 +33,7 @@ export default function VehicleVersionsBulkImport() {
     const errors = props.errors ?? {};
 
     const [selectedBranches, setSelectedBranches] = useState<number[]>([]);
+    const [updateNames, setUpdateNames] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [preview, setPreview] = useState<PreviewData | null>(null);
     const [loadingPreview, setLoadingPreview] = useState(false);
@@ -102,6 +103,7 @@ export default function VehicleVersionsBulkImport() {
         setSubmitting(true);
         const fd = new FormData();
         fd.append('file', file);
+        fd.append('update_names', updateNames ? '1' : '0');
         selectedBranches.forEach((id) => fd.append('branch_ids[]', String(id)));
         router.post('/admin/vehicle-versions/bulk-import', fd, {
             forceFormData: true,
@@ -125,8 +127,9 @@ export default function VehicleVersionsBulkImport() {
                     <div>
                         <h1 className="text-2xl font-semibold">Importar lista de precios</h1>
                         <p className="text-sm text-muted-foreground">
-                            Sube el Excel "Lista de Precios sugeridos" de Toyota. Las versiones existentes solo actualizan precio
-                            y bonos; las nuevas se crean con datos básicos para completar a mano después.
+                            Sube el Excel "Lista de Precios sugeridos" de Toyota. Las versiones existentes actualizan precio
+                            y bonos (y opcionalmente su nombre, ver casilla al confirmar); las nuevas se crean con datos
+                            básicos para completar a mano después.
                         </p>
                     </div>
                     <Button asChild variant="outline">
@@ -270,6 +273,21 @@ export default function VehicleVersionsBulkImport() {
                                 </p>
                             )}
                         </div>
+
+                        <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-md border border-input bg-muted/30 p-3">
+                            <Checkbox
+                                checked={updateNames}
+                                onCheckedChange={(v) => setUpdateNames(!!v)}
+                                className="mt-0.5"
+                            />
+                            <span className="text-sm">
+                                <span className="font-medium">Actualizar también los nombres de versión desde el Excel</span>
+                                <span className="block text-xs text-muted-foreground">
+                                    Si lo marcas, las versiones existentes tomarán el nombre comercial de la columna "Versión"
+                                    del Excel (pisa el nombre actual). Si lo dejas sin marcar, solo se actualizan precio y bonos.
+                                </span>
+                            </span>
+                        </label>
 
                         <div className="mt-4 flex items-center justify-between">
                             <p className="text-xs text-muted-foreground">

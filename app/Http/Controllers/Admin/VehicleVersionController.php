@@ -160,7 +160,9 @@ class VehicleVersionController extends Controller
         $this->settings->deleteOldFile($vehicleVersion->hero_image);
         $vehicleVersion->delete();
 
-        return redirect('/admin/vehicle-versions')->with('success', 'Versión eliminada.');
+        // back() preserva el filtro de modelo (?model_id=X) en el que estaba el
+        // admin; si no hay referer, cae al index sin filtro.
+        return redirect()->back(fallback: '/admin/vehicle-versions')->with('success', 'Versión eliminada.');
     }
 
     /**
@@ -241,11 +243,13 @@ class VehicleVersionController extends Controller
             'file' => ['required', 'file', 'mimes:xlsx,xls'],
             'branch_ids' => ['required', 'array', 'min:1'],
             'branch_ids.*' => ['integer', 'exists:branches,id'],
+            'update_names' => ['boolean'],
         ]);
 
         $result = (new ListaPreciosMayo2026Importer)->import(
             $request->file('file'),
-            array_map('intval', $request->input('branch_ids', []))
+            array_map('intval', $request->input('branch_ids', [])),
+            $request->boolean('update_names'),
         );
 
         return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());

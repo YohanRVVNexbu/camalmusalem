@@ -4,7 +4,7 @@ import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useEffect, useState } from 'react';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, formatTelefono, isValidTelefono } from '@/lib/format';
 
 type Repuesto = { id: number; name: string; price: string | null; images: string[]; stock_la_serena: boolean; stock_ovalle: boolean; };
 
@@ -148,12 +148,15 @@ export default function RepuestoCotizar({ repuesto, footer }: { repuesto: Repues
                                                     <input
                                                         type="tel"
                                                         value={telefono}
-                                                        onChange={(e) => setTelefono(e.target.value)}
-                                                        placeholder="+569"
+                                                        onChange={(e) => setTelefono(formatTelefono(e.target.value))}
+                                                        placeholder="+56 9 1234 5678"
                                                         className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black outline-none placeholder:text-black/60 focus:border-black/20"
                                                         style={{ fontFamily: '"Toyota Type"' }}
                                                         required
                                                     />
+                                                    {telefono && !isValidTelefono(telefono) && (
+                                                        <span className="text-xs text-red-500">Ingresa un teléfono válido (ej: +56 9 1234 5678).</span>
+                                                    )}
                                                 </div>
                                             </div>
 

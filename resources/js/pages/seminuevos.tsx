@@ -57,6 +57,9 @@ function matchesCategory(v: Seminuevo, category: SeminuevoCategory): boolean {
 }
 
 export default function Seminuevos({ data, footer, seminuevos = [] }: { data: any | null; footer: any | null; seminuevos: Seminuevo[] }) {
+    // El logo de certificado lo administra el cliente desde /admin/paginas/seminuevos.
+    // Si no subió uno, usamos el sello estático por defecto.
+    const certBadge = data?.certificate_badge || certificateImg;
     const [filtersVisible, setFiltersVisible] = useState(true);
     const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
     const [viewMode, setViewMode] = useState<ViewMode>('grid');
@@ -224,7 +227,7 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                                                     fuel={v.fuel}
                                                     price={v.price_offer || v.price}
                                                     originalPrice={v.price_offer ? v.price : undefined}
-                                                    certificateBadge={v.certified ? certificateImg : undefined}
+                                                    certificateBadge={v.certified ? certBadge : undefined}
                                                     href={`/seminuevos/${v.slug ?? v.id}`}
                                                 />
                                             ))}
@@ -244,7 +247,7 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                                                     fuel={v.fuel}
                                                     price={v.price_offer || v.price}
                                                     originalPrice={v.price_offer ? v.price : undefined}
-                                                    certificateBadge={v.certified ? certificateImg : undefined}
+                                                    certificateBadge={v.certified ? certBadge : undefined}
                                                     href={`/seminuevos/${v.slug ?? v.id}`}
                                                 />
                                             ))}

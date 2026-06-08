@@ -27,6 +27,11 @@ type Cotizacion = {
     sync_attempts: number;
 };
 
+// Mensaje genérico para fallos de sincronización con Salesforce. El detalle
+// técnico NO se muestra al cliente — queda en los logs del servidor (ver
+// CotizacionSyncService).
+const SYNC_ERROR_MSG = 'Hubo un error al enviar el formulario.';
+
 export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizaciones: Cotizacion[] }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
 
@@ -49,7 +54,7 @@ export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizacio
         }
         if (c.sync_status === 'failed') {
             return (
-                <Badge variant="destructive" className="gap-1" title={c.sync_last_error ?? 'Falló sincronización'}>
+                <Badge variant="destructive" className="gap-1" title={SYNC_ERROR_MSG}>
                     <XCircle className="size-3" />SF falló{c.sync_attempts > 0 ? ` (${c.sync_attempts}x)` : ''}
                 </Badge>
             );
@@ -119,8 +124,8 @@ export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizacio
                                                 {c.version?.material_code && <>Material: <code>{c.version.material_code}</code></>}
                                             </p>
                                         )}
-                                        {c.sync_status === 'failed' && c.sync_last_error && (
-                                            <p className="text-xs text-red-600">⚠ {c.sync_last_error}</p>
+                                        {c.sync_status === 'failed' && (
+                                            <p className="text-xs text-amber-600">⚠ {SYNC_ERROR_MSG}</p>
                                         )}
                                         {c.comentarios && <p className="text-sm text-muted-foreground whitespace-pre-wrap">{c.comentarios}</p>}
                                     </div>

@@ -41,6 +41,14 @@ return [
     ],
 
     /*
+     * Google Tag Manager. Solo se inyecta el snippet si GTM_ID está definido
+     * en el .env (formato "GTM-XXXXXXX"). Si está vacío, no se carga nada.
+     */
+    'gtm' => [
+        'id' => env('GTM_ID'),
+    ],
+
+    /*
      * Integración Salesforce Toyota (Mulesoft Dealer Experience API).
      * Crea oportunidades en Salesforce cuando un cliente cotiza un vehículo
      * nuevo desde la web. Documentación: "Documentos de Integración - PATCH

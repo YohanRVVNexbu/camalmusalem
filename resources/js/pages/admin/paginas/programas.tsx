@@ -18,6 +18,80 @@ import defaultMantenimientoImg from '@images/programas-toyota/card_2_image.png?f
 
 const DEFAULT_GRID_IMGS = [defaultGrid1, defaultGrid2, defaultGrid3, defaultGrid4, defaultGrid5, defaultGrid6];
 
+// Páginas internas del sitio a las que el botón puede redirigir directamente
+// (el cliente las elige del selector en vez de escribir la ruta a mano).
+const SITE_PAGES: { label: string; value: string }[] = [
+    { label: 'Inicio', value: '/' },
+    { label: 'Vehículos nuevos', value: '/nuevos' },
+    { label: 'Seminuevos', value: '/seminuevos' },
+    { label: 'Comparar vehículos', value: '/seminuevos/comparar' },
+    { label: 'Arriendo KINTO', value: '/kinto' },
+    { label: 'Programas Toyota', value: '/programas' },
+    { label: 'Noticias', value: '/noticias' },
+    { label: 'Shorts', value: '/shorts' },
+    { label: 'Nosotros', value: '/nosotros' },
+    { label: 'Contacto', value: '/contacto' },
+    { label: 'Accesorios y Merch', value: '/post-venta/accesorios' },
+    { label: 'Repuestos', value: '/post-venta/repuestos' },
+    { label: 'Agendar mantención', value: '/post-venta/agendar-mantencion' },
+];
+
+/**
+ * Selector de destino del botón de una tarjeta. El cliente puede:
+ *  - elegir "Sin botón" (no se muestra el botón),
+ *  - elegir una página del sitio (el selector setea la ruta),
+ *  - o "Otra URL…" para pegar un link externo o una noticia específica.
+ * Internamente todo se guarda en el mismo campo `link` (string).
+ */
+function ButtonDestinationField({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+    const isKnownPage = SITE_PAGES.some((p) => p.value === value);
+    const isEmpty = value.trim() === '' || value.trim() === '#';
+    const [mode, setMode] = useState<'none' | 'page' | 'custom'>(
+        isEmpty ? 'none' : isKnownPage ? 'page' : 'custom',
+    );
+
+    const handleSelect = (sel: string) => {
+        if (sel === 'none') {
+            setMode('none');
+            onChange('');
+        } else if (sel === 'custom') {
+            setMode('custom'); // conserva el valor actual para que lo editen
+        } else {
+            setMode('page');
+            onChange(sel); // sel es la ruta de la página
+        }
+    };
+
+    const selectValue = mode === 'none' ? 'none' : mode === 'custom' ? 'custom' : value;
+
+    return (
+        <div className="grid gap-2">
+            <Label>Destino del botón</Label>
+            <select
+                value={selectValue}
+                onChange={(e) => handleSelect(e.target.value)}
+                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm outline-none focus-visible:ring-1 focus-visible:ring-ring"
+            >
+                <option value="none">— Sin botón —</option>
+                <optgroup label="Páginas del sitio">
+                    {SITE_PAGES.map((p) => (
+                        <option key={p.value} value={p.value}>{p.label}</option>
+                    ))}
+                </optgroup>
+                <option value="custom">Otra URL (externa o noticia específica)…</option>
+            </select>
+            {mode === 'custom' && (
+                <TextField
+                    label="URL"
+                    value={value}
+                    onChange={onChange}
+                    placeholder="https://… o /noticias/mi-noticia"
+                />
+            )}
+        </div>
+    );
+}
+
 export default function ProgramasPage({ sections }: { sections: Record<string, SectionProp> }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const page = 'programas';
@@ -153,7 +227,14 @@ function ProgramasGridSection({ page, s }: { page: string; s: SectionProp }) {
                         </div>
                         <TextField label="Título" value={item.title ?? ''} onChange={(v) => setItem(i, 'title', v)} />
                         <TextareaField label="Descripción" value={item.desc ?? ''} onChange={(v) => setItem(i, 'desc', v)} rows={3} />
-                        <TextField label="Enlace (URL)" value={item.link ?? ''} onChange={(v) => setItem(i, 'link', v)} placeholder="#" />
+                        <div className="grid gap-3 rounded-md border border-dashed p-3">
+                            <p className="text-xs text-muted-foreground">
+                                <strong>Botón de la tarjeta.</strong> Elige a qué página del sitio lleva, o pega
+                                una URL. Con "Sin botón" la tarjeta no muestra botón.
+                            </p>
+                            <TextField label="Texto del botón" value={item.button_label ?? ''} onChange={(v) => setItem(i, 'button_label', v)} placeholder="Ver más / Descargar app / Leer noticia" />
+                            <ButtonDestinationField value={item.link ?? ''} onChange={(v) => setItem(i, 'link', v)} />
+                        </div>
                     </div>
                 ))}
             </div>

@@ -120,9 +120,9 @@ export default function ProgramasPage({
                                     { img: grid4, title: 'Beyond Zero', desc: 'Una iniciativa de Toyota que reúne su visión de movilidad sostenible a través de vehículos híbridos y eléctricos, orientada a reducir el impacto ambiental y avanzar hacia la neutralidad de carbono.', link: '#' },
                                     { img: grid5, title: 'Toyota 10 Relax', desc: 'Entrega una cobertura adicional de hasta 5 años o 200.000 km, lo que ocurra primero.', link: '#' },
                                     { img: grid6, title: 'Llamado a revisión', desc: 'Campañas de revisión y reemplazo preventivo para ciertos modelos Toyota, realizadas con repuestos originales y orientadas a mantener la seguridad de tu vehículo.', link: '#' },
-                                ]) as { img: string; title: string; desc: string; link?: string }[];
+                                ]) as { img: string; title: string; desc: string; link?: string; button_label?: string }[];
                                 return items.map((it, idx) => ({ ...it, _fallback: fallbackImgs[idx % fallbackImgs.length] }));
-                            })().reduce<{ img: string; title: string; desc: string; link?: string; _fallback: string }[][]>((rows, item, i) => {
+                            })().reduce<{ img: string; title: string; desc: string; link?: string; button_label?: string; _fallback: string }[][]>((rows, item, i) => {
                                 if (i % 2 === 0) rows.push([item]);
                                 else rows[rows.length - 1].push(item);
                                 return rows;
@@ -164,10 +164,10 @@ export default function ProgramasPage({
                                                     href={link}
                                                     target={isExternal ? '_blank' : undefined}
                                                     rel={isExternal ? 'noopener noreferrer' : undefined}
-                                                    className="flex w-full items-center justify-between rounded-[60px] bg-black p-1 transition hover:bg-black/85 lg:w-38"
+                                                    className="flex w-full items-center justify-between gap-2.5 rounded-[60px] bg-black p-1 transition hover:bg-black/85 lg:w-auto lg:min-w-38"
                                                 >
                                                     <span className="pl-2.5 text-base leading-none text-white" style={{ fontFamily: '"Toyota Type"' }}>
-                                                        Ver más
+                                                        {item.button_label?.trim() || 'Ver más'}
                                                     </span>
                                                     <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-white">
                                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="14" viewBox="0 0 18 14" fill="none">

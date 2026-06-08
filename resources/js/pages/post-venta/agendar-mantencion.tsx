@@ -6,6 +6,8 @@ import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
+import { formatTelefono, isValidTelefono } from '@/lib/format';
+import { isValidRut } from '@/lib/rut';
 import { useIsMobile } from '@/hooks/use-mobile';
 import useEmblaCarousel from 'embla-carousel-react';
 import { DayPicker } from 'react-day-picker';
@@ -26,7 +28,7 @@ const calendarStyles = `
     .rdp-button_next, .rdp-button_previous { border: 1px solid rgba(0,0,0,0.2); border-radius: 50%; width: 32px; height: 32px; }
     .rdp-day_button:hover:not(.rdp-selected) { background: rgba(0,0,0,0.08); }
 `;
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import heroImg from '@images/mantencion/hero-imagen.png?format=webp';
 import ejemploVideo from '@images/seminuevos/ejemplo-video.png?format=webp';
 import card1Img from '@images/mantencion/card_1.png?format=webp';
@@ -131,6 +133,22 @@ export default function AgendarMantencion({
     const [selectedDate, setSelectedDate] = useState<Date | undefined>();
     const [selectedTime, setSelectedTime] = useState('');
     const [showCalendar, setShowCalendar] = useState(false);
+
+    // Reglas de agendamiento (pedido del área de servicio técnico):
+    //  - Mínimo 48 hrs de anticipación: la fecha más temprana reservable es
+    //    "ahora + 48h". Como cada día del calendario se compara a las 00:00, el
+    //    día umbral queda deshabilitado salvo que su medianoche ya pase las 48h,
+    //    garantizando siempre ≥48h reales de anticipación.
+    //  - Solo días hábiles (lunes a viernes): se bloquean sábado y domingo.
+    const minBookingDate = useMemo(() => {
+        const d = new Date();
+        d.setHours(d.getHours() + 48);
+        return d;
+    }, []);
+    const disabledDays = useMemo(
+        () => [{ before: minBookingDate }, { dayOfWeek: [0, 6] }],
+        [minBookingDate],
+    );
     const calendarRef = useRef<HTMLDivElement>(null);
 
     // Step 1
@@ -513,7 +531,7 @@ export default function AgendarMantencion({
                                                                         }
                                                                     }}
                                                                     locale={es}
-                                                                    disabled={{ before: new Date() }}
+                                                                    disabled={disabledDays}
                                                                 />
                                                                 <div className="mt-3 flex flex-col gap-2 border-t border-black/10 pt-3">
                                                                     <div className="flex items-center justify-between">
@@ -626,16 +644,22 @@ export default function AgendarMantencion({
                                                             placeholder="12.345.678-9"
                                                             className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 py-2.5 text-sm leading-none font-normal text-black placeholder:text-black/60 outline-none"
                                                         />
+                                                        {rut && !isValidRut(rut) && (
+                                                            <span className="text-xs text-red-500">Ingresa un RUT válido (ej: 12.345.678-9).</span>
+                                                        )}
                                                     </div>
                                                     <div className="flex flex-col gap-2.5">
                                                         <span className="text-sm leading-none font-normal text-black">Teléfono</span>
                                                         <input
                                                             type="tel"
                                                             value={telefono}
-                                                            onChange={(e) => setTelefono(e.target.value)}
-                                                            placeholder="+569"
+                                                            onChange={(e) => setTelefono(formatTelefono(e.target.value))}
+                                                            placeholder="+56 9 1234 5678"
                                                             className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 py-2.5 text-sm leading-none font-normal text-black placeholder:text-black/60 outline-none"
                                                         />
+                                                        {telefono && !isValidTelefono(telefono) && (
+                                                            <span className="text-xs text-red-500">Ingresa un teléfono válido (ej: +56 9 1234 5678).</span>
+                                                        )}
                                                     </div>
                                                     <div className="flex flex-col gap-2.5">
                                                         <span className="text-sm leading-none font-normal text-black">Correo</span>

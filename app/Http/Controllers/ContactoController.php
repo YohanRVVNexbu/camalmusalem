@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\ContactoMail;
 use App\Models\Contacto;
 use App\Rules\Rut;
+use App\Rules\Telefono;
 use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -32,7 +33,7 @@ class ContactoController extends Controller
             'nombre'   => ['required', 'string', 'max:255'],
             'asunto'   => ['required', 'string', 'max:255'],
             'email'    => ['required', 'email', 'max:255'],
-            'telefono' => ['nullable', 'string', 'max:50'],
+            'telefono' => ['nullable', 'string', 'max:50', new Telefono],
             'rut'      => ['required', 'string', 'max:20', new Rut],
             'mensaje'  => ['required', 'string'],
             'privacidad' => ['accepted'],

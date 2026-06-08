@@ -5,7 +5,8 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { pickResponsiveImage } from '@/lib/media';
-import { formatRut } from '@/lib/rut';
+import { formatRut, isValidRut } from '@/lib/rut';
+import { formatTelefono, isValidTelefono } from '@/lib/format';
 import { toast } from 'sonner';
 import formImgDefault from '@images/contacto/form_image.png?format=webp';
 
@@ -205,12 +206,16 @@ export default function Contacto({ footer, contacto_info }: { footer: any | null
                                                 </label>
                                                 <input
                                                     type="tel"
-                                                    placeholder="+569"
+                                                    placeholder="+56 9 1234 5678"
                                                     value={data.telefono}
-                                                    onChange={(e) => setData('telefono', e.target.value)}
+                                                    onChange={(e) => setData('telefono', formatTelefono(e.target.value))}
                                                     className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black placeholder-black/60 outline-none"
                                                     style={{ fontFamily: '"Toyota Type"' }}
                                                 />
+                                                {data.telefono && !isValidTelefono(data.telefono) && (
+                                                    <span className="text-xs text-red-500">Ingresa un teléfono válido (ej: +56 9 1234 5678).</span>
+                                                )}
+                                                {errors.telefono && <span className="text-xs text-red-500">{errors.telefono}</span>}
                                             </div>
                                         </div>
 
@@ -230,6 +235,9 @@ export default function Contacto({ footer, contacto_info }: { footer: any | null
                                                 className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black placeholder-black/60 outline-none"
                                                 style={{ fontFamily: '"Toyota Type"' }}
                                             />
+                                            {data.rut && !isValidRut(data.rut) && (
+                                                <span className="text-xs text-red-500">Ingresa un RUT válido (ej: 12.345.678-9).</span>
+                                            )}
                                             {errors.rut && <span className="text-xs text-red-500">{errors.rut}</span>}
                                         </div>
                                     </div>

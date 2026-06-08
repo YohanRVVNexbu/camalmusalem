@@ -8,6 +8,7 @@ use App\Models\Seminuevo;
 use App\Models\VehicleModel;
 use App\Models\VehicleVersion;
 use App\Rules\Rut;
+use App\Rules\Telefono;
 use App\Services\NotificationRouter;
 use App\Services\Salesforce\CotizacionSyncService;
 use Illuminate\Http\Request;
@@ -37,7 +38,7 @@ class CotizacionVehiculoController extends Controller
             'branch_id'   => ['nullable', 'integer', 'exists:branches,id'],
             'nombre'      => ['required', 'string', 'max:255'],
             'email'       => ['required', 'email', 'max:255'],
-            'telefono'    => ['required', 'string', 'max:50'],
+            'telefono'    => ['required', 'string', 'max:50', new Telefono],
             'rut'         => ['required', 'string', 'max:20', new Rut],
             'comentarios' => ['nullable', 'string'],
             'privacidad'  => ['accepted'],

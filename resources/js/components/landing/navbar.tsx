@@ -1,10 +1,11 @@
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import logoBlanco from '@images/logo_blanco.png?format=webp';
 import logoNegro from '@images/logo_negro.png?format=webp';
 import navAgendarMantencion from '@images/navbar/agendar_mantencion.png?format=webp';
 import navAccesorios from '@images/navbar/accesorios.png?format=webp';
 import navRepuestos from '@images/navbar/repuestos.png?format=webp';
 import { useEffect, useState } from 'react';
+import { WhatsappButton } from '@/components/landing/whatsapp-button';
 
 // ── Iconos ────────────────────────────────────────────────────────────────────
 
@@ -101,6 +102,18 @@ export function Navbar({ variant = 'transparent', detailBar }: NavbarProps) {
     const [activeSection, setActiveSection] = useState<SidebarSection>('default');
     const [openAccordions, setOpenAccordions] = useState<Set<string>>(new Set());
     const isWhite = variant === 'white';
+
+    // Imágenes del menú Post Venta sincronizadas con la portada (hero) de cada
+    // página, compartidas global vía HandleInertiaRequests. Si una está vacía,
+    // se usa la imagen estática por defecto del link.
+    const { postventaMenuImages } = usePage<{
+        postventaMenuImages?: { mantencion?: string | null; accesorios?: string | null; repuestos?: string | null };
+    }>().props;
+    const postventaImageByHref: Record<string, string | null | undefined> = {
+        '/post-venta/agendar-mantencion': postventaMenuImages?.mantencion,
+        '/post-venta/accesorios': postventaMenuImages?.accesorios,
+        '/post-venta/repuestos': postventaMenuImages?.repuestos,
+    };
 
     // Desktop sidebar open/close
     const openMenu = (section: SidebarSection = 'default') => {
@@ -238,6 +251,8 @@ export function Navbar({ variant = 'transparent', detailBar }: NavbarProps) {
                         onClick={(e) => e.stopPropagation()}
                     >
                         {sidebarLinks[activeSection].map((link, i) => {
+                            // La imagen del hero (admin) tiene prioridad; si no hay, cae a la estática.
+                            const image = postventaImageByHref[link.href] || link.image;
                             const cls   = `group flex shrink-0 flex-col items-end self-stretch transition-all duration-400 ease-out ${menuVisible ? 'translate-x-0 opacity-100' : 'translate-x-20 opacity-0'}`;
                             const delay = { transitionDelay: menuVisible ? `${150 + i * 60}ms` : '0ms' };
                             const content = (
@@ -245,13 +260,13 @@ export function Navbar({ variant = 'transparent', detailBar }: NavbarProps) {
                                     <div className="flex h-14.5 items-center justify-end self-stretch rounded-[60px] px-5 py-2.5">
                                         <span className={`relative text-base leading-none ${sidebarText}`}>
                                             {link.label}
-                                            {!link.image && <span className={`absolute right-0 -bottom-1 h-px w-0 ${sidebarLine} transition-all duration-300 ease-out group-hover:w-full`} />}
+                                            {!image && <span className={`absolute right-0 -bottom-1 h-px w-0 ${sidebarLine} transition-all duration-300 ease-out group-hover:w-full`} />}
                                         </span>
                                     </div>
-                                    {link.image && (
+                                    {image && (
                                         <div className="grid grid-rows-[0fr] transition-all duration-400 ease-out group-hover:grid-rows-[1fr]">
                                             <div className="overflow-hidden">
-                                                <img src={link.image} alt={link.label} className="mt-1 w-full rounded-[15px] object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+                                                <img src={image} alt={link.label} className="mt-1 w-full rounded-[15px] object-cover opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
                                             </div>
                                         </div>
                                     )}
@@ -379,6 +394,11 @@ export function Navbar({ variant = 'transparent', detailBar }: NavbarProps) {
                     </div>
                 )}
             </nav>
+
+            {/* Botón flotante de WhatsApp: vive en el Navbar para aparecer en
+                TODAS las vistas públicas (no solo home). Su data llega global
+                vía HandleInertiaRequests → whatsappButton. */}
+            <WhatsappButton />
         </>
     );
 }

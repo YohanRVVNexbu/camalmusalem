@@ -60,6 +60,45 @@ class HandleInertiaRequests extends Middleware
             'whatsappButton'   => fn () => $this->whatsappButton(),
             'maintenanceActive' => fn () => $this->maintenanceActive(),
             'horariosAtencion' => fn () => $this->horariosAtencion(),
+            'postventaMenuImages' => fn () => $this->postventaMenuImages(),
+            'crossReferenceIva' => fn () => $this->crossReferenceIva(),
+        ];
+    }
+
+    /**
+     * Último % de IVA usado en el import Cross Reference (para precargar el
+     * campo). Default 19% (IVA estándar de Chile) la primera vez.
+     */
+    private function crossReferenceIva(): float
+    {
+        $section = SiteSection::where('section', 'cross_reference_settings')->first();
+        $value = $section?->data['iva_percent'] ?? 19;
+
+        return is_numeric($value) ? (float) $value : 19;
+    }
+
+    /**
+     * Imágenes del menú Post Venta del navbar. El cliente pidió que se
+     * sincronicen con la portada (hero) de cada página, así no tiene que
+     * mantener dos imágenes por sección. Devuelve la `hero_image` de cada
+     * sección (o null si está vacía → el navbar usa su imagen estática por
+     * defecto). Se comparte global porque el navbar vive en TODAS las vistas.
+     *
+     * @return array{mantencion: ?string, accesorios: ?string, repuestos: ?string}
+     */
+    private function postventaMenuImages(): array
+    {
+        $heroImage = function (string $sectionKey): ?string {
+            $section = SiteSection::where('section', $sectionKey)->first();
+            $img = $section?->data['hero_image'] ?? null;
+
+            return is_string($img) && $img !== '' ? $img : null;
+        };
+
+        return [
+            'mantencion' => $heroImage('mantencion_hero'),
+            'accesorios' => $heroImage('accesorios_hero'),
+            'repuestos'  => $heroImage('repuestos_hero'),
         ];
     }
 

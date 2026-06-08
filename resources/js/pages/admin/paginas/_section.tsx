@@ -217,11 +217,13 @@ export function ImageField({
     currentUrl,
     defaultUrl,
     onChange,
+    previewClassName = 'h-40 w-full rounded-lg object-cover',
 }: {
     label: string;
     currentUrl: string;
     defaultUrl?: string;
     onChange: (file: File | null) => void;
+    previewClassName?: string;
 }) {
     const [pickedFile, setPickedFile] = useState<File | null>(null);
     const previewUrl = pickedFile ? URL.createObjectURL(pickedFile) : (currentUrl || defaultUrl);
@@ -229,8 +231,8 @@ export function ImageField({
         <div className="grid gap-2">
             <Label>{label}</Label>
             {previewUrl && (
-                <div className="relative">
-                    <img src={previewUrl} className="h-40 w-full rounded-lg object-cover" alt="" />
+                <div className="relative inline-block">
+                    <img src={previewUrl} className={previewClassName} alt="" />
                     {pickedFile && (
                         <span className="absolute bottom-2 left-2 rounded bg-primary/80 px-2 py-0.5 text-xs text-white">
                             Nueva imagen seleccionada

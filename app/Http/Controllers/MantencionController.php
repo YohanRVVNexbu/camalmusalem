@@ -4,8 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Mail\MantencionMail;
 use App\Models\MantencionAgendamiento;
+use App\Rules\Rut;
+use App\Rules\Telefono;
 use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
@@ -41,15 +44,27 @@ class MantencionController extends Controller
         $request->validate([
             'servicio'   => ['required', 'string', 'max:255'],
             'taller'     => ['required', 'string', 'max:255'],
-            'fecha'      => ['required', 'date'],
+            // Regla pedida por servicio técnico: solo lunes a viernes y con un
+            // mínimo de 48 hrs de anticipación. Refuerza la restricción del
+            // calendario del front por si el request llega manipulado.
+            'fecha'      => ['required', 'date', function ($attribute, $value, $fail) {
+                $fecha = Carbon::parse($value);
+                if (in_array($fecha->dayOfWeek, [Carbon::SATURDAY, Carbon::SUNDAY], true)) {
+                    $fail('Solo se pueden agendar citas de lunes a viernes.');
+                    return;
+                }
+                if ($fecha->copy()->startOfDay()->lt(now()->addHours(48))) {
+                    $fail('La reserva debe solicitarse con al menos 48 horas de anticipación.');
+                }
+            }],
             'hora'       => ['required', 'string', 'max:10'],
             'modelo'     => ['required', 'string', 'max:255'],
             'anio'       => ['required', 'string', 'max:10'],
             'patente'    => ['required', 'string', 'max:20'],
             'comentario' => ['nullable', 'string'],
             'nombre'     => ['required', 'string', 'max:255'],
-            'rut'        => ['required', 'string', 'max:20'],
-            'telefono'   => ['required', 'string', 'max:50'],
+            'rut'        => ['required', 'string', 'max:20', new Rut],
+            'telefono'   => ['required', 'string', 'max:50', new Telefono],
             'correo'     => ['required', 'email', 'max:255'],
             'privacidad' => ['accepted'],
         ]);

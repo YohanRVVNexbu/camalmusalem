@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Mail\CotizacionMerchMail;
 use App\Models\CotizacionMerch;
 use App\Models\Merch;
+use App\Rules\Telefono;
 use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -31,7 +32,7 @@ class CotizacionMerchController extends Controller
         $request->validate([
             'nombre'      => ['required', 'string', 'max:255'],
             'email'       => ['required', 'email', 'max:255'],
-            'telefono'    => ['required', 'string', 'max:50'],
+            'telefono'    => ['required', 'string', 'max:50', new Telefono],
             'sucursal'    => ['required', 'string', 'max:100'],
             'comentarios' => ['nullable', 'string'],
             'privacidad'  => ['accepted'],

@@ -113,6 +113,7 @@ class PostVentaController extends Controller
         return Inertia::render('post-venta/repuesto-show', [
             'repuesto' => Repuesto::where('is_visible', true)->findOrFail($id),
             'footer'   => $this->section('footer'),
+            'whatsapp' => $this->section('repuestos_whatsapp'),
         ]);
     }
 

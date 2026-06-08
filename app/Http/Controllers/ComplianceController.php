@@ -8,6 +8,7 @@ use App\Models\Denuncia;
 use App\Models\DenunciaAdjunto;
 use App\Models\SiteSection;
 use App\Rules\Rut;
+use App\Rules\Telefono;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Log;
@@ -237,7 +238,7 @@ class ComplianceController extends Controller
         if (! $esAnonima) {
             $rules['nombre']   = ['required', 'string', 'max:255'];
             $rules['email']    = ['required', 'email', 'max:255'];
-            $rules['telefono'] = ['nullable', 'string', 'max:50'];
+            $rules['telefono'] = ['nullable', 'string', 'max:50', new Telefono];
             $rules['rut']      = ['nullable', 'string', 'max:20', new Rut];
         }
 

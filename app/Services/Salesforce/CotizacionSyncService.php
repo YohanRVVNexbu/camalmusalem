@@ -203,6 +203,15 @@ class CotizacionSyncService
 
     private function markFailed(CotizacionVehiculo $cot, string $reason): void
     {
+        // El detalle técnico va al log del servidor; en el panel solo se muestra
+        // un mensaje genérico ("Hubo un error al enviar el formulario").
+        Log::warning('Salesforce sync falló', [
+            'cotizacion_id' => $cot->id,
+            'branch_id'     => $cot->branch_id,
+            'version_id'    => $cot->version_id,
+            'reason'        => $reason,
+        ]);
+
         $cot->update([
             'sync_status'     => 'failed',
             'sync_last_error' => substr($reason, 0, 1000),

@@ -3,7 +3,7 @@ import { toast } from 'sonner';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { useEffect, useState } from 'react';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, formatTelefono, isValidTelefono } from '@/lib/format';
 
 type Accesorio = { id: number; name: string; price: string | null; images: string[]; };
 
@@ -141,12 +141,15 @@ export default function AccesorioCotizar({ accesorio, footer }: { accesorio: Acc
                                                     <input
                                                         type="tel"
                                                         value={telefono}
-                                                        onChange={(e) => setTelefono(e.target.value)}
-                                                        placeholder="+569"
+                                                        onChange={(e) => setTelefono(formatTelefono(e.target.value))}
+                                                        placeholder="+56 9 1234 5678"
                                                         className="h-10 w-full rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black outline-none placeholder:text-black/60 focus:border-black/20"
                                                         style={{ fontFamily: '"Toyota Type"' }}
                                                         required
                                                     />
+                                                    {telefono && !isValidTelefono(telefono) && (
+                                                        <span className="text-xs text-red-500">Ingresa un teléfono válido (ej: +56 9 1234 5678).</span>
+                                                    )}
                                                 </div>
                                             </div>
 

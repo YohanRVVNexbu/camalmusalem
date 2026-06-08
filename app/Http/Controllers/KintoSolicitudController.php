@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Mail\KintoSolicitudMail;
 use App\Models\KintoSolicitud;
+use App\Rules\Rut;
+use App\Rules\Telefono;
 use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -32,8 +34,8 @@ class KintoSolicitudController extends Controller
             'duracion_tipo'=> ['required', 'in:horas,dias'],
             'vehiculo'     => ['required', 'string', 'max:100'],
             'nombre'       => ['required', 'string', 'max:255'],
-            'rut'          => ['required', 'string', 'max:20'],
-            'telefono'     => ['required', 'string', 'max:50'],
+            'rut'          => ['required', 'string', 'max:20', new Rut],
+            'telefono'     => ['required', 'string', 'max:50', new Telefono],
             'correo'       => ['required', 'email', 'max:255'],
             'privacidad'   => ['accepted'],
         ]);

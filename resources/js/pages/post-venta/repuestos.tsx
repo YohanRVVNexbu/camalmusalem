@@ -5,7 +5,7 @@ import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
 import { BranchesSection } from '@/components/landing/branches-section';
 import { isVideoUrl, pickResponsiveImage } from '@/lib/media';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, formatTelefono, isValidTelefono } from '@/lib/format';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useEffect, useMemo, useState } from 'react';
 import heroImg from '@images/repuestos/hero_image.png?format=webp';
@@ -447,13 +447,16 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                                                 <div className="flex flex-col gap-2.5">
                                                     <label className="text-sm leading-none text-black">Teléfono</label>
                                                     <input
-                                                        type="text"
+                                                        type="tel"
                                                         value={encargoTelefono}
-                                                        onChange={(e) => setEncargoTelefono(e.target.value)}
-                                                        placeholder="+569"
+                                                        onChange={(e) => setEncargoTelefono(formatTelefono(e.target.value))}
+                                                        placeholder="+56 9 1234 5678"
                                                         required
                                                         className="h-10 w-full rounded-[60px] bg-white px-5 text-sm text-black outline-none placeholder:text-black/60"
                                                     />
+                                                    {encargoTelefono && !isValidTelefono(encargoTelefono) && (
+                                                        <span className="text-xs text-red-500">Ingresa un teléfono válido (ej: +56 9 1234 5678).</span>
+                                                    )}
                                                 </div>
                                                 <div className="flex flex-col gap-2.5">
                                                     <label className="text-sm leading-none text-black">Modelo del vehículo</label>

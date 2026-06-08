@@ -6,7 +6,7 @@ export type ViewMode = 'grid' | 'list';
 export type SortMode = '' | 'price-asc' | 'price-desc' | 'year-desc' | 'year-asc' | 'km-asc';
 
 export const PER_PAGE_OPTIONS = [15, 25, 50, 100] as const;
-export type PerPage = typeof PER_PAGE_OPTIONS[number];
+export type PerPage = number;
 
 type ToolbarProps = {
     filtersVisible: boolean;
@@ -17,6 +17,7 @@ type ToolbarProps = {
     onChangeSort?: (mode: SortMode) => void;
     perPage?: PerPage;
     onChangePerPage?: (n: PerPage) => void;
+    perPageOptions?: readonly number[];
 };
 
 export function Toolbar({
@@ -28,6 +29,7 @@ export function Toolbar({
     onChangeSort,
     perPage,
     onChangePerPage,
+    perPageOptions = PER_PAGE_OPTIONS,
 }: ToolbarProps) {
     return (
         <div className="mt-10 hidden items-center justify-between lg:flex">
@@ -69,7 +71,7 @@ export function Toolbar({
                             className="cursor-pointer appearance-none rounded-[60px] border border-black bg-[#EAEAF1] py-2.5 pl-5 pr-10 text-base leading-none text-black outline-none"
                             aria-label="Vehículos por página"
                         >
-                            {PER_PAGE_OPTIONS.map((n) => (
+                            {perPageOptions.map((n) => (
                                 <option key={n} value={n}>Mostrar {n}</option>
                             ))}
                         </select>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Mail\SolicitudEncargoRepuestoMail;
 use App\Models\SolicitudEncargoRepuesto;
+use App\Rules\Telefono;
 use App\Services\NotificationRouter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +29,7 @@ class SolicitudEncargoRepuestoController extends Controller
         $request->validate([
             'nombre'          => ['required', 'string', 'max:255'],
             'email'           => ['required', 'email', 'max:255'],
-            'telefono'        => ['required', 'string', 'max:50'],
+            'telefono'        => ['required', 'string', 'max:50', new Telefono],
             'sucursal'        => ['required', 'string', 'max:255'],
             'modelo'          => ['nullable', 'string', 'max:100'],
             'marca'           => ['nullable', 'string', 'max:100'],

@@ -222,7 +222,7 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
     type NuevosCategory = typeof NUEVOS_CATEGORIES[number];
     const [activeCategory, setActiveCategory] = useState<NuevosCategory | null>(null);
     const [sortMode, setSortMode] = useState<SortMode>('');
-    const [perPage, setPerPage] = useState<PerPage>(15);
+    const [perPage, setPerPage] = useState<PerPage>(10);
 
     const matchesNuevosCategory = (v: VehicleWithFilter, cat: NuevosCategory): boolean => {
         const f = v._filter;
@@ -503,6 +503,7 @@ export default function Nuevos({ data, footer, vehicles = [], heroCards: heroCar
                         onChangeSort={setSortMode}
                         perPage={perPage}
                         onChangePerPage={setPerPage}
+                        perPageOptions={[10, 25, 50, 100]}
                     />
 
                     {/* Grid section: filters + products */}

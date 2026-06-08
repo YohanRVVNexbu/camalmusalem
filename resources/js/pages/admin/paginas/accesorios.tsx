@@ -1,5 +1,6 @@
 import { Head, usePage } from '@inertiajs/react';
 import { useState } from 'react';
+import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
 import { ResponsiveMediaField, SectionCard, SectionProp, TextField, TextareaField, VisibilityField, resetSection, submitSection } from './_section';
@@ -30,29 +31,79 @@ export default function AccesoriosPage({ sections }: { sections: Record<string, 
     );
 }
 
+type WaContact = { label: string; phone: string };
+
 function WhatsappSection({ page, s }: { page: string; s?: SectionProp }) {
-    const [data, setData] = useState(s?.data ?? { phone: '', message: 'Hola, quiero cotizar por el producto' });
+    // Estructura nueva: lista de números por sucursal. Si en BD solo existe el
+    // número viejo (`phone`), lo migramos a un contacto. Si no hay nada, se
+    // arranca con las dos sucursales para que el cliente solo complete números.
+    const initialContacts: WaContact[] = (() => {
+        const c = s?.data?.contacts;
+        if (Array.isArray(c) && c.length > 0) {
+            return c.map((x: any) => ({ label: x.label ?? '', phone: x.phone ?? '' }));
+        }
+        if (s?.data?.phone) return [{ label: 'WhatsApp', phone: s.data.phone }];
+        return [{ label: 'Sucursal La Serena', phone: '' }, { label: 'Sucursal Ovalle', phone: '' }];
+    })();
+
+    const [contacts, setContacts] = useState<WaContact[]>(initialContacts);
+    const [message, setMessage] = useState<string>(s?.data?.message ?? 'Hola, quiero cotizar por el producto');
     const [visible, setVisible] = useState(s?.is_visible ?? true);
     const [processing, setProcessing] = useState(false);
-    const set = (k: string, v: any) => setData((d: any) => ({ ...d, [k]: v }));
 
     if (!s) return null;
+
+    const setContact = (i: number, k: keyof WaContact, v: string) =>
+        setContacts((cs) => cs.map((c, idx) => (idx === i ? { ...c, [k]: v } : c)));
+    const addContact = () => setContacts((cs) => [...cs, { label: '', phone: '' }]);
+    const removeContact = (i: number) => setContacts((cs) => cs.filter((_, idx) => idx !== i));
+
+    const onSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        // Guardamos solo los contactos con teléfono. Limpiamos el `phone` viejo.
+        const data = {
+            contacts: contacts.filter((c) => c.phone.trim() !== '').map((c) => ({ label: c.label.trim(), phone: c.phone.trim() })),
+            message,
+        };
+        submitSection(page, 'accesorios_whatsapp', data, visible, {}, setProcessing);
+    };
 
     return (
         <SectionCard page={page} sectionKey="accesorios_whatsapp" label="Botón WhatsApp (detalle de productos)" isVisible={visible}
             processing={processing}
-            onSubmit={(e) => { e.preventDefault(); submitSection(page, 'accesorios_whatsapp', data, visible, {}, setProcessing); }}
+            onSubmit={onSubmit}
             onReset={() => resetSection(page, 'accesorios_whatsapp')}>
             <p className="text-sm text-muted-foreground">
-                Aparece en el detalle (show) de cada Accesorio y Merch. Si lo ocultas, el botón desaparece de esas vistas.
+                Aparece en el detalle (show) de cada Accesorio y Merch. Si cargas <strong>dos o más</strong> números,
+                al pinchar el botón el cliente <strong>elige la sucursal</strong>. Con un solo número, abre WhatsApp directo.
             </p>
+            <div className="rounded-md border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
+                <strong>Para deshabilitar el botón</strong> (mientras no tengan un número definitivo): desmarca
+                "Publicado" aquí abajo y guarda. El botón desaparece de todas las fichas. Cuando lo vuelvas a marcar, reaparece.
+            </div>
             <VisibilityField checked={visible} onChange={setVisible} />
             <Separator />
-            <TextField label="Teléfono (incluye código país, ej. +56912345678)" value={data.phone ?? ''} onChange={(v) => set('phone', v)} />
+            <div className="flex flex-col gap-3">
+                <Label>Números por sucursal</Label>
+                {contacts.map((c, i) => (
+                    <div key={i} className="grid gap-2 rounded-lg border p-3">
+                        <TextField label="Nombre de la sucursal (ej. Sucursal La Serena)" value={c.label} onChange={(v) => setContact(i, 'label', v)} />
+                        <TextField label="Teléfono (con código país, ej. +56912345678)" value={c.phone} onChange={(v) => setContact(i, 'phone', v)} />
+                        {contacts.length > 1 && (
+                            <button type="button" onClick={() => removeContact(i)} className="self-start text-xs text-destructive underline">
+                                Quitar este número
+                            </button>
+                        )}
+                    </div>
+                ))}
+                <button type="button" onClick={addContact} className="self-start rounded-md border px-3 py-1.5 text-sm hover:bg-accent">
+                    + Agregar número
+                </button>
+            </div>
             <TextareaField
                 label="Mensaje pre-cargado (se le agrega el nombre del producto; usa {producto} para ubicarlo en el texto)"
-                value={data.message ?? ''}
-                onChange={(v) => set('message', v)}
+                value={message}
+                onChange={setMessage}
                 rows={2}
             />
         </SectionCard>

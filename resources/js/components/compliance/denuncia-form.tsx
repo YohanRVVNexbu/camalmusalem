@@ -3,7 +3,8 @@ import { ChangeEvent, FormEvent, useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { Paperclip, X as XIcon } from 'lucide-react';
 
-import { formatRut } from '@/lib/rut';
+import { formatRut, isValidRut } from '@/lib/rut';
+import { formatTelefono, isValidTelefono } from '@/lib/format';
 
 type Categoria = { value: string; label: string };
 
@@ -214,10 +215,10 @@ export function DenunciaForm({
                     <Field label="Email *" error={errors.email}>
                         <Input type="email" value={data.email} onChange={(v) => setData('email', v)} required placeholder="tu@correo.cl" />
                     </Field>
-                    <Field label="Teléfono" error={errors.telefono}>
-                        <Input type="tel" value={data.telefono} onChange={(v) => setData('telefono', v)} placeholder="+569" />
+                    <Field label="Teléfono" error={errors.telefono || (data.telefono && !isValidTelefono(data.telefono) ? 'Ingresa un teléfono válido (ej: +56 9 1234 5678).' : undefined)}>
+                        <Input type="tel" value={data.telefono} onChange={(v) => setData('telefono', formatTelefono(v))} placeholder="+56 9 1234 5678" />
                     </Field>
-                    <Field label="RUT" error={errors.rut}>
+                    <Field label="RUT" error={errors.rut || (data.rut && !isValidRut(data.rut) ? 'Ingresa un RUT válido (ej: 12.345.678-9).' : undefined)}>
                         <Input value={data.rut} onChange={(v) => setData('rut', formatRut(v))} maxLength={12} placeholder="12.345.678-9" />
                     </Field>
                 </div>

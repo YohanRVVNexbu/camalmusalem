@@ -1,10 +1,12 @@
-import { router } from '@inertiajs/react';
+import { router, usePage } from '@inertiajs/react';
 import { FileSpreadsheet, RefreshCw, Upload, X } from 'lucide-react';
 import { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import {
     Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger,
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 /**
  * Sube el archivo "Cross Reference" de Toyota tal cual y sincroniza los precios
@@ -12,8 +14,11 @@ import {
  * en accesorios/repuestos/merch; no crea nuevos (la fuente no trae categoría).
  */
 export function CrossReferenceSync() {
+    // Último % de IVA usado (compartido global desde HandleInertiaRequests).
+    const { crossReferenceIva } = usePage<{ crossReferenceIva?: number }>().props;
     const [open, setOpen] = useState(false);
     const [file, setFile] = useState<File | null>(null);
+    const [iva, setIva] = useState<string>(String(crossReferenceIva ?? 19));
     const [processing, setProcessing] = useState(false);
     const inputRef = useRef<HTMLInputElement>(null);
 
@@ -28,6 +33,7 @@ export function CrossReferenceSync() {
         setProcessing(true);
         const fd = new FormData();
         fd.append('file', file);
+        fd.append('iva_percent', iva.trim() === '' ? '0' : iva.trim());
         router.post('/admin/cross-reference/import', fd, {
             forceFormData: true,
             onFinish: () => { setProcessing(false); setOpen(false); setFile(null); },
@@ -49,8 +55,27 @@ export function CrossReferenceSync() {
                         Sube el archivo <strong>Cross Reference.xlsx</strong> de Toyota tal cual. Se lee la
                         pestaña <strong>"Data"</strong> y se actualiza el <strong>precio por SKU</strong> de los
                         productos que ya existen (accesorios, repuestos y merch). No crea productos nuevos.
+                        El MSRP viene <strong>neto</strong>: se le aplica el % de IVA que indiques abajo.
                     </DialogDescription>
                 </DialogHeader>
+
+                <div className="grid gap-2">
+                    <Label htmlFor="iva-percent">IVA a aplicar (%)</Label>
+                    <Input
+                        id="iva-percent"
+                        type="number"
+                        min={0}
+                        max={100}
+                        step="0.1"
+                        value={iva}
+                        onChange={(e) => setIva(e.target.value)}
+                        className="w-32"
+                    />
+                    <p className="text-xs text-muted-foreground">
+                        Se aplica a cada precio (MSRP × (1 + %/100)). Usa <strong>0</strong> para no aplicar IVA.
+                        Se recuerda el último valor usado.
+                    </p>
+                </div>
 
                 <div
                     onClick={() => !file && inputRef.current?.click()}

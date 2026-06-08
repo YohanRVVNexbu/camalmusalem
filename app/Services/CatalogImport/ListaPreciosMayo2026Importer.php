@@ -28,7 +28,8 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
  * Comportamiento upsert:
  *   - Versión existente (matched por material_code): actualiza SOLO precio y
  *     bonos. NO toca trim_name, slug, year, powertrain, drivetrain ni nada que
- *     el cliente haya editado manualmente.
+ *     el cliente haya editado manualmente. EXCEPCIÓN: si $updateNames=true,
+ *     también pisa el trim_name con el nombre comercial de la col D del Excel.
  *   - Versión nueva: la crea con defaults razonables (powertrain/drivetrain
  *     inferidos del nombre) y el cliente completa el resto a mano después.
  *
@@ -43,8 +44,10 @@ class ListaPreciosMayo2026Importer
 
     /**
      * @param  array<int>  $branchIds  Sucursales a vincular con las versiones importadas
+     * @param  bool  $updateNames  Si true, pisa el trim_name de versiones existentes
+     *                             con el nombre comercial (col D) del Excel.
      */
-    public function import(UploadedFile $file, array $branchIds): ImportResult
+    public function import(UploadedFile $file, array $branchIds, bool $updateNames = false): ImportResult
     {
         $result = new ImportResult;
 
@@ -120,7 +123,7 @@ class ListaPreciosMayo2026Importer
             ];
 
             DB::transaction(function () use (
-                $material, $opcion, $linea, $clasif, $versionD, $priceData, $brandId, $validBranchIds, $result
+                $material, $opcion, $linea, $clasif, $versionD, $priceData, $brandId, $validBranchIds, $updateNames, $result
             ) {
                 $existing = VehicleVersion::query()->where('material_code', $material)->first();
 
@@ -128,11 +131,17 @@ class ListaPreciosMayo2026Importer
                     // Actualiza precios + el option_code (por si en futuras
                     // listas Toyota lo modificó). NO toca trim_name, slug,
                     // year, etc. — eso lo manejamos para no pisar ediciones
-                    // manuales del cliente.
-                    $existing->update([
+                    // manuales del cliente. Salvo que $updateNames esté activo:
+                    // ahí también pisa el trim_name con el nombre comercial (col
+                    // D). El slug NO se toca para no romper URLs existentes.
+                    $updateData = [
                         ...$priceData,
                         'option_code' => $opcion !== '' ? $opcion : $existing->option_code,
-                    ]);
+                    ];
+                    if ($updateNames && $versionD !== '') {
+                        $updateData['trim_name'] = $versionD;
+                    }
+                    $existing->update($updateData);
                     $version = $existing;
                     $result->updated++;
                 } else {
