@@ -581,7 +581,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                                             Solicitud enviada
                                         </h3>
                                         <p className="text-center text-sm leading-[120%] text-black lg:w-92 lg:text-base">
-                                            Un asesor de venta de repuestos se comunicará con usted a la brevedad.
+                                            Un Asesor de Venta de Repuestos se comunicará con usted en un plazo máximo de 48 Hrs.
                                         </p>
                                         <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:gap-5">
                                             <a
