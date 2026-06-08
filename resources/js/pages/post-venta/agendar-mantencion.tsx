@@ -755,7 +755,7 @@ export default function AgendarMantencion({
                                                         onSuccess: () => {
                                                             setShowForm(false);
                                                             setSubmitting(false);
-                                                            toast.success('¡Agendamiento confirmado! Te contactaremos pronto.');
+                                                            toast.success('¡Solicitud de agendamiento confirmada! Te contactaremos pronto.');
                                                         },
                                                         onError: (errors) => {
                                                             setSubmitting(false);
