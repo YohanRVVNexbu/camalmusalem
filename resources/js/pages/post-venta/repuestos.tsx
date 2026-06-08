@@ -31,7 +31,9 @@ type Repuesto = {
 };
 
 const modelos = ['Hilux', 'Land Cruiser', 'Corolla', 'Yaris', 'RAV4', 'Fortuner', 'SW4', 'Prado', 'Rush', 'Avanza'];
-const marcas = ['Toyota', 'Lexus', 'Ford', 'Chevrolet', 'Hyundai', 'Kia', 'Nissan', 'Volkswagen', 'Mazda', 'Honda'];
+// Repuestos: solo Toyota (es un concesionario Toyota). Si en el futuro
+// quieren más marcas, agregarlas aquí — la lista no es autoadministrable.
+const marcas = ['Toyota'];
 const sucursales = ['La Serena — Av. Francisco de Aguirre #070', 'Ovalle — Aristía #358'];
 
 export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, repuestos = [] }: { footer: any | null; repuestos_hero?: any | null; repuestos_seccion?: any | null; repuestos: Repuesto[] }) {
@@ -95,7 +97,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
     const [encargoEmail, setEncargoEmail] = useState('');
     const [encargoModelo, setEncargoModelo] = useState('');
     const [encargoSucursal, setEncargoSucursal] = useState('');
-    const [encargoMarca, setEncargoMarca] = useState('');
+    const [encargoMarca, setEncargoMarca] = useState('Toyota');
     const [encargoVin, setEncargoVin] = useState('');
     const [encargoLista, setEncargoLista] = useState('');
     const [encargoAcepta, setEncargoAcepta] = useState(false);
@@ -112,7 +114,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                 setEncargoEmail('');
                 setEncargoModelo('');
                 setEncargoSucursal('');
-                setEncargoMarca('');
+                setEncargoMarca('Toyota');
                 setEncargoVin('');
                 setEncargoLista('');
                 setEncargoAcepta(false);
@@ -513,7 +515,6 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                                                             onChange={(e) => setEncargoMarca(e.target.value)}
                                                             className="h-10 w-full cursor-pointer appearance-none rounded-[60px] bg-white px-5 pr-10 text-sm text-black outline-none"
                                                         >
-                                                            <option value="">Marca</option>
                                                             {marcas.map(m => <option key={m} value={m}>{m}</option>)}
                                                         </select>
                                                         <svg className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2" width="6" height="10" viewBox="0 0 6 10" fill="none">
@@ -580,7 +581,7 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                                             Solicitud enviada
                                         </h3>
                                         <p className="text-center text-sm leading-[120%] text-black lg:w-92 lg:text-base">
-                                            Un asesor de servicio se comunicará con usted dentro de las próximas 48 horas.
+                                            Un asesor de venta de repuestos se comunicará con usted dentro de las próximas 48 horas.
                                         </p>
                                         <div className="flex w-full flex-col items-stretch gap-3 lg:w-auto lg:gap-5">
                                             <a
