@@ -53,7 +53,11 @@ class MantencionController extends Controller
                     $fail('Solo se pueden agendar citas de lunes a viernes.');
                     return;
                 }
-                if ($fecha->copy()->startOfDay()->lt(now()->addHours(48))) {
+                // Comparamos por día calendario (igual que el calendario del
+                // frontend): el día reservado debe ser >= el día de "ahora+48h".
+                // Antes se comparaba contra now()+48h con hora exacta, lo que
+                // rechazaba fechas que el calendario sí permitía → error al enviar.
+                if ($fecha->copy()->startOfDay()->lt(now()->addHours(48)->startOfDay())) {
                     $fail('La reserva debe solicitarse con al menos 48 horas de anticipación.');
                 }
             }],

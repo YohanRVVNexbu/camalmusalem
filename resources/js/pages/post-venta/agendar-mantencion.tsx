@@ -135,14 +135,15 @@ export default function AgendarMantencion({
     const [showCalendar, setShowCalendar] = useState(false);
 
     // Reglas de agendamiento (pedido del área de servicio técnico):
-    //  - Mínimo 48 hrs de anticipación: la fecha más temprana reservable es
-    //    "ahora + 48h". Como cada día del calendario se compara a las 00:00, el
-    //    día umbral queda deshabilitado salvo que su medianoche ya pase las 48h,
-    //    garantizando siempre ≥48h reales de anticipación.
+    //  - Mínimo 48 hrs de anticipación: la fecha más temprana reservable es el
+    //    día calendario de "ahora + 48h". Usamos el inicio de ese día (00:00)
+    //    para comparar por día — así el frontend y el backend coinciden exacto
+    //    y no se rechaza una fecha que el calendario sí permitió elegir.
     //  - Solo días hábiles (lunes a viernes): se bloquean sábado y domingo.
     const minBookingDate = useMemo(() => {
         const d = new Date();
         d.setHours(d.getHours() + 48);
+        d.setHours(0, 0, 0, 0);
         return d;
     }, []);
     const disabledDays = useMemo(
@@ -464,7 +465,7 @@ export default function AgendarMantencion({
                                     {/* Formulario paso actual */}
                                     <div key={formStep} className="flex w-full flex-1 flex-col items-start gap-7.5 lg:gap-10" style={{ animation: `${stepDirection === 'right' ? 'slideFromRight' : 'slideFromLeft'} 0.4s ease-out` }}>
                                         <h3 className="text-xl leading-[120%] font-semibold text-black lg:text-2xl lg:leading-none">
-                                            {['Servicio y horario', 'Datos del vehículo', 'Datos de contacto', 'Resumen de tu agendamiento'][formStep]}
+                                            {['Servicio y horario', 'Datos del vehículo', 'Datos de contacto', 'Resumen de tu Solicitud de Agendamiento'][formStep]}
                                         </h3>
                                         <div className="flex w-full flex-col gap-5">
                                             {formStep === 0 && (
