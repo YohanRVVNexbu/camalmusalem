@@ -77,9 +77,16 @@ export default function ComplianceShow({ denuncia, estados }: { denuncia: Denunc
                             Recibida el {new Date(denuncia.created_at).toLocaleString('es-CL')}
                         </p>
                     </div>
-                    <Button variant="ghost" onClick={eliminar} className="text-destructive">
-                        <Trash2 className="mr-1 size-4" />Eliminar
-                    </Button>
+                    <div className="flex items-center gap-2">
+                        <Button asChild variant="outline">
+                            <a href={`/admin/compliance/denuncias/${denuncia.id}/pdf`} target="_blank" rel="noopener noreferrer">
+                                <Download className="mr-1 size-4" />Descargar PDF
+                            </a>
+                        </Button>
+                        <Button variant="ghost" onClick={eliminar} className="text-destructive">
+                            <Trash2 className="mr-1 size-4" />Eliminar
+                        </Button>
+                    </div>
                 </header>
 
                 {flash?.success && (

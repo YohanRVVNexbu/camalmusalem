@@ -192,6 +192,7 @@ Route::middleware('admin')->group(function () {
     Route::get('compliance/denuncias/{denuncia}', [AdminComplianceController::class, 'show'])->name('admin.compliance.denuncias.show');
     Route::patch('compliance/denuncias/{denuncia}/leido', [AdminComplianceController::class, 'marcarLeido'])->name('admin.compliance.denuncias.leido');
     Route::patch('compliance/denuncias/{denuncia}/estado', [AdminComplianceController::class, 'updateEstado'])->name('admin.compliance.denuncias.estado');
+    Route::get('compliance/denuncias/{denuncia}/pdf', [AdminComplianceController::class, 'downloadPdf'])->name('admin.compliance.denuncias.pdf');
     Route::get('compliance/denuncias/{denuncia}/adjuntos/{adjunto}', [AdminComplianceController::class, 'downloadAdjunto'])->name('admin.compliance.denuncias.adjuntos.download');
     Route::delete('compliance/denuncias/{denuncia}', [AdminComplianceController::class, 'destroy'])->name('admin.compliance.denuncias.destroy');
 

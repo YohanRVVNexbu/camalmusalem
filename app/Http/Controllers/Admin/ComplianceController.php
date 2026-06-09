@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Denuncia;
 use App\Models\DenunciaAdjunto;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
@@ -164,5 +165,17 @@ class ComplianceController extends Controller
         return Storage::disk('local')->download($adjunto->path, $adjunto->original_name, [
             'Content-Type' => $adjunto->mime_type ?? 'application/octet-stream',
         ]);
+    }
+
+    /**
+     * Descarga la denuncia completa en PDF (el mismo documento que se
+     * adjunta al correo del encargado). Útil para imprimir/archivar.
+     */
+    public function downloadPdf(Denuncia $denuncia)
+    {
+        $denuncia->load('adjuntos');
+
+        return Pdf::loadView('pdf.denuncia', ['denuncia' => $denuncia])
+            ->download("denuncia-{$denuncia->tracking_code}.pdf");
     }
 }
