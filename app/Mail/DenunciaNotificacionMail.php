@@ -3,30 +3,26 @@
 namespace App\Mail;
 
 use App\Models\Denuncia;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 /**
- * Correo que se envía al Encargado de Prevención del Delito cuando llega
+ * Correo que se envía al Encargado de Compliance / abogada cuando llega
  * una nueva denuncia.
  *
- * Decisión deliberada: este correo NO incluye el contenido de la
- * denuncia (descripción, denunciado, RUT, etc.). Solo notifica que hay
- * una nueva denuncia y enlaza al admin para verla.
+ * Por solicitud del cliente (jun 2026), este correo SÍ incluye el detalle
+ * completo de la denuncia en un PDF adjunto, más los archivos que haya
+ * subido el denunciante. El destino (config services.compliance.encargado_email,
+ * ej. compliance@camalmusalem.cl) es un casillero de acceso exclusivo de la
+ * abogada, por lo que el contenido sensible viaja a un buzón controlado.
  *
- * Razones:
- *  - El contenido puede ser sensible (datos de identidad del denunciante,
- *    nombres de implicados, hechos delicados).
- *  - Si el correo se reenvía por error, se intercepta, queda cacheado en
- *    un servidor SMTP intermedio, o el casillero del encargado se ve
- *    comprometido, no se expone la denuncia completa.
- *  - El asunto es neutro a propósito ("Nueva denuncia recibida —
- *    Compliance"), sin mencionar el tipo de ley ni nombres.
- *
- * El detalle vive en `/admin/compliance/denuncias/{id}` bajo auth.
+ * El cuerpo del correo se mantiene breve; todo el contenido va en el PDF.
+ * El detalle también sigue disponible en /admin/compliance/denuncias/{id}.
  */
 class DenunciaNotificacionMail extends Mailable
 {
@@ -53,5 +49,29 @@ class DenunciaNotificacionMail extends Mailable
                 'tracking'   => $this->denuncia->tracking_code,
             ],
         );
+    }
+
+    /**
+     * Adjuntos: (1) PDF con todo el contenido de la denuncia y (2) los
+     * archivos que el denunciante haya subido (disco privado 'local').
+     *
+     * @return array<int, Attachment>
+     */
+    public function attachments(): array
+    {
+        $pdf = Pdf::loadView('pdf.denuncia', ['denuncia' => $this->denuncia]);
+
+        $attachments = [
+            Attachment::fromData(fn () => $pdf->output(), "denuncia-{$this->denuncia->tracking_code}.pdf")
+                ->withMime('application/pdf'),
+        ];
+
+        foreach ($this->denuncia->adjuntos as $adjunto) {
+            $attachments[] = Attachment::fromStorageDisk('local', $adjunto->path)
+                ->as($adjunto->original_name)
+                ->withMime($adjunto->mime_type ?? 'application/octet-stream');
+        }
+
+        return $attachments;
     }
 }

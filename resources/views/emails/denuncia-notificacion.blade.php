@@ -6,8 +6,9 @@
     <h1>Nueva denuncia recibida</h1>
     <p>
         Se ha recibido una nueva denuncia en el canal de compliance.
-        Por motivos de confidencialidad, el detalle no se envía por correo:
-        debes acceder al panel administrativo para revisarlo.
+        Adjuntamos el <strong>detalle completo en PDF</strong> y los archivos
+        que haya entregado el denunciante. También puedes revisarla en el panel
+        administrativo. Trátala con la máxima confidencialidad.
     </p>
 
     <div class="summary">
