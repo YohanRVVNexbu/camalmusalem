@@ -52,6 +52,8 @@ class HomeController extends Controller
                         'transmission' => $s->transmission ?? '',
                         'fuel' => $s->fuel ?? '',
                         'price' => (string) $s->price,
+                        'price_offer' => $s->price_offer ? (string) $s->price_offer : null,
+                        'down_payment' => $s->down_payment ? (string) $s->down_payment : null,
                         'href' => '/seminuevos/' . ($s->slug ?? $s->id),
                     ];
                 })

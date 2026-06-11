@@ -19,6 +19,7 @@ type ProductListItemProps = {
     fuel: string;
     price: string;
     originalPrice?: string;
+    downPayment?: string | null;
     certificateBadge?: string;
     href?: string;
 };
@@ -41,6 +42,7 @@ export function ProductListItem({
     fuel,
     price,
     originalPrice,
+    downPayment,
     certificateBadge,
     href = '#',
 }: ProductListItemProps) {
@@ -112,6 +114,12 @@ export function ProductListItem({
                         <span className="text-2xl font-semibold uppercase leading-none text-black">
                             {formatCLP(price)}
                         </span>
+                        {downPayment && (
+                            <span className="mt-0.5 text-xs font-normal normal-case leading-none text-black/60">
+                                Financiamiento:{' '}
+                                <span className="font-semibold text-black">{formatCLP(downPayment)}</span>
+                            </span>
+                        )}
                     </div>
                     <Link
                         href={href}

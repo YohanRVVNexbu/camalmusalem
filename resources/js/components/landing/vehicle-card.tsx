@@ -11,6 +11,8 @@ type VehicleCardProps = {
     transmission: string;
     fuel: string;
     price: string;
+    price_offer?: string | null;
+    down_payment?: string | null;
     href?: string;
 };
 
@@ -24,6 +26,8 @@ export function VehicleCard({
     transmission,
     fuel,
     price,
+    price_offer,
+    down_payment,
     href = '#',
 }: VehicleCardProps) {
     return (
@@ -67,19 +71,34 @@ export function VehicleCard({
                     </div>
                 </div>
 
-                <div className="flex items-center justify-between px-2.5">
-                    <span className="text-2xl leading-none font-semibold uppercase text-black">
-                        {formatCLP(price)}
-                    </span>
-                    <a
-                        href={href}
-                        className="flex h-10 items-center gap-2.5 rounded-full bg-black py-1 pr-1 pl-4 text-sm leading-none text-white transition hover:bg-black/85"
-                    >
-                        Ver más
-                        <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-white">
-                            <ArrowIcon className="scale-75 text-black" />
+                <div className="flex flex-col gap-1.5 px-2.5">
+                    {down_payment && (
+                        <span className="text-xs leading-none text-black/60">
+                            Precio con Financiamiento:{' '}
+                            <span className="font-semibold text-black">{formatCLP(down_payment)}</span>
                         </span>
-                    </a>
+                    )}
+                    <div className="flex items-center justify-between">
+                        <div className="flex flex-col gap-0.5">
+                            {price_offer && (
+                                <span className="text-sm leading-none font-normal uppercase text-[#EB0A1E] line-through">
+                                    {formatCLP(price)}
+                                </span>
+                            )}
+                            <span className="text-2xl leading-none font-semibold uppercase text-black">
+                                {formatCLP(price_offer || price)}
+                            </span>
+                        </div>
+                        <a
+                            href={href}
+                            className="flex h-10 items-center gap-2.5 rounded-full bg-black py-1 pr-1 pl-4 text-sm leading-none text-white transition hover:bg-black/85"
+                        >
+                            Ver más
+                            <span className="flex size-7.5 shrink-0 items-center justify-center rounded-full bg-white">
+                                <ArrowIcon className="scale-75 text-black" />
+                            </span>
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>

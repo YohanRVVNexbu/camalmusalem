@@ -22,6 +22,7 @@ type Seminuevo = {
     km: number;
     price: string;
     price_offer?: string | null;
+    down_payment?: string | null;
     certified?: boolean;
     fuel: string;
     transmission: string;
@@ -227,6 +228,7 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                                                     fuel={v.fuel}
                                                     price={v.price_offer || v.price}
                                                     originalPrice={v.price_offer ? v.price : undefined}
+                                                    downPayment={v.down_payment || undefined}
                                                     certificateBadge={v.certified ? certBadge : undefined}
                                                     href={`/seminuevos/${v.slug ?? v.id}`}
                                                 />
@@ -247,6 +249,7 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                                                     fuel={v.fuel}
                                                     price={v.price_offer || v.price}
                                                     originalPrice={v.price_offer ? v.price : undefined}
+                                                    downPayment={v.down_payment || undefined}
                                                     certificateBadge={v.certified ? certBadge : undefined}
                                                     href={`/seminuevos/${v.slug ?? v.id}`}
                                                 />

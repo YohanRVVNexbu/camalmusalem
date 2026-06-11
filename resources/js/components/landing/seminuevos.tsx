@@ -35,6 +35,8 @@ type VehicleData = {
     transmission: string;
     fuel: string;
     price: string;
+    price_offer?: string | null;
+    down_payment?: string | null;
     href?: string;
 };
 

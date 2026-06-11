@@ -19,6 +19,7 @@ type ProductCardProps = {
     fuel: string;
     price: string;
     originalPrice?: string;
+    downPayment?: string | null;
     certificateBadge?: string;
     href?: string;
 };
@@ -41,6 +42,7 @@ export function ProductCard({
     fuel,
     price,
     originalPrice,
+    downPayment,
     certificateBadge,
     href = '#',
 }: ProductCardProps) {
@@ -106,6 +108,12 @@ export function ProductCard({
                             <span className="block text-base font-semibold leading-tight">
                                 {formatCLP(price)}
                             </span>
+                            {downPayment && (
+                                <span className="mt-0.5 block text-[10px] font-normal normal-case leading-none text-black/60">
+                                    Financiamiento:{' '}
+                                    <span className="font-semibold text-black">{formatCLP(downPayment)}</span>
+                                </span>
+                            )}
                         </div>
                         <Link
                             href={href}
@@ -173,7 +181,14 @@ export function ProductCard({
                     </div>
 
                     {/* Price + CTA fijado al fondo del card */}
-                    <div className="mt-auto flex items-center justify-between px-2.5">
+                    <div className="mt-auto flex flex-col gap-1.5 px-2.5">
+                        {downPayment && (
+                            <span className="text-xs leading-none text-black/60">
+                                Precio con Financiamiento:{' '}
+                                <span className="font-semibold text-black">{formatCLP(downPayment)}</span>
+                            </span>
+                        )}
+                        <div className="flex items-center justify-between">
                         <div className="flex flex-col items-end">
                             {originalPrice && (
                                 <span className="text-sm font-normal uppercase leading-none text-[#EB0A1E] line-through">
@@ -193,6 +208,7 @@ export function ProductCard({
                                 <ArrowIcon className="scale-75 text-black" />
                             </span>
                         </Link>
+                        </div>
                     </div>
                 </div>
             </div>
