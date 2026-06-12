@@ -71,16 +71,15 @@ class CatalogPresenter
 
     /**
      * Calcula el precio "Desde" del modelo: el MENOR precio real entre todas
-     * sus versiones, y el bono de esa versión.
+     * sus versiones, y el bono total de esa versión.
      *
-     * Los bonos de financiamiento son EXCLUYENTES entre sí (el cliente toma
-     * crédito R9 *o* crédito tradicional, nunca ambos), así que el bono
-     * máximo aplicable por versión es bono_marca + max(r9, tradicional).
-     * Esto replica buildPricing(): el "Desde" coincide exactamente con el
-     * menor precio que la ficha de detalle muestra (típicamente el "Precio
-     * Bono Financiamiento R9"). Antes se SUMABAN los tres bonos y la card
-     * mostraba un precio fantasma que no existía en el detalle (ej. Raize
-     * i MT: desde $10.990.000 vs R9 real $11.490.000).
+     * Los bonos STACKEAN según la lista de precios oficial de Toyota
+     * (confirmado por el cliente con la tabla de junio 2026): la columna
+     * "Precio BONO Base+Crédito R9" = Precio − Bono Base TCL − Bono Crédito
+     * − Bono Crédito R9. Ej. Raize i MT: 13.990.000 − 1.500.000 − 500.000
+     * − 1.000.000 = 10.990.000 (bono total $3.000.000). Por eso el desde
+     * por versión es lista − (marca + tradicional + r9), igual que el
+     * "Precio Bono Financiamiento R9" de buildPricing().
      *
      * Devuelve dígitos crudos como string (el frontend aplica formatCLP).
      * Si ninguna versión tiene msrp, price = null (el card muestra "Consultar").
@@ -95,7 +94,8 @@ class CatalogPresenter
                 continue;
             }
             $bono = (int) $v->bono_marca
-                + max((int) $v->bono_financiamiento_tradicional, (int) $v->bono_financiamiento_r9);
+                + (int) $v->bono_financiamiento_tradicional
+                + (int) $v->bono_financiamiento_r9;
             $price = (int) $v->msrp_clp - $bono;
 
             if ($bestPrice === null || $price < $bestPrice) {
@@ -218,20 +218,22 @@ class CatalogPresenter
         $bTrad  = (int) $v->bono_financiamiento_tradicional;
 
         // Cada precio con bono se muestra si SU propio bono existe, sin
-        // depender de bono_marca. Antes exigíamos bono_marca (Bono Base TCL)
-        // para mostrar R9/Tradicional, pero hay modelos sin Base TCL que igual
-        // tienen Bono Crédito (trad) y/o Bono Crédito R9 — esos quedaban con
-        // solo "Precio de lista". Los bonos R9/Trad stackean sobre marca:
-        // precio = lista − marca − bono (con marca=0 queda lista − bono).
+        // depender de bono_marca. Los bonos STACKEAN según la lista de
+        // precios oficial de Toyota (tabla del cliente, jun 2026):
+        //   Precio BONO Base+Crédito    = lista − Base TCL − Bono Crédito
+        //   Precio BONO Base+Crédito R9 = lista − Base TCL − Bono Crédito − Bono Crédito R9
+        // Es decir, el R9 acumula TAMBIÉN el bono crédito tradicional (antes
+        // se calculaba lista − marca − r9 y el R9 quedaba $500K más caro que
+        // la lista oficial: Raize i MT 11.490.000 vs 10.990.000 reales).
         $precioLista  = $lista ? $raw($lista) : null;
-        $precioBono   = ($lista && $bMarca > 0) ? $raw($lista - $bMarca)          : null;
-        $precioR9     = ($lista && $bR9 > 0)    ? $raw($lista - $bMarca - $bR9)   : null;
-        $precioTrad   = ($lista && $bTrad > 0)  ? $raw($lista - $bMarca - $bTrad) : null;
+        $precioBono   = ($lista && $bMarca > 0) ? $raw($lista - $bMarca)                  : null;
+        $precioR9     = ($lista && $bR9 > 0)    ? $raw($lista - $bMarca - $bTrad - $bR9)  : null;
+        $precioTrad   = ($lista && $bTrad > 0)  ? $raw($lista - $bMarca - $bTrad)         : null;
 
         $rows = array_values(array_filter([
             $precioLista ? ['label' => 'Precio de lista',                        'value' => $precioLista, 'highlight' => false] : null,
             $precioBono  ? ['label' => 'Precio Bono Marca',                      'value' => $precioBono,  'highlight' => true,  'bono' => $raw($bMarca)] : null,
-            $precioR9    ? ['label' => 'Precio Bono Financiamiento R9',          'value' => $precioR9,    'highlight' => true,  'bono' => $raw($bMarca + $bR9)] : null,
+            $precioR9    ? ['label' => 'Precio Bono Financiamiento R9',          'value' => $precioR9,    'highlight' => true,  'bono' => $raw($bMarca + $bTrad + $bR9)] : null,
             $precioTrad  ? ['label' => 'Precio Bono Financiamiento Tradicional', 'value' => $precioTrad,  'highlight' => true,  'bono' => $raw($bMarca + $bTrad)] : null,
         ]));
 

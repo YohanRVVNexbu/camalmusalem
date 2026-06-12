@@ -832,7 +832,16 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     : rentalContext.price_month
                         ? `${formatCLP(rentalContext.price_month)} al mes`
                         : 'Consultar')
-        : formatCLP(vehicle.price);
+        // "Desde" real del modelo: menor precio con bonos aplicados entre
+        // versiones (mismo valor que la card de /nuevos). Antes mostraba el
+        // precio de LISTA de la primera versión y no calzaba con la card.
+        : formatCLP(vehicle.desde_price ?? vehicle.price);
+
+    // Bono incluido en el "Desde" (ej. "Incluye bono $3.000.000"), solo
+    // cuando aplica y no estamos en contexto de arriendo KINTO.
+    const displayBono: string | null = !rentalContext && vehicle.desde_bono
+        ? `Incluye bono ${formatCLP(vehicle.desde_bono)}`
+        : null;
 
     const cotizarHref: string = rentalContext
         ? `/kinto?rental=${rentalContext.id}`
@@ -958,6 +967,9 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                             <div className="flex flex-col gap-1">
                                 <span className="text-sm leading-none text-white/80">{heroTagline}</span>
                                 <span className="text-[28px] font-semibold leading-none text-white">{displayPrice}</span>
+                                {displayBono && (
+                                    <span className="text-sm font-semibold leading-none text-white">{displayBono}</span>
+                                )}
                             </div>
 
                             {/* Specs 2×2 grid */}
@@ -1035,6 +1047,9 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                             <div className="mt-2 flex flex-col gap-1">
                                 <span className="text-base leading-none text-white">{heroTagline}</span>
                                 <span className="text-[32px] font-semibold leading-none text-white">{displayPrice}</span>
+                                {displayBono && (
+                                    <span className="text-base font-semibold leading-none text-white">{displayBono}</span>
+                                )}
                             </div>
                         </div>
 
