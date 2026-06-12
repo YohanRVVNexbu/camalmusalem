@@ -39,6 +39,7 @@ type Seminuevo = {
     price: string;
     price_offer: string | null;
     down_payment: string | null;
+    cuota: string | null;
     fuel: string | null;
     transmission: string | null;
     traction: string | null;
@@ -268,11 +269,15 @@ export default function SeminuevosShow({ seminuevo, footer, certificateBadge, wh
                             ))}
                         </div>
 
-                        {/* Price */}
+                        {/* Price — si hay precio con financiamiento, ese es el protagonista
+                            (pedido de gerencia jun 2026) y el precio lista pasa a la línea
+                            secundaria, rotando las posiciones originales. */}
                         <div className="flex flex-col gap-1.5">
-                            <span className="text-base leading-none text-black/60">*Precio</span>
+                            <span className="text-base leading-none text-black/60">{seminuevo.down_payment ? '*Precio con Financiamiento' : '*Precio'}</span>
                             <div className="rounded-[10px] bg-white p-4">
-                                {seminuevo.price_offer ? (
+                                {seminuevo.down_payment ? (
+                                    <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
+                                ) : seminuevo.price_offer ? (
                                     <div className="flex flex-col gap-1.5">
                                         <div className="flex items-center gap-2">
                                             <span className="rounded-full bg-[#EB0A1E] px-2 py-1 text-xs font-semibold leading-none text-white">Oferta</span>
@@ -286,11 +291,26 @@ export default function SeminuevosShow({ seminuevo, footer, certificateBadge, wh
                             </div>
                         </div>
 
-                        {/* Precio con financiamiento */}
+                        {/* Precio lista (secundario cuando el financiamiento es el principal) */}
                         {seminuevo.down_payment && (
                             <div className="flex items-center gap-1.5 rounded-[10px] bg-white px-5 py-2.5">
-                                <span className="text-base leading-none text-black/60">*Precio con Financiamiento</span>
-                                <span className="text-base font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
+                                <span className="text-base leading-none text-black/60">*Precio lista</span>
+                                {seminuevo.price_offer ? (
+                                    <>
+                                        <span className="text-base leading-none text-[#EB0A1E] line-through">{formatCLP(seminuevo.price)}</span>
+                                        <span className="text-base font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price_offer)}</span>
+                                    </>
+                                ) : (
+                                    <span className="text-base font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
+                                )}
+                            </div>
+                        )}
+
+                        {/* Valor cuota (administrable, opcional) */}
+                        {seminuevo.cuota && (
+                            <div className="flex items-center gap-1.5 rounded-[10px] bg-white px-5 py-2.5">
+                                <span className="text-base leading-none text-black/60">Cuotas desde</span>
+                                <span className="text-base font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.cuota)}</span>
                             </div>
                         )}
 
@@ -569,11 +589,15 @@ export default function SeminuevosShow({ seminuevo, footer, certificateBadge, wh
                                 ))}
                             </div>
 
-                            {/* Price */}
+                            {/* Price — si hay precio con financiamiento, ese es el protagonista
+                                (pedido de gerencia jun 2026) y el precio lista pasa a la línea
+                                secundaria, rotando las posiciones originales. */}
                             <div className="flex flex-col gap-1.5">
-                                <span className="text-lg leading-none text-black/60">*Precio</span>
+                                <span className="text-lg leading-none text-black/60">{seminuevo.down_payment ? '*Precio con Financiamiento' : '*Precio'}</span>
                                 <div className="rounded-[10px] bg-[#EAEAF1] p-4">
-                                    {seminuevo.price_offer ? (
+                                    {seminuevo.down_payment ? (
+                                        <span className="text-[28px] font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
+                                    ) : seminuevo.price_offer ? (
                                         <div className="flex flex-col gap-1.5">
                                             <div className="flex items-center gap-2.5">
                                                 <span className="rounded-full bg-[#EB0A1E] px-2.5 py-1 text-xs font-semibold leading-none text-white">Oferta</span>
@@ -587,11 +611,26 @@ export default function SeminuevosShow({ seminuevo, footer, certificateBadge, wh
                                 </div>
                             </div>
 
-                            {/* Precio con financiamiento */}
+                            {/* Precio lista (secundario cuando el financiamiento es el principal) */}
                             {seminuevo.down_payment && (
                                 <div className="flex items-center gap-1.5 rounded-[10px] bg-[#EAEAF1] px-5 py-2.5">
-                                    <span className="text-lg leading-none text-black/60">*Precio con Financiamiento</span>
-                                    <span className="text-lg font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.down_payment)}</span>
+                                    <span className="text-lg leading-none text-black/60">*Precio lista</span>
+                                    {seminuevo.price_offer ? (
+                                        <>
+                                            <span className="text-lg leading-none text-[#EB0A1E] line-through">{formatCLP(seminuevo.price)}</span>
+                                            <span className="text-lg font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price_offer)}</span>
+                                        </>
+                                    ) : (
+                                        <span className="text-lg font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.price)}</span>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Valor cuota (administrable, opcional) */}
+                            {seminuevo.cuota && (
+                                <div className="flex items-center gap-1.5 rounded-[10px] bg-[#EAEAF1] px-5 py-2.5">
+                                    <span className="text-lg leading-none text-black/60">Cuotas desde</span>
+                                    <span className="text-lg font-semibold uppercase leading-none text-black">{formatCLP(seminuevo.cuota)}</span>
                                 </div>
                             )}
 

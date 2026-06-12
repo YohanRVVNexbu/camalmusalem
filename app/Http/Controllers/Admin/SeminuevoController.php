@@ -215,6 +215,7 @@ class SeminuevoController extends Controller
             'price'        => ['required', 'string', 'max:100'],
             'price_offer'  => ['nullable', 'string', 'max:100'],
             'down_payment' => ['nullable', 'string', 'max:100'],
+            'cuota'        => ['nullable', 'string', 'max:100'],
             'fuel'         => ['nullable', 'string', 'max:100'],
             'transmission' => ['nullable', 'string', 'max:100'],
             'traction'     => ['nullable', 'string', 'max:50'],
@@ -242,6 +243,9 @@ class SeminuevoController extends Controller
         }
         if (isset($data['down_payment'])) {
             $data['down_payment'] = $this->onlyDigits($data['down_payment']) ?: null;
+        }
+        if (isset($data['cuota'])) {
+            $data['cuota'] = $this->onlyDigits($data['cuota']) ?: null;
         }
 
         return $data;

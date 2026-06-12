@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Seminuevo extends Model
 {
     protected $fillable = [
-        'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'price_offer', 'down_payment',
+        'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'price_offer', 'down_payment', 'cuota',
         'fuel', 'transmission', 'traction', 'doors', 'seats',
         'color', 'description', 'gallery', 'featured_gallery', 'specs',
         'is_visible', 'certified', 'order', 'branch_id',

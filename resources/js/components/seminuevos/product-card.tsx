@@ -46,9 +46,13 @@ export function ProductCard({
     certificateBadge,
     href = '#',
 }: ProductCardProps) {
-    // "Desde": menor entre el precio mostrado (oferta o contado) y el precio
-    // con financiamiento — pedido de gerencia para igualar el patrón de nuevos.
+    // Patrón "Bruno Fritsch" (pedido de gerencia jun 2026): la card muestra
+    // el precio MÁS BAJO (financiamiento u oferta) y debajo "Incluye bono $X",
+    // donde bono = precio lista − precio mostrado.
     const desde = lowestPrice(price, downPayment) ?? price;
+    const listaNum = Number(String(originalPrice ?? price).replace(/[^0-9]/g, '')) || 0;
+    const desdeNum = Number(String(desde).replace(/[^0-9]/g, '')) || 0;
+    const bono = listaNum > desdeNum ? String(listaNum - desdeNum) : null;
     return (
         <>
             {/* ── Mobile: layout horizontal (imagen izq, contenido der) ── */}
@@ -103,19 +107,12 @@ export function ProductCard({
 
                     <div className="mt-auto flex flex-col gap-2">
                         <div className="uppercase text-black">
-                            {originalPrice && (
-                                <span className="block text-xs font-normal leading-none text-[#EB0A1E] line-through">
-                                    {formatCLP(originalPrice)}
-                                </span>
-                            )}
-                            <span className="block text-xs leading-none">Desde</span>
                             <span className="block text-base font-semibold leading-tight">
                                 {formatCLP(desde)}
                             </span>
-                            {downPayment && (
-                                <span className="mt-0.5 block text-[10px] font-normal normal-case leading-none text-black/60">
-                                    Financiamiento:{' '}
-                                    <span className="font-semibold text-black">{formatCLP(downPayment)}</span>
+                            {bono && (
+                                <span className="mt-0.5 block text-[10px] font-normal normal-case leading-none text-black/70">
+                                    Incluye bono <span className="font-semibold text-black">{formatCLP(bono)}</span>
                                 </span>
                             )}
                         </div>
@@ -193,16 +190,15 @@ export function ProductCard({
                             </span>
                         )}
                         <div className="flex items-center justify-between">
-                        <div className="flex flex-col items-start gap-0.5">
-                            {originalPrice && (
-                                <span className="text-sm font-normal uppercase leading-none text-[#EB0A1E] line-through">
-                                    {formatCLP(originalPrice)}
-                                </span>
-                            )}
-                            <span className="text-sm uppercase leading-none text-black">Desde</span>
+                        <div className="flex flex-col items-start gap-1">
                             <span className="text-2xl font-semibold uppercase leading-none text-black">
                                 {formatCLP(desde)}
                             </span>
+                            {bono && (
+                                <span className="text-xs font-normal leading-none text-black/70">
+                                    Incluye bono <span className="font-semibold text-black">{formatCLP(bono)}</span>
+                                </span>
+                            )}
                         </div>
                         <Link
                             href={href}

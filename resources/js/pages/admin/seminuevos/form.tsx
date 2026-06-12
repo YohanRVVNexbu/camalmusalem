@@ -22,7 +22,7 @@ type BranchLite = { id: number; name: string; city: string | null };
 
 type Seminuevo = {
     id?: number; brand: string; model: string; vu_code: string | null; slug: string | null; year: number; km: number;
-    price: string; price_offer: string | null; down_payment: string | null;
+    price: string; price_offer: string | null; down_payment: string | null; cuota: string | null;
     fuel: string | null; transmission: string | null; traction: string | null;
     doors: number; seats: number; color: string | null; description: string | null;
     gallery: string[]; featured_gallery: string[]; specs: Specs | null;
@@ -202,7 +202,7 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
     const [data, setData] = useState<Seminuevo>(() => {
         const base = seminuevo ?? {
             brand: 'Toyota', model: '', vu_code: null, slug: null, year: new Date().getFullYear(), km: 0,
-            price: '', price_offer: null, down_payment: null, fuel: null, transmission: null, traction: null,
+            price: '', price_offer: null, down_payment: null, cuota: null, fuel: null, transmission: null, traction: null,
             doors: 5, seats: 5, color: null, description: null,
             gallery: [], featured_gallery: [], specs: null, is_visible: true, certified: false, order: 0,
             branch_id: null,
@@ -261,7 +261,7 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
         setProcessing(true);
         const formData = new FormData();
         const fields: (keyof Seminuevo)[] = [
-            'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'price_offer', 'down_payment',
+            'brand', 'model', 'vu_code', 'slug', 'year', 'km', 'price', 'price_offer', 'down_payment', 'cuota',
             'fuel', 'transmission', 'traction', 'doors', 'seats', 'color', 'description', 'is_visible', 'certified', 'order', 'branch_id',
         ];
         fields.forEach((f) => formData.append(f as string, String(data[f] ?? '')));
@@ -356,6 +356,15 @@ export default function SeminuevoForm({ seminuevo, branches = [] }: { seminuevo:
                                 value={formatCLP(data.down_payment)}
                                 onChange={(e) => set('down_payment', e.target.value.replace(/[^0-9]/g, '') || null)}
                                 placeholder="$ 14.500.000"
+                                inputMode="numeric"
+                            />
+                        </div>
+                        <div className="grid gap-2">
+                            <Label>Valor cuota <span className="text-muted-foreground text-xs">(opcional — "Cuotas desde $X" en la ficha)</span></Label>
+                            <Input
+                                value={formatCLP(data.cuota)}
+                                onChange={(e) => set('cuota', e.target.value.replace(/[^0-9]/g, '') || null)}
+                                placeholder="$ 412.055"
                                 inputMode="numeric"
                             />
                         </div>

@@ -46,8 +46,12 @@ export function ProductListItem({
     certificateBadge,
     href = '#',
 }: ProductListItemProps) {
-    // "Desde": menor entre el precio mostrado (oferta o contado) y el de financiamiento.
+    // Patrón "Bruno Fritsch": precio MÁS BAJO + "Incluye bono $X"
+    // (bono = precio lista − precio mostrado).
     const desde = lowestPrice(price, downPayment) ?? price;
+    const listaNum = Number(String(originalPrice ?? price).replace(/[^0-9]/g, '')) || 0;
+    const desdeNum = Number(String(desde).replace(/[^0-9]/g, '')) || 0;
+    const bono = listaNum > desdeNum ? String(listaNum - desdeNum) : null;
     return (
         <div className="relative flex w-full overflow-hidden rounded-[20px] border border-black/5 bg-white">
             {/* Image */}
@@ -107,20 +111,13 @@ export function ProductListItem({
 
                 {/* Price + CTA */}
                 <div className="flex shrink-0 items-center gap-7.5">
-                    <div className="flex flex-col items-end">
-                        {originalPrice && (
-                            <span className="text-sm font-normal uppercase leading-none text-[#EB0A1E] line-through">
-                                {formatCLP(originalPrice)}
-                            </span>
-                        )}
-                        <span className="text-sm uppercase leading-none text-black">Desde</span>
+                    <div className="flex flex-col items-end gap-1">
                         <span className="text-2xl font-semibold uppercase leading-none text-black">
                             {formatCLP(desde)}
                         </span>
-                        {downPayment && (
-                            <span className="mt-0.5 text-xs font-normal normal-case leading-none text-black/60">
-                                Financiamiento:{' '}
-                                <span className="font-semibold text-black">{formatCLP(downPayment)}</span>
+                        {bono && (
+                            <span className="text-xs font-normal leading-none text-black/70">
+                                Incluye bono <span className="font-semibold text-black">{formatCLP(bono)}</span>
                             </span>
                         )}
                     </div>

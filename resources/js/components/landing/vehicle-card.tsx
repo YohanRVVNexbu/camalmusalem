@@ -30,8 +30,12 @@ export function VehicleCard({
     down_payment,
     href = '#',
 }: VehicleCardProps) {
-    // "Desde": menor entre el precio vigente (oferta o contado) y el de financiamiento.
+    // Patrón "Bruno Fritsch": precio MÁS BAJO + "Incluye bono $X"
+    // (bono = precio lista − precio mostrado).
     const desde = lowestPrice(price_offer || price, down_payment) ?? price;
+    const listaNum = Number(String(price ?? '').replace(/[^0-9]/g, '')) || 0;
+    const desdeNum = Number(String(desde).replace(/[^0-9]/g, '')) || 0;
+    const bono = listaNum > desdeNum ? String(listaNum - desdeNum) : null;
     return (
         <div className="flex flex-col overflow-hidden rounded-[20px] border border-black/5 bg-white">
             {/* Image */}
@@ -74,23 +78,16 @@ export function VehicleCard({
                 </div>
 
                 <div className="flex flex-col gap-1.5 px-2.5">
-                    {down_payment && (
-                        <span className="text-xs leading-none text-black/60">
-                            Precio con Financiamiento:{' '}
-                            <span className="font-semibold text-black">{formatCLP(down_payment)}</span>
-                        </span>
-                    )}
                     <div className="flex items-center justify-between">
-                        <div className="flex flex-col gap-0.5">
-                            {price_offer && (
-                                <span className="text-sm leading-none font-normal uppercase text-[#EB0A1E] line-through">
-                                    {formatCLP(price)}
-                                </span>
-                            )}
-                            <span className="text-sm leading-none uppercase text-black">Desde</span>
+                        <div className="flex flex-col gap-1">
                             <span className="text-2xl leading-none font-semibold uppercase text-black">
                                 {formatCLP(desde)}
                             </span>
+                            {bono && (
+                                <span className="text-xs leading-none font-normal text-black/70">
+                                    Incluye bono <span className="font-semibold text-black">{formatCLP(bono)}</span>
+                                </span>
+                            )}
                         </div>
                         <a
                             href={href}
