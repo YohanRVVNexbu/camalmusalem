@@ -70,14 +70,17 @@ class CatalogPresenter
     }
 
     /**
-     * Calcula el precio "Desde" del modelo: el MENOR precio con bono total
-     * aplicado entre todas sus versiones, y el bono de esa versión.
+     * Calcula el precio "Desde" del modelo: el MENOR precio real entre todas
+     * sus versiones, y el bono de esa versión.
      *
-     * Bono total por versión = bono_marca + bono_financiamiento_tradicional
-     * + bono_financiamiento_r9, que mapean respectivamente a las columnas
-     * de la lista de precios "Bono Base TCL" + "Bono Crédito" + "Bono
-     * Crédito R9" (ver ListaPreciosMayo2026Importer). Los modelos sin alguno
-     * de esos bonos lo tienen en 0, así que la suma funciona igual.
+     * Los bonos de financiamiento son EXCLUYENTES entre sí (el cliente toma
+     * crédito R9 *o* crédito tradicional, nunca ambos), así que el bono
+     * máximo aplicable por versión es bono_marca + max(r9, tradicional).
+     * Esto replica buildPricing(): el "Desde" coincide exactamente con el
+     * menor precio que la ficha de detalle muestra (típicamente el "Precio
+     * Bono Financiamiento R9"). Antes se SUMABAN los tres bonos y la card
+     * mostraba un precio fantasma que no existía en el detalle (ej. Raize
+     * i MT: desde $10.990.000 vs R9 real $11.490.000).
      *
      * Devuelve dígitos crudos como string (el frontend aplica formatCLP).
      * Si ninguna versión tiene msrp, price = null (el card muestra "Consultar").
@@ -92,8 +95,7 @@ class CatalogPresenter
                 continue;
             }
             $bono = (int) $v->bono_marca
-                + (int) $v->bono_financiamiento_tradicional
-                + (int) $v->bono_financiamiento_r9;
+                + max((int) $v->bono_financiamiento_tradicional, (int) $v->bono_financiamiento_r9);
             $price = (int) $v->msrp_clp - $bono;
 
             if ($bestPrice === null || $price < $bestPrice) {

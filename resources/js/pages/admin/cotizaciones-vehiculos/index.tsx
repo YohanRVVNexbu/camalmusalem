@@ -32,7 +32,15 @@ type Cotizacion = {
 // CotizacionSyncService).
 const SYNC_ERROR_MSG = 'Hubo un error al enviar el formulario.';
 
-export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizaciones: Cotizacion[] }) {
+export default function CotizacionesVehiculosIndex({
+    cotizaciones,
+    tipo,
+    counts,
+}: {
+    cotizaciones: Cotizacion[];
+    tipo: 'nuevo' | 'seminuevo';
+    counts: { nuevo: number; seminuevo: number };
+}) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
 
     const marcarLeido = (id: number) => router.patch(`/admin/cotizaciones-vehiculos/${id}/leido`);
@@ -81,13 +89,34 @@ export default function CotizacionesVehiculosIndex({ cotizaciones }: { cotizacio
                     </h1>
                 </div>
 
+                {/* Tabs por tipo — pedido del cliente: no mezclar 0 km con seminuevos */}
+                <div className="flex gap-2 border-b pb-px">
+                    {([
+                        { key: 'nuevo', label: 'Vehículos nuevos', count: counts.nuevo },
+                        { key: 'seminuevo', label: 'Seminuevos', count: counts.seminuevo },
+                    ] as const).map((t) => (
+                        <button
+                            key={t.key}
+                            onClick={() => router.get('/admin/cotizaciones-vehiculos', { tipo: t.key }, { preserveState: false })}
+                            className={`-mb-px rounded-t-md border-x border-t px-4 py-2 text-sm font-medium transition-colors ${
+                                tipo === t.key
+                                    ? 'border-border bg-background text-foreground'
+                                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                            }`}
+                        >
+                            {t.label}
+                            <span className="ml-2 rounded-full bg-muted px-2 py-0.5 text-xs text-muted-foreground">{t.count}</span>
+                        </button>
+                    ))}
+                </div>
+
                 {flash?.success && (
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
                 )}
 
                 {cotizaciones.length === 0 ? (
                     <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
-                        No hay cotizaciones aún.
+                        No hay cotizaciones de {tipo === 'nuevo' ? 'vehículos nuevos' : 'seminuevos'} aún.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">

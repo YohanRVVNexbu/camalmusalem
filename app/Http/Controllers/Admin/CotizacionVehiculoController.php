@@ -5,19 +5,36 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CotizacionVehiculo;
 use App\Services\Salesforce\CotizacionSyncService;
+use Illuminate\Http\Request;
 use Inertia\Inertia;
 
 class CotizacionVehiculoController extends Controller
 {
-    public function index()
+    /**
+     * Bandeja de cotizaciones separada por tipo (?tipo=nuevo|seminuevo).
+     * Pedido del cliente (jun 2026): no mezclar las cotizaciones de 0 km
+     * con las de seminuevos. Default: nuevo.
+     */
+    public function index(Request $request)
     {
+        $tipo = in_array($request->query('tipo'), ['nuevo', 'seminuevo'], true)
+            ? $request->query('tipo')
+            : 'nuevo';
+
         $cotizaciones = CotizacionVehiculo::query()
+            ->where('tipo', $tipo)
             ->with(['branch:id,name', 'version:id,trim_name,material_code,option_code'])
             ->orderByDesc('created_at')
             ->get();
 
         return Inertia::render('admin/cotizaciones-vehiculos/index', [
             'cotizaciones' => $cotizaciones,
+            'tipo'         => $tipo,
+            // Contadores para los tabs (incluye no-leídas como referencia rápida).
+            'counts'       => [
+                'nuevo'      => CotizacionVehiculo::where('tipo', 'nuevo')->count(),
+                'seminuevo'  => CotizacionVehiculo::where('tipo', 'seminuevo')->count(),
+            ],
         ]);
     }
 

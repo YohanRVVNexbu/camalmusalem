@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { LazyImage } from '@/components/ui/lazy-image';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, lowestPrice } from '@/lib/format';
 import { FuelElectricIcon } from '@/components/icons/fuel-electric-icon';
 import { FuelGasIcon } from '@/components/icons/fuel-gas-icon';
 import { FuelHybridIcon } from '@/components/icons/fuel-hybrid-icon';
@@ -46,6 +46,9 @@ export function ProductCard({
     certificateBadge,
     href = '#',
 }: ProductCardProps) {
+    // "Desde": menor entre el precio mostrado (oferta o contado) y el precio
+    // con financiamiento — pedido de gerencia para igualar el patrón de nuevos.
+    const desde = lowestPrice(price, downPayment) ?? price;
     return (
         <>
             {/* ── Mobile: layout horizontal (imagen izq, contenido der) ── */}
@@ -105,8 +108,9 @@ export function ProductCard({
                                     {formatCLP(originalPrice)}
                                 </span>
                             )}
+                            <span className="block text-xs leading-none">Desde</span>
                             <span className="block text-base font-semibold leading-tight">
-                                {formatCLP(price)}
+                                {formatCLP(desde)}
                             </span>
                             {downPayment && (
                                 <span className="mt-0.5 block text-[10px] font-normal normal-case leading-none text-black/60">
@@ -129,7 +133,7 @@ export function ProductCard({
             </div>
 
             {/* ── Desktop: layout vertical original con altura fija ── */}
-            <div className="relative hidden w-full flex-col rounded-[20px] border border-black/5 bg-white lg:flex lg:h-130 lg:w-81.75">
+            <div className="relative hidden w-full flex-col rounded-[20px] border border-black/5 bg-white lg:flex lg:h-130">
                 <div className="relative h-59.25 shrink-0 overflow-hidden rounded-t-[14px] p-2.5">
                     <LazyImage
                         src={image}
@@ -189,14 +193,15 @@ export function ProductCard({
                             </span>
                         )}
                         <div className="flex items-center justify-between">
-                        <div className="flex flex-col items-end">
+                        <div className="flex flex-col items-start gap-0.5">
                             {originalPrice && (
                                 <span className="text-sm font-normal uppercase leading-none text-[#EB0A1E] line-through">
                                     {formatCLP(originalPrice)}
                                 </span>
                             )}
+                            <span className="text-sm uppercase leading-none text-black">Desde</span>
                             <span className="text-2xl font-semibold uppercase leading-none text-black">
-                                {formatCLP(price)}
+                                {formatCLP(desde)}
                             </span>
                         </div>
                         <Link

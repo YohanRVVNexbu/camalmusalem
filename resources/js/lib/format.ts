@@ -23,6 +23,19 @@ export function cleanCLP(value: string | number | null | undefined): string {
     return String(value).replace(/[^0-9]/g, '');
 }
 
+/**
+ * Menor precio entre varios candidatos (strings de dígitos; null/vacíos se
+ * ignoran). Usado para el "Desde" de seminuevos: min(contado/oferta,
+ * financiamiento). Devuelve dígitos crudos (aplicar formatCLP al render)
+ * o null si ningún candidato es válido.
+ */
+export function lowestPrice(...values: Array<string | number | null | undefined>): string | null {
+    const nums = values
+        .map((v) => Number(String(v ?? '').replace(/[^0-9]/g, '')))
+        .filter((n) => n > 0);
+    return nums.length ? String(Math.min(...nums)) : null;
+}
+
 // ─── Teléfono chileno ───────────────────────────────────────────────────────
 // El backend (App\Rules\Telefono) valida: 9 dígitos locales, con/sin código país.
 

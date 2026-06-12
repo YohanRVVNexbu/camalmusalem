@@ -118,7 +118,7 @@ export function NuevosProductCard({
             </div>
 
             {/* ── Desktop: layout vertical centrado con imagen overflow arriba ── */}
-            <div className="relative hidden w-full pt-16 lg:block lg:w-81.75">
+            <div className="relative hidden w-full pt-16 lg:block">
                 <div className="absolute left-1/2 -top-4 z-10 flex h-36 w-[85%] -translate-x-1/2 items-center justify-center">
                     <VehicleImage
                         src={image}

@@ -214,7 +214,7 @@ export default function Seminuevos({ data, footer, seminuevos = [] }: { data: an
                             ) : (
                                 <div>
                                     {viewMode === 'grid' ? (
-                                        <div key="grid" className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400 lg:flex-row lg:flex-wrap lg:items-start">
+                                        <div key="grid" className="flex flex-col gap-5 animate-in fade-in slide-in-from-bottom-2 duration-400 lg:grid lg:grid-cols-3 lg:items-start">
                                             {paginated.map((v) => (
                                                 <ProductCard
                                                     key={`grid-${v.id}`}

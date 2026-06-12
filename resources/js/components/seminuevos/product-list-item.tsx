@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { ArrowIcon } from '@/components/landing/arrow-icon';
 import { LazyImage } from '@/components/ui/lazy-image';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, lowestPrice } from '@/lib/format';
 import { FuelElectricIcon } from '@/components/icons/fuel-electric-icon';
 import { FuelGasIcon } from '@/components/icons/fuel-gas-icon';
 import { FuelHybridIcon } from '@/components/icons/fuel-hybrid-icon';
@@ -46,6 +46,8 @@ export function ProductListItem({
     certificateBadge,
     href = '#',
 }: ProductListItemProps) {
+    // "Desde": menor entre el precio mostrado (oferta o contado) y el de financiamiento.
+    const desde = lowestPrice(price, downPayment) ?? price;
     return (
         <div className="relative flex w-full overflow-hidden rounded-[20px] border border-black/5 bg-white">
             {/* Image */}
@@ -111,8 +113,9 @@ export function ProductListItem({
                                 {formatCLP(originalPrice)}
                             </span>
                         )}
+                        <span className="text-sm uppercase leading-none text-black">Desde</span>
                         <span className="text-2xl font-semibold uppercase leading-none text-black">
-                            {formatCLP(price)}
+                            {formatCLP(desde)}
                         </span>
                         {downPayment && (
                             <span className="mt-0.5 text-xs font-normal normal-case leading-none text-black/60">

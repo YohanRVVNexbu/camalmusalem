@@ -1,5 +1,5 @@
 import { ArrowIcon } from '@/components/landing/arrow-icon';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, lowestPrice } from '@/lib/format';
 
 type VehicleCardProps = {
     image: string;
@@ -30,6 +30,8 @@ export function VehicleCard({
     down_payment,
     href = '#',
 }: VehicleCardProps) {
+    // "Desde": menor entre el precio vigente (oferta o contado) y el de financiamiento.
+    const desde = lowestPrice(price_offer || price, down_payment) ?? price;
     return (
         <div className="flex flex-col overflow-hidden rounded-[20px] border border-black/5 bg-white">
             {/* Image */}
@@ -85,8 +87,9 @@ export function VehicleCard({
                                     {formatCLP(price)}
                                 </span>
                             )}
+                            <span className="text-sm leading-none uppercase text-black">Desde</span>
                             <span className="text-2xl leading-none font-semibold uppercase text-black">
-                                {formatCLP(price_offer || price)}
+                                {formatCLP(desde)}
                             </span>
                         </div>
                         <a
