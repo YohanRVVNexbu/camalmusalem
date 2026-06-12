@@ -873,10 +873,20 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
 
     // Centra el thumbnail seleccionado en la tira de multimedia cuando se
     // navega con las flechas (la tira scrollea horizontalmente).
+    // OJO: scrollear SOLO el contenedor de la tira, nunca con scrollIntoView —
+    // ese también desplaza la PÁGINA verticalmente y, como este efecto corre
+    // al montar, la ficha aterrizaba en la sección multimedia en vez de la
+    // portada al entrar desde las cards.
     const thumbsRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
-        const el = thumbsRef.current?.children[selectedMedia] as HTMLElement | undefined;
-        el?.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        const container = thumbsRef.current;
+        const el = container?.children[selectedMedia] as HTMLElement | undefined;
+        if (!container || !el) return;
+        const delta = el.getBoundingClientRect().left - container.getBoundingClientRect().left;
+        container.scrollTo({
+            left: container.scrollLeft + delta - (container.clientWidth - el.clientWidth) / 2,
+            behavior: 'smooth',
+        });
     }, [selectedMedia]);
 
     const handlePointerDown = useCallback((e: React.PointerEvent) => {
