@@ -183,12 +183,6 @@ export function ProductCard({
 
                     {/* Price + CTA fijado al fondo del card */}
                     <div className="mt-auto flex flex-col gap-1.5 px-2.5">
-                        {downPayment && (
-                            <span className="text-xs leading-none text-black/60">
-                                Precio con Financiamiento:{' '}
-                                <span className="font-semibold text-black">{formatCLP(downPayment)}</span>
-                            </span>
-                        )}
                         <div className="flex items-center justify-between">
                         <div className="flex flex-col items-start gap-1">
                             <span className="text-2xl font-semibold uppercase leading-none text-black">
