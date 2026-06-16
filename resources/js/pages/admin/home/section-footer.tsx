@@ -17,7 +17,7 @@ import { appendNested, dotToBracket } from '@/lib/form-data';
 import { SOCIAL_NETWORKS, SOCIAL_NETWORKS_BY_KEY } from '@/lib/social-networks';
 
 type Location = { title: string; items: string[] };
-type LegalLink = { label: string; href: string };
+type LegalLink = { label: string; href: string; file?: string };
 
 type Props = {
     data: {
@@ -35,8 +35,8 @@ type Props = {
 function normalizeLegalLinks(items: (string | LegalLink)[]): LegalLink[] {
     return items.map((item) =>
         typeof item === 'string'
-            ? { label: item, href: /prevenci[óo]n.*del\s*delito/i.test(item) ? '/prevencion-delito' : '#' }
-            : { label: item.label ?? '', href: item.href ?? '#' },
+            ? { label: item, href: /prevenci[óo]n.*del\s*delito/i.test(item) ? '/prevencion-delito' : '#', file: '' }
+            : { label: item.label ?? '', href: item.href ?? '#', file: item.file ?? '' },
     );
 }
 
@@ -61,6 +61,26 @@ export function SectionFooter({ data: initialData, isVisible: initialVisible }: 
 
     const removeLegalLink = (index: number) => {
         setData({ ...data, legal_links: data.legal_links.filter((_, i) => i !== index) });
+        const { [`legal_links.${index}.file`]: _drop, ...restFiles } = files;
+        setFiles(restFiles);
+    };
+
+    const setLegalFile = (index: number, file: File | null) => {
+        const key = `legal_links.${index}.file`;
+        if (file) {
+            setFiles({ ...files, [key]: file });
+        } else {
+            const { [key]: _drop, ...restFiles } = files;
+            setFiles(restFiles);
+        }
+    };
+
+    // Quita el archivo: borra el pendiente y limpia la URL guardada del archivo.
+    const clearLegalFile = (index: number) => {
+        setLegalFile(index, null);
+        const links = [...data.legal_links];
+        links[index] = { ...links[index], file: '' };
+        setData({ ...data, legal_links: links });
     };
 
     const updateSocial = (key: string, value: string) => {
@@ -245,32 +265,67 @@ export function SectionFooter({ data: initialData, isVisible: initialVisible }: 
                     <Plus className="mr-1 size-4" /> Agregar enlace
                 </Button>
             </div>
+            <p className="text-sm text-muted-foreground">
+                Cada enlace puede apuntar a un <strong>archivo (PDF)</strong> que subas o a una <strong>dirección (URL/ruta)</strong>.
+                Si subes un archivo, este tiene prioridad sobre el enlace. Ej.: "Aviso legal" o "Bases legales" → subir el PDF;
+                "Mapa del sitio" → puede ser una dirección o un archivo.
+            </p>
             {data.legal_links.length === 0 ? (
                 <p className="text-sm text-muted-foreground">Aún no has agregado enlaces legales.</p>
             ) : (
                 <div className="flex flex-col gap-3">
-                    {data.legal_links.map((link, i) => (
-                        <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-3 items-end">
-                            <div className="grid gap-2">
-                                <Label className="text-xs">Texto</Label>
-                                <Input value={link.label} onChange={(e) => updateLegalLink(i, 'label', e.target.value)} placeholder="Ej: Aviso legal" />
+                    {data.legal_links.map((link, i) => {
+                        const pendingFile = files[`legal_links.${i}.file`];
+                        return (
+                            <div key={i} className="grid gap-3 rounded-lg border p-4">
+                                <div className="flex items-center justify-between">
+                                    <Label className="text-sm font-medium">Enlace legal {i + 1}</Label>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        onClick={() => removeLegalLink(i)}
+                                        className="text-destructive hover:text-destructive"
+                                        title="Quitar enlace"
+                                    >
+                                        <XIcon className="size-4" />
+                                    </Button>
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-xs">Texto</Label>
+                                    <Input value={link.label} onChange={(e) => updateLegalLink(i, 'label', e.target.value)} placeholder="Ej: Aviso legal" />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-xs">Dirección (URL o ruta) — opcional si subes un archivo</Label>
+                                    <Input value={link.href === '#' ? '' : link.href} onChange={(e) => updateLegalLink(i, 'href', e.target.value || '#')} placeholder="https://… o /ruta" />
+                                </div>
+                                <div className="grid gap-2">
+                                    <Label className="text-xs">Archivo (PDF) — tiene prioridad sobre la dirección</Label>
+                                    {pendingFile ? (
+                                        <p className="text-xs text-primary">Nuevo archivo a subir: <strong>{pendingFile.name}</strong></p>
+                                    ) : link.file ? (
+                                        <a href={link.file} target="_blank" rel="noopener noreferrer" className="text-xs text-primary underline">
+                                            Ver archivo actual
+                                        </a>
+                                    ) : (
+                                        <p className="text-xs text-muted-foreground">Sin archivo.</p>
+                                    )}
+                                    <div className="flex items-center gap-2">
+                                        <Input
+                                            type="file"
+                                            accept=".pdf,.doc,.docx,.xml,.txt,image/*"
+                                            onChange={(e) => setLegalFile(i, e.target.files?.[0] ?? null)}
+                                        />
+                                        {(pendingFile || link.file) && (
+                                            <Button type="button" variant="outline" size="sm" onClick={() => clearLegalFile(i)}>
+                                                Quitar archivo
+                                            </Button>
+                                        )}
+                                    </div>
+                                </div>
                             </div>
-                            <div className="grid gap-2">
-                                <Label className="text-xs">Enlace (URL o ruta)</Label>
-                                <Input value={link.href} onChange={(e) => updateLegalLink(i, 'href', e.target.value)} placeholder="https://… o /ruta" />
-                            </div>
-                            <Button
-                                type="button"
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => removeLegalLink(i)}
-                                className="text-destructive hover:text-destructive"
-                                title="Quitar enlace"
-                            >
-                                <XIcon className="size-4" />
-                            </Button>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
 

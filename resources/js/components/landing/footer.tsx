@@ -20,7 +20,7 @@ function SocialButton({
     );
 }
 
-type LegalLink = { label: string; href: string };
+type LegalLink = { label: string; href: string; file?: string };
 
 type FooterData = {
     logo: string;
@@ -99,15 +99,20 @@ export function Footer({ data }: { data: FooterData }) {
                                 Legales
                             </span>
                             {data.legal_links.map((item, i) => {
-                                // Soporta tanto el formato nuevo {label,href} como el legacy (string).
+                                // Soporta tanto el formato nuevo {label,href,file} como el legacy (string).
                                 const label = typeof item === 'string' ? item : item.label;
+                                // Prioridad: archivo subido (PDF) > URL/ruta > '#'.
+                                const file = typeof item === 'string' ? '' : (item.file ?? '');
                                 const href = typeof item === 'string'
                                     ? (/prevenci[óo]n.*del\s*delito/i.test(item) ? '/prevencion-delito' : '#')
-                                    : (item.href || '#');
+                                    : (item.file || item.href || '#');
+                                const external = href !== '#' && (!!file || /^https?:\/\//i.test(href));
                                 return (
                                     <a
                                         key={`${label}-${i}`}
                                         href={href}
+                                        target={external ? '_blank' : undefined}
+                                        rel={external ? 'noopener noreferrer' : undefined}
                                         className="text-sm leading-normal text-[rgba(35,31,32,0.80)] transition hover:text-black"
                                     >
                                         {label}
