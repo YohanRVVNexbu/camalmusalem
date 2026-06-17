@@ -3,13 +3,18 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Concerns\TieneSeguimiento;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CotizacionVehiculo extends Model
 {
+    use TieneSeguimiento;
+
     protected $table = 'cotizaciones_vehiculos';
 
     protected $fillable = [
+        'estado',
+        'nota_seguimiento',
         'tipo',
         'vehicle_id',
         'branch_id',

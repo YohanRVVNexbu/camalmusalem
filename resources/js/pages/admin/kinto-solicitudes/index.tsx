@@ -1,9 +1,17 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { Trash2, MailOpen, Mail, Calendar, Car, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
+import {
+    EstadoBadge,
+    SeguimientoControls,
+    SeguimientoTabs,
+    filtrarSeguimiento,
+    type SeguimientoFiltro,
+} from '@/components/admin/seguimiento-controls';
 
 type Solicitud = {
     id: number;
@@ -18,6 +26,8 @@ type Solicitud = {
     correo: string;
     leido: boolean;
     created_at: string;
+    estado?: string | null;
+    nota_seguimiento?: string | null;
 };
 
 const SUCURSAL_LABEL: Record<string, string> = {
@@ -33,6 +43,9 @@ const VEHICULO_LABEL: Record<string, string> = {
 export default function KintoSolicitudesIndex({ solicitudes }: { solicitudes: Solicitud[] }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const noLeidos = solicitudes.filter((s) => !s.leido).length;
+
+    const [filtro, setFiltro] = useState<SeguimientoFiltro>('activas');
+    const visibles = filtrarSeguimiento(solicitudes, filtro);
 
     const marcarLeido = (id: number) => router.patch(`/admin/kinto-solicitudes/${id}/leido`);
     const eliminar = (id: number) => { if (confirm('¿Eliminar esta solicitud?')) router.delete(`/admin/kinto-solicitudes/${id}`); };
@@ -52,13 +65,15 @@ export default function KintoSolicitudesIndex({ solicitudes }: { solicitudes: So
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
                 )}
 
-                {solicitudes.length === 0 ? (
+                <SeguimientoTabs items={solicitudes} value={filtro} onChange={setFiltro} />
+
+                {visibles.length === 0 ? (
                     <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
                         No hay solicitudes aún.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        {solicitudes.map((s) => (
+                        {visibles.map((s) => (
                             <div key={s.id} className={`rounded-lg border p-5 transition-colors ${s.leido ? 'bg-background' : 'border-primary/30 bg-primary/5'}`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex flex-1 flex-col gap-3 min-w-0">
@@ -70,6 +85,7 @@ export default function KintoSolicitudesIndex({ solicitudes }: { solicitudes: So
                                             <span className="text-sm text-muted-foreground">{s.correo}</span>
                                             <span className="text-muted-foreground text-sm">·</span>
                                             <span className="text-sm text-muted-foreground">{s.telefono}</span>
+                                            <EstadoBadge estado={s.estado} />
                                             <span className="text-sm text-muted-foreground ml-auto">
                                                 {new Date(s.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </span>
@@ -116,6 +132,8 @@ export default function KintoSolicitudesIndex({ solicitudes }: { solicitudes: So
                                         </Button>
                                     </div>
                                 </div>
+
+                                <SeguimientoControls tipo="kinto" id={s.id} estado={s.estado} nota={s.nota_seguimiento} />
                             </div>
                         ))}
                     </div>

@@ -22,6 +22,7 @@ use App\Http\Controllers\Admin\KintoSolicitudController;
 use App\Http\Controllers\Admin\MaintenanceController;
 use App\Http\Controllers\Admin\MantencionController;
 use App\Http\Controllers\Admin\SolicitudEncargoRepuestoController;
+use App\Http\Controllers\Admin\SolicitudSeguimientoController;
 use App\Http\Controllers\Admin\HomeContentController;
 use App\Http\Controllers\Admin\NoticiaController;
 use App\Http\Controllers\Admin\PageContentController;
@@ -41,6 +42,10 @@ Route::middleware('guest')->group(function () {
 Route::middleware('admin')->group(function () {
     Route::post('logout', [AuthController::class, 'logout'])->name('admin.logout');
     Route::get('/', [DashboardController::class, 'index'])->name('admin.dashboard');
+
+    // Seguimiento genérico de solicitudes (estado + nota) para todas las bandejas.
+    Route::patch('solicitudes/{tipo}/{id}/seguimiento', [SolicitudSeguimientoController::class, 'update'])
+        ->name('admin.solicitudes.seguimiento');
 
     // Subida de imágenes vía Base64 (JSON) — esquiva el falso positivo 403
     // de ModSecurity (path-traversal) que afecta a los uploads multipart.

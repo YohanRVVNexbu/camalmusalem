@@ -1,8 +1,10 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { Trash2, MailOpen, Mail, RefreshCw, CheckCircle2, XCircle, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
+import { EstadoBadge, SeguimientoControls, SeguimientoTabs, filtrarSeguimiento, type SeguimientoFiltro } from '@/components/admin/seguimiento-controls';
 
 type Cotizacion = {
     id: number;
@@ -25,6 +27,8 @@ type Cotizacion = {
     salesforce_quote_id: string | null;
     sync_last_error: string | null;
     sync_attempts: number;
+    estado?: string | null;
+    nota_seguimiento?: string | null;
 };
 
 // Mensaje genérico para fallos de sincronización con Salesforce. El detalle
@@ -42,6 +46,8 @@ export default function CotizacionesVehiculosIndex({
     counts: { nuevo: number; seminuevo: number };
 }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
+    const [filtro, setFiltro] = useState<SeguimientoFiltro>('activas');
+    const visibles = filtrarSeguimiento(cotizaciones, filtro);
 
     const marcarLeido = (id: number) => router.patch(`/admin/cotizaciones-vehiculos/${id}/leido`);
     const eliminar = (id: number) => {
@@ -110,17 +116,20 @@ export default function CotizacionesVehiculosIndex({
                     ))}
                 </div>
 
+                {/* Filtro por estado de seguimiento (sobre el tipo ya seleccionado) */}
+                <SeguimientoTabs items={cotizaciones} value={filtro} onChange={setFiltro} />
+
                 {flash?.success && (
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
                 )}
 
-                {cotizaciones.length === 0 ? (
+                {visibles.length === 0 ? (
                     <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
-                        No hay cotizaciones de {tipo === 'nuevo' ? 'vehículos nuevos' : 'seminuevos'} aún.
+                        No hay cotizaciones en esta vista.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        {cotizaciones.map((c) => (
+                        {visibles.map((c) => (
                             <div key={c.id} className={`rounded-lg border p-5 transition-colors ${c.leido ? 'bg-background' : 'border-primary/30 bg-primary/5'}`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex flex-1 flex-col gap-1 min-w-0">
@@ -138,6 +147,7 @@ export default function CotizacionesVehiculosIndex({
                                                 </>
                                             )}
                                             <Badge variant="outline" className="ml-1">{c.tipo === 'nuevo' ? 'Nuevo' : 'Seminuevo'}</Badge>
+                                            <EstadoBadge estado={c.estado} />
                                             {renderSyncBadge(c)}
                                             <span className="text-muted-foreground text-sm ml-auto">
                                                 {new Date(c.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
@@ -179,6 +189,7 @@ export default function CotizacionesVehiculosIndex({
                                         </Button>
                                     </div>
                                 </div>
+                                <SeguimientoControls tipo="cotizacion-vehiculo" id={c.id} estado={c.estado} nota={c.nota_seguimiento} />
                             </div>
                         ))}
                     </div>

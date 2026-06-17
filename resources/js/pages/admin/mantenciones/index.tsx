@@ -1,9 +1,17 @@
 import { Head, router, usePage } from '@inertiajs/react';
+import { useState } from 'react';
 import { Trash2, MailOpen, Mail, Calendar, Car, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import AdminLayout from '@/layouts/admin-layout';
+import {
+    EstadoBadge,
+    SeguimientoControls,
+    SeguimientoTabs,
+    filtrarSeguimiento,
+    type SeguimientoFiltro,
+} from '@/components/admin/seguimiento-controls';
 
 type Agendamiento = {
     id: number;
@@ -20,12 +28,16 @@ type Agendamiento = {
     telefono: string;
     correo: string;
     leido: boolean;
+    estado?: string | null;
+    nota_seguimiento?: string | null;
     created_at: string;
 };
 
 export default function MantencionesIndex({ agendamientos }: { agendamientos: Agendamiento[] }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
     const noLeidos = agendamientos.filter((a) => !a.leido).length;
+    const [filtro, setFiltro] = useState<SeguimientoFiltro>('activas');
+    const visibles = filtrarSeguimiento(agendamientos, filtro);
 
     const marcarLeido = (id: number) => router.patch(`/admin/mantenciones/${id}/leido`);
     const eliminar = (id: number) => { if (confirm('¿Eliminar este agendamiento?')) router.delete(`/admin/mantenciones/${id}`); };
@@ -45,13 +57,15 @@ export default function MantencionesIndex({ agendamientos }: { agendamientos: Ag
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
                 )}
 
-                {agendamientos.length === 0 ? (
+                <SeguimientoTabs items={agendamientos} value={filtro} onChange={setFiltro} />
+
+                {visibles.length === 0 ? (
                     <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
                         No hay agendamientos aún.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        {agendamientos.map((a) => (
+                        {visibles.map((a) => (
                             <div key={a.id} className={`rounded-lg border p-5 transition-colors ${a.leido ? 'bg-background' : 'border-primary/30 bg-primary/5'}`}>
                                 <div className="flex items-start justify-between gap-4">
                                     <div className="flex flex-1 flex-col gap-3 min-w-0">
@@ -63,6 +77,7 @@ export default function MantencionesIndex({ agendamientos }: { agendamientos: Ag
                                             <span className="text-sm text-muted-foreground">{a.correo}</span>
                                             <span className="text-muted-foreground text-sm">·</span>
                                             <span className="text-sm text-muted-foreground">{a.telefono}</span>
+                                            <EstadoBadge estado={a.estado} />
                                             <span className="text-sm text-muted-foreground ml-auto">
                                                 {new Date(a.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </span>
@@ -113,6 +128,8 @@ export default function MantencionesIndex({ agendamientos }: { agendamientos: Ag
                                         </Button>
                                     </div>
                                 </div>
+
+                                <SeguimientoControls tipo="mantencion" id={a.id} estado={a.estado} nota={a.nota_seguimiento} />
                             </div>
                         ))}
                     </div>

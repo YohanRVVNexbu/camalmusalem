@@ -1,8 +1,16 @@
+import { useState } from 'react';
 import { Head, router, usePage } from '@inertiajs/react';
 import { Trash2, MailOpen, Mail } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import AdminLayout from '@/layouts/admin-layout';
+import {
+    EstadoBadge,
+    SeguimientoControls,
+    SeguimientoTabs,
+    filtrarSeguimiento,
+    type SeguimientoFiltro,
+} from '@/components/admin/seguimiento-controls';
 
 type Contacto = {
     id: number;
@@ -13,11 +21,16 @@ type Contacto = {
     rut: string | null;
     mensaje: string;
     leido: boolean;
+    estado?: string | null;
+    nota_seguimiento?: string | null;
     created_at: string;
 };
 
 export default function ContactosIndex({ contactos }: { contactos: Contacto[] }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
+
+    const [filtro, setFiltro] = useState<SeguimientoFiltro>('activas');
+    const visibles = filtrarSeguimiento(contactos, filtro);
 
     const marcarLeido = (id: number) => {
         router.patch(`/admin/contactos/${id}/leido`);
@@ -48,13 +61,15 @@ export default function ContactosIndex({ contactos }: { contactos: Contacto[] })
                     <div className="rounded-md border border-green-200 bg-green-50 p-3 text-sm text-green-700">{flash.success}</div>
                 )}
 
-                {contactos.length === 0 ? (
+                <SeguimientoTabs items={contactos} value={filtro} onChange={setFiltro} />
+
+                {visibles.length === 0 ? (
                     <div className="flex h-40 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
-                        No hay mensajes aún.
+                        No hay solicitudes en esta vista.
                     </div>
                 ) : (
                     <div className="flex flex-col gap-3">
-                        {contactos.map((c) => (
+                        {visibles.map((c) => (
                             <div
                                 key={c.id}
                                 className={`rounded-lg border p-5 transition-colors ${c.leido ? 'bg-background' : 'border-primary/30 bg-primary/5'}`}
@@ -64,6 +79,7 @@ export default function ContactosIndex({ contactos }: { contactos: Contacto[] })
                                         <div className="flex items-center gap-2 flex-wrap">
                                             {!c.leido && <span className="size-2 rounded-full bg-primary shrink-0" />}
                                             <span className="font-semibold">{c.nombre}</span>
+                                            <EstadoBadge estado={c.estado} />
                                             <span className="text-muted-foreground text-sm">·</span>
                                             <span className="text-sm text-muted-foreground">{c.email}</span>
                                             {c.telefono && (
@@ -110,6 +126,12 @@ export default function ContactosIndex({ contactos }: { contactos: Contacto[] })
                                         </Button>
                                     </div>
                                 </div>
+                                <SeguimientoControls
+                                    tipo="contacto"
+                                    id={c.id}
+                                    estado={c.estado}
+                                    nota={c.nota_seguimiento}
+                                />
                             </div>
                         ))}
                     </div>
