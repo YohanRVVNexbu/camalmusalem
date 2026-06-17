@@ -2,6 +2,7 @@
 
 namespace App\Models\Concerns;
 
+use App\Support\EstadoSeguimiento;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
@@ -13,28 +14,16 @@ use Illuminate\Database\Eloquent\Builder;
  * Requiere que la tabla tenga las columnas `estado` (default 'pendiente') y
  * `nota_seguimiento` (nullable) — ver migración add_seguimiento_to_solicitudes.
  * El modelo debe incluir 'estado' y 'nota_seguimiento' en su $fillable.
+ *
+ * Los estados válidos viven en App\Support\EstadoSeguimiento (clase normal):
+ * las constantes de un trait NO se pueden acceder llamando un método estático
+ * directamente sobre el trait, por eso no se definen aquí.
  */
 trait TieneSeguimiento
 {
-    public const ESTADO_PENDIENTE      = 'pendiente';
-    public const ESTADO_EN_SEGUIMIENTO = 'en_seguimiento';
-    public const ESTADO_CERRADA        = 'cerrada';
-
-    /** Catálogo estado => etiqueta legible. */
-    public const ESTADOS_SEGUIMIENTO = [
-        self::ESTADO_PENDIENTE      => 'Pendiente',
-        self::ESTADO_EN_SEGUIMIENTO => 'En seguimiento',
-        self::ESTADO_CERRADA        => 'Cerrada',
-    ];
-
-    public static function estadosSeguimientoValidos(): array
-    {
-        return array_keys(self::ESTADOS_SEGUIMIENTO);
-    }
-
     /** Excluye las solicitudes cerradas (las activas pendientes de gestión). */
     public function scopeNoCerradas(Builder $query): Builder
     {
-        return $query->where('estado', '!=', self::ESTADO_CERRADA);
+        return $query->where('estado', '!=', EstadoSeguimiento::CERRADA);
     }
 }

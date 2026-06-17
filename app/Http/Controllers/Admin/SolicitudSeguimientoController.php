@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Concerns\TieneSeguimiento;
 use App\Models\Contacto;
 use App\Models\CotizacionAccesorio;
 use App\Models\CotizacionMerch;
@@ -12,6 +11,7 @@ use App\Models\CotizacionVehiculo;
 use App\Models\KintoSolicitud;
 use App\Models\MantencionAgendamiento;
 use App\Models\SolicitudEncargoRepuesto;
+use App\Support\EstadoSeguimiento;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -40,7 +40,7 @@ class SolicitudSeguimientoController extends Controller
         $modelClass = self::TIPOS[$tipo] ?? abort(404);
 
         $validated = $request->validate([
-            'estado'           => ['nullable', Rule::in(TieneSeguimiento::estadosSeguimientoValidos())],
+            'estado'           => ['nullable', Rule::in(EstadoSeguimiento::valores())],
             'nota_seguimiento' => ['nullable', 'string', 'max:2000'],
         ]);
 
