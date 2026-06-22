@@ -14,12 +14,15 @@ use App\Http\Controllers\PagesController;
 use App\Http\Controllers\PostVentaController;
 use App\Http\Controllers\SeminuevosController;
 use App\Http\Controllers\SolicitudEncargoRepuestoController;
+use App\Http\Controllers\VehiculoColorController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
 Route::get('/nuevos', [NuevosController::class, 'index'])->name('nuevos');
 Route::get('/nuevos/{id}/cotizar', [NuevosController::class, 'cotizar'])->name('nuevos.cotizar');
 Route::post('/cotizaciones/vehiculo', [CotizacionVehiculoController::class, 'store'])->name('cotizaciones.vehiculo.store');
+// Colores disponibles de una versión (Salesforce/Mulesoft) para el selector del formulario.
+Route::get('/vehiculos/{version}/colores', [VehiculoColorController::class, 'index'])->name('vehiculos.colores');
 Route::get('/nuevos/{id}', [NuevosController::class, 'show'])->name('nuevos.show');
 Route::get('/seminuevos', [SeminuevosController::class, 'index'])->name('seminuevos');
 Route::get('/seminuevos/comparar', [SeminuevosController::class, 'compare'])->name('seminuevos.compare');

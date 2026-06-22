@@ -12,6 +12,7 @@ type Cotizacion = {
     vehicle_id: number;
     vehicle_nombre: string;
     vehicle_precio: string | null;
+    color: string | null;
     nombre: string;
     email: string;
     telefono: string;
@@ -153,7 +154,10 @@ export default function CotizacionesVehiculosIndex({
                                                 {new Date(c.created_at).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                             </span>
                                         </div>
-                                        <p className="font-medium">{c.vehicle_nombre}{c.vehicle_precio ? ` — ${c.vehicle_precio}` : ''}</p>
+                                        <p className="font-medium">
+                                            {c.vehicle_nombre}{c.vehicle_precio ? ` — ${c.vehicle_precio}` : ''}
+                                            {c.color && <span className="text-muted-foreground font-normal"> · Color: {c.color}</span>}
+                                        </p>
                                         {(c.branch || c.version?.option_code || c.version?.material_code) && (
                                             <p className="text-xs text-muted-foreground">
                                                 {c.branch && <>Sucursal: <strong>{c.branch.name}</strong></>}

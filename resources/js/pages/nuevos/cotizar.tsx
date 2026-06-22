@@ -27,6 +27,8 @@ type Vehicle = {
 
 type BranchOption = { id: number; name: string; city?: string | null };
 
+type ColorOption = { externalColor: string; externalCodeColor?: string; internalColor?: string };
+
 export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; footer: any | null }) {
     const { branchesShared } = usePage<{ branchesShared: BranchOption[] }>().props;
     const branches = branchesShared ?? [];
@@ -37,6 +39,8 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
     const [rut, setRut] = useState('');
     const [comentarios, setComentarios] = useState('');
     const [branchId, setBranchId] = useState<number | ''>(branches.length === 1 ? branches[0].id : '');
+    const [colores, setColores] = useState<ColorOption[]>([]);
+    const [color, setColor] = useState('');
     const [acepta, setAcepta] = useState(false);
     const [enviado, setEnviado] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -62,6 +66,29 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
             : null
     ) ?? vehicle.versions?.[0];
 
+    // Colores disponibles de la versión (Salesforce/Mulesoft). Si el API está
+    // deshabilitado o falla, devuelve [] y el selector simplemente no aparece.
+    useEffect(() => {
+        const versionId = activeVersion?.id;
+        if (!versionId) {
+            setColores([]);
+            return;
+        }
+        let cancelled = false;
+        fetch(`/vehiculos/${versionId}/colores`, { headers: { Accept: 'application/json' } })
+            .then((r) => (r.ok ? r.json() : { colors: [] }))
+            .then((data) => {
+                if (cancelled) return;
+                const list: ColorOption[] = Array.isArray(data?.colors) ? data.colors : [];
+                setColores(list);
+                setColor((prev) => (list.some((c) => c.externalColor === prev) ? prev : ''));
+            })
+            .catch(() => {
+                if (!cancelled) setColores([]);
+            });
+        return () => { cancelled = true; };
+    }, [activeVersion?.id]);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         if (submitting) return;
@@ -78,6 +105,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
             tipo: 'nuevo',
             vehicle_id: vehicle.id,
             version_id: activeVersion?.id ?? null,
+            color: color || null,
             branch_id: branchId || null,
             nombre,
             email,
@@ -241,6 +269,28 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                                     <span className="text-xs text-red-500">Ingresa un RUT válido (ej: 12.345.678-9).</span>
                                                 )}
                                             </div>
+
+                                            {/* Color de interés — opciones desde Salesforce (solo si hay) */}
+                                            {colores.length > 0 && (
+                                                <div className="flex w-full flex-col items-start gap-2.5">
+                                                    <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
+                                                        Color de interés <span className="text-black/50">(opcional)</span>
+                                                    </label>
+                                                    <select
+                                                        value={color}
+                                                        onChange={(e) => setColor(e.target.value)}
+                                                        className="h-10 w-full cursor-pointer rounded-[60px] border border-transparent bg-white px-5 text-sm leading-none text-black outline-none focus:border-black/20"
+                                                        style={{ fontFamily: '"Toyota Type"' }}
+                                                    >
+                                                        <option value="">Selecciona un color</option>
+                                                        {colores.map((c) => (
+                                                            <option key={c.externalColor} value={c.externalColor}>
+                                                                {c.externalColor}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            )}
                                         </div>
 
                                         {/* Comentarios */}

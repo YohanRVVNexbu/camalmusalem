@@ -19,6 +19,7 @@ class CotizacionVehiculo extends Model
         'vehicle_id',
         'branch_id',
         'version_id',
+        'color',
         'vehicle_nombre',
         'vehicle_precio',
         'nombre',

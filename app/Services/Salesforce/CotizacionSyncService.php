@@ -115,6 +115,12 @@ class CotizacionSyncService
         $descripcionPartes = [
             "Cotización web Toyota Musalem — Sucursal: {$branch->name}",
         ];
+        // El Create Quote API todavía no tiene un campo estructurado para el
+        // color, así que lo mandamos dentro de la descripción (workaround
+        // acordado con Globant hasta que agreguen el campo).
+        if ($cot->color) {
+            $descripcionPartes[] = "Color de interés: {$cot->color}";
+        }
         if ($cot->comentarios) {
             $descripcionPartes[] = "Comentarios cliente: {$cot->comentarios}";
         }

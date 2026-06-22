@@ -121,6 +121,57 @@ class DealerExpApiClient
     }
 
     /**
+     * GET /dealers/vehicle-versions/{optionCode}/colors
+     * Devuelve los colores disponibles de una versión (por su option_code, el
+     * mismo de la lista de precios). API adicional de Mulesoft (jun 2026).
+     *
+     * Es RESILIENTE a propósito: si la integración está deshabilitada, no hay
+     * credenciales, o el API falla, devuelve [] en vez de tirar excepción —
+     * así nunca rompe el formulario público (el selector de color simplemente
+     * no aparece). Cachea el resultado 6 horas por option_code.
+     *
+     * @return array<int, array<string, mixed>> Lista de colores (cada uno con
+     *   internalColor, internalCodeColor, externalColor, extenalCodeColor, isActive).
+     */
+    public function getColors(string $optionCode, ?string $dealerId = null): array
+    {
+        if (! $this->isEnabled() || trim($optionCode) === '') {
+            return [];
+        }
+
+        $dealerId = $dealerId ?: (array_key_first($this->dealers) ?: '100068');
+
+        return Cache::remember('salesforce_dealer:colors:'.$optionCode, 21600, function () use ($optionCode, $dealerId) {
+            try {
+                [$clientId, $clientSecret] = $this->resolveCredentials($dealerId);
+                $token = $this->getTokenFor($dealerId, $clientId, $clientSecret);
+                $url = rtrim($this->apiBaseUrl, '/').'/vehicle-versions/'.rawurlencode($optionCode).'/colors';
+
+                $response = Http::withHeaders($this->commonHeaders($token, $clientId, $clientSecret))
+                    ->timeout(15)->connectTimeout(8)->get($url);
+
+                if ($response->status() === 401) {
+                    $this->forgetTokenFor($dealerId);
+                    $token = $this->getTokenFor($dealerId, $clientId, $clientSecret);
+                    $response = Http::withHeaders($this->commonHeaders($token, $clientId, $clientSecret))
+                        ->timeout(15)->get($url);
+                }
+
+                if (! $response->successful()) {
+                    return [];
+                }
+
+                $colors = data_get($response->json(), 'data.colors', []);
+
+                return is_array($colors) ? array_values($colors) : [];
+            } catch (\Throwable $e) {
+                Log::warning('Salesforce getColors falló', ['option_code' => $optionCode, 'error' => $e->getMessage()]);
+                return [];
+            }
+        });
+    }
+
+    /**
      * Resuelve el par client_id/client_secret a usar para un dealer dado.
      * Primero busca en el mapa `dealers.{dealerId}`, sino cae al genérico.
      *
