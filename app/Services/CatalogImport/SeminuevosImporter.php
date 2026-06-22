@@ -38,7 +38,8 @@ class SeminuevosImporter
             $year      = (int) ($row[3] ?? 0);
             $color     = $this->str($row[4]);
             $price     = $this->money($row[9]);   // Precio lista (CLP)
-            $financed  = $this->money($row[11]);  // Precio Lista + Bono (= "Precio con Financiamiento")
+            $financed  = $this->money($row[10]);  // Precio con Financiamiento
+            $offer     = $this->money($row[11]);  // Precio Oferta (opcional)
             $km        = (int) ($row[19] ?? 0);
             $certified = $this->parseCertified($row[6] ?? null); // Certificación Toyota Usados
 
@@ -55,6 +56,7 @@ class SeminuevosImporter
                 'km'           => $km,
                 'price'        => $price,
                 'down_payment' => $financed,
+                'price_offer'  => $offer,
                 'fuel'         => $this->str($row[18]),
                 'transmission' => $this->str($row[14]),
                 'traction'     => $this->str($row[13]),

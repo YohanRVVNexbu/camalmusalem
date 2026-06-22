@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminLayout from '@/layouts/admin-layout';
 
-type Seminuevo = { id: number; brand: string; model: string; vu_code: string | null; year: number; km: number; price: string; fuel: string | null; transmission: string | null; is_visible: boolean; };
+type Seminuevo = { id: number; brand: string; model: string; vu_code: string | null; year: number; km: number; price: string; fuel: string | null; transmission: string | null; is_visible: boolean; gallery: string[] | null; };
 
 export default function SeminuevosIndex({ seminuevos }: { seminuevos: Seminuevo[] }) {
     const { flash } = usePage<{ flash: { success?: string } }>().props;
@@ -63,6 +63,7 @@ export default function SeminuevosIndex({ seminuevos }: { seminuevos: Seminuevo[
                                 <TableHead>Año</TableHead>
                                 <TableHead>Km</TableHead>
                                 <TableHead>Precio</TableHead>
+                                <TableHead>Fotos</TableHead>
                                 <TableHead>Combustible</TableHead>
                                 <TableHead>Estado</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
@@ -80,6 +81,11 @@ export default function SeminuevosIndex({ seminuevos }: { seminuevos: Seminuevo[
                                     <TableCell>{s.year}</TableCell>
                                     <TableCell>{s.km.toLocaleString('es-CL')} km</TableCell>
                                     <TableCell>{formatCLP(s.price)}</TableCell>
+                                    <TableCell>
+                                        {(s.gallery?.length ?? 0) > 0
+                                            ? <Badge variant="outline" className="border-green-300 bg-green-50 text-green-700">{s.gallery!.length} foto{s.gallery!.length === 1 ? '' : 's'}</Badge>
+                                            : <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">Sin fotos</Badge>}
+                                    </TableCell>
                                     <TableCell>{s.fuel ?? '—'}</TableCell>
                                     <TableCell><Badge variant={s.is_visible ? 'default' : 'secondary'}>{s.is_visible ? 'Visible' : 'Oculto'}</Badge></TableCell>
                                     <TableCell className="text-right">
@@ -95,7 +101,7 @@ export default function SeminuevosIndex({ seminuevos }: { seminuevos: Seminuevo[
                                 </TableRow>
                             ))}
                             {filtered.length === 0 && (
-                                <TableRow><TableCell colSpan={8} className="py-8 text-center text-muted-foreground">{query ? 'No se encontraron seminuevos para tu búsqueda.' : 'No hay seminuevos.'}</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={9} className="py-8 text-center text-muted-foreground">{query ? 'No se encontraron seminuevos para tu búsqueda.' : 'No hay seminuevos.'}</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>

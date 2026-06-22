@@ -18,7 +18,7 @@ class SeminuevosExporter extends BaseExporter
         return [
             'VU', 'Marca', 'Modelo', 'Año', 'Color',
             'Mantenciones', 'Certificación Toyota Usados', 'Segmento', 'Año',
-            'Precio lista (CLP)', 'Bono Financiamiento', 'Precio Lista + Bono',
+            'Precio lista (CLP)', 'Precio con Financiamiento', 'Precio Oferta',
             'Imagen hero', 'Tracción', 'Transmisión', 'Cilindrada (cc)',
             'Potencia', 'Torque', 'Tipo Combustible', 'KM',
             'Sistema de frenos ABS', 'Distribución electrónica de frenado (EBD)',
@@ -82,7 +82,8 @@ class SeminuevosExporter extends BaseExporter
                 $s->year,
                 $s->price,
                 $s->down_payment,
-                null, null,
+                $s->price_offer,
+                null,
                 $s->traction,
                 $s->transmission,
                 null, null, null,
