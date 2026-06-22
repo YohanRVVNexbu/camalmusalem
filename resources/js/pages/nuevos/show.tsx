@@ -843,13 +843,25 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
         ? `Incluye bono ${formatCLP(vehicle.desde_bono)}`
         : null;
 
+    // Color actualmente elegido en el visor 360 (pertenece a la versión que se
+    // está viendo). Lo arrastramos al formulario de cotización vía ?color= para
+    // que llegue ya seleccionado.
+    const selectedVersionId: number | null = vehicle.versions?.[selectedVersion]?.id ?? null;
+    const selectedColorName: string | null = dynamicColors[selectedColor]?.name?.trim() || null;
+
     const cotizarHref: string = rentalContext
         ? `/kinto?rental=${rentalContext.id}`
         : `/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`;
     const cotizarHrefForVersion = (verId: number | undefined | null): string => {
         if (rentalContext) return `/kinto?rental=${rentalContext.id}`;
         const base = `/nuevos/${vehicle.slug ?? vehicle.id}/cotizar`;
-        return verId ? `${base}?version=${verId}` : base;
+        let href = verId ? `${base}?version=${verId}` : base;
+        // El color del 360 solo aplica a la versión que se está viendo. Si el
+        // CTA es de OTRA versión, no lo adjuntamos (sería el color equivocado).
+        if (selectedColorName && (verId == null || verId === selectedVersionId)) {
+            href += `${href.includes('?') ? '&' : '?'}color=${encodeURIComponent(selectedColorName)}`;
+        }
+        return href;
     };
     const cotizarLabel: string = rentalContext ? 'Solicitar arriendo' : 'Cotizar';
 
@@ -919,7 +931,7 @@ export default function NuevosShow({ vehicle: vehicleProp, footer, shorts, youtu
                     detailBar={{
                         backHref: rentalContext ? '/kinto' : '/nuevos',
                         vehicleName: vehicle.fullName,
-                        ctaHref: cotizarHref,
+                        ctaHref: cotizarHrefForVersion(selectedVersionId),
                         ctaLabel: rentalContext ? 'Arrendar' : 'Cotizar',
                     }}
                 />

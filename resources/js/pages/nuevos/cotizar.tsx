@@ -29,6 +29,10 @@ type BranchOption = { id: number; name: string; city?: string | null };
 
 type ColorOption = { externalColor: string; externalCodeColor?: string; internalColor?: string };
 
+// Normaliza nombres de color para comparar (saca tildes, espacios y mayúsculas).
+// El color que llega del visor 360 puede venir escrito distinto al de Salesforce.
+const normColor = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').trim().toLowerCase();
+
 export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; footer: any | null }) {
     const { branchesShared } = usePage<{ branchesShared: BranchOption[] }>().props;
     const branches = branchesShared ?? [];
@@ -40,7 +44,12 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
     const [comentarios, setComentarios] = useState('');
     const [branchId, setBranchId] = useState<number | ''>(branches.length === 1 ? branches[0].id : '');
     const [colores, setColores] = useState<ColorOption[]>([]);
-    const [color, setColor] = useState('');
+    // Color preseleccionado: llega en ?color=… desde el visor 360 de la ficha.
+    // Se conserva aunque el API de Salesforce no lo liste.
+    const [color, setColor] = useState(() => {
+        if (typeof window === 'undefined') return '';
+        return (new URLSearchParams(window.location.search).get('color') ?? '').trim();
+    });
     const [acepta, setAcepta] = useState(false);
     const [enviado, setEnviado] = useState(false);
     const [submitting, setSubmitting] = useState(false);
@@ -81,7 +90,14 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                 if (cancelled) return;
                 const list: ColorOption[] = Array.isArray(data?.colors) ? data.colors : [];
                 setColores(list);
-                setColor((prev) => (list.some((c) => c.externalColor === prev) ? prev : ''));
+                // Si el color preseleccionado (del 360) calza con uno de
+                // Salesforce ignorando tildes/mayúsculas, lo normalizamos a la
+                // etiqueta oficial. Si no calza pero existe, lo conservamos.
+                setColor((prev) => {
+                    if (!prev) return '';
+                    const match = list.find((c) => normColor(c.externalColor) === normColor(prev));
+                    return match ? match.externalColor : prev;
+                });
             })
             .catch(() => {
                 if (!cancelled) setColores([]);
@@ -130,6 +146,13 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
     const backHref = `/nuevos/${vehicle.slug ?? vehicle.id}`;
     const titleDisplay = activeVersion?.name || vehicle.full_name || vehicle.name;
     const pricingRows = activeVersion?.pricing ?? [];
+
+    // Opciones del selector: las de Salesforce + el color preseleccionado del
+    // 360 si no estuviera en esa lista, así siempre aparece y queda elegido.
+    const colorOptions: ColorOption[] =
+        color && !colores.some((c) => normColor(c.externalColor) === normColor(color))
+            ? [{ externalColor: color }, ...colores]
+            : colores;
 
     return (
         <>
@@ -270,8 +293,8 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                                 )}
                                             </div>
 
-                                            {/* Color de interés — opciones desde Salesforce (solo si hay) */}
-                                            {colores.length > 0 && (
+                                            {/* Color de interés — viene del 360 y/o de Salesforce */}
+                                            {colorOptions.length > 0 && (
                                                 <div className="flex w-full flex-col items-start gap-2.5">
                                                     <label className="text-sm leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>
                                                         Color de interés <span className="text-black/50">(opcional)</span>
@@ -283,7 +306,7 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
                                                         style={{ fontFamily: '"Toyota Type"' }}
                                                     >
                                                         <option value="">Selecciona un color</option>
-                                                        {colores.map((c) => (
+                                                        {colorOptions.map((c) => (
                                                             <option key={c.externalColor} value={c.externalColor}>
                                                                 {c.externalColor}
                                                             </option>
