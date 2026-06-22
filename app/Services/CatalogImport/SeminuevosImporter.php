@@ -27,26 +27,63 @@ class SeminuevosImporter
             $brand = trim((string) ($row[1] ?? ''));
             $model = trim((string) ($row[2] ?? ''));
 
-            if ($brand === '' && $model === '') {
-                continue;
-            }
-            if ($brand === '' || $model === '') {
-                $result->addError($rowNum, 'Marca o modelo vacíos, fila omitida.');
-                continue;
-            }
-
-            $year      = (int) ($row[3] ?? 0);
-            $color     = $this->str($row[4]);
+            // Valores de la fila (null si la celda viene vacía).
             $price     = $this->money($row[9]);   // Precio lista (CLP)
             $financed  = $this->money($row[10]);  // Precio con Financiamiento
             $offer     = $this->money($row[11]);  // Precio Oferta (opcional)
+            $year      = (int) ($row[3] ?? 0);
+            $color     = $this->str($row[4]);
             $km        = (int) ($row[19] ?? 0);
-            $certified = $this->parseCertified($row[6] ?? null); // Certificación Toyota Usados
+            $fuel      = $this->str($row[18]);
+            $transmission = $this->str($row[14]);
+            $traction  = $this->str($row[13]);
+            $certCell  = trim((string) ($row[6] ?? ''));
+            $specs     = $this->parseSpecs($row);
 
-            // Mapeo de características booleanas desde la columna U (índice 20) en adelante
-            $specs = $this->parseSpecs($row);
+            // Fila completamente vacía → se omite.
+            if ($vu === '' && $brand === '' && $model === '' && $price === null) {
+                continue;
+            }
 
-            $data = [
+            // ── ACTUALIZACIÓN por VU: si el VU ya existe, hacemos un update
+            // PARCIAL — solo se tocan las columnas que vienen CON valor. Esto
+            // permite la "actualización de precios" cargando solo VU + columnas
+            // de precio, sin borrar el resto (km, año, fotos, equipamiento, etc.).
+            if ($vu !== '') {
+                $existing = Seminuevo::where('vu_code', $vu)->first();
+                if ($existing) {
+                    $updates = [];
+                    if ($price !== null)        $updates['price']        = $price;
+                    if ($financed !== null)     $updates['down_payment'] = $financed;
+                    if ($offer !== null)        $updates['price_offer']  = $offer;
+                    if ($brand !== '')          $updates['brand']        = $brand;
+                    if ($model !== '')          $updates['model']        = $model;
+                    if ($year > 0)              $updates['year']         = $year;
+                    if ($color !== null)        $updates['color']        = $color;
+                    if ($km > 0)                $updates['km']           = $km;
+                    if ($fuel !== null)         $updates['fuel']         = $fuel;
+                    if ($transmission !== null) $updates['transmission'] = $transmission;
+                    if ($traction !== null)     $updates['traction']     = $traction;
+                    if ($certCell !== '')       $updates['certified']    = $this->parseCertified($certCell);
+                    if (! empty($specs))        $updates['specs']        = $specs;
+
+                    if (! empty($updates)) {
+                        $existing->update($updates);
+                    }
+                    $result->updated++;
+
+                    continue;
+                }
+            }
+
+            // ── CREAR un seminuevo nuevo: aquí sí exigimos Marca + Modelo (no se
+            // puede crear un vehículo solo con VU + precio).
+            if ($brand === '' || $model === '') {
+                $result->addError($rowNum, 'Para crear un vehículo nuevo se requiere Marca y Modelo. Si querías actualizar uno existente, revisa que el VU coincida.');
+                continue;
+            }
+
+            Seminuevo::create([
                 'brand'        => $brand,
                 'model'        => $model,
                 'vu_code'      => $vu ?: null,
@@ -57,28 +94,13 @@ class SeminuevosImporter
                 'price'        => $price,
                 'down_payment' => $financed,
                 'price_offer'  => $offer,
-                'fuel'         => $this->str($row[18]),
-                'transmission' => $this->str($row[14]),
-                'traction'     => $this->str($row[13]),
-                'certified'    => $certified,
+                'fuel'         => $fuel,
+                'transmission' => $transmission,
+                'traction'     => $traction,
+                'certified'    => $certCell !== '' ? $this->parseCertified($certCell) : false,
                 'specs'        => $specs ?: null,
                 'is_visible'   => true,
-            ];
-
-            // Upsert por VU (código interno único) si está presente: si ya existe
-            // un seminuevo con ese VU, se actualiza; si no, se crea uno nuevo.
-            if ($vu !== '') {
-                $existing = Seminuevo::where('vu_code', $vu)->first();
-                if ($existing) {
-                    unset($data['slug']); // Preservar slug existente
-                    $existing->update($data);
-                    $result->updated++;
-
-                    continue;
-                }
-            }
-
-            Seminuevo::create($data);
+            ]);
             $result->created++;
         }
 
