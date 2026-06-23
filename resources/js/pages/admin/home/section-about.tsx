@@ -48,10 +48,17 @@ export function SectionAbout({ data: initialData, isVisible: initialVisible, ext
     const [uploading, setUploading] = useState<Record<string, boolean>>({});
     const [processing, setProcessing] = useState(false);
 
+    // Usamos el updater FUNCIONAL (prev => …) a propósito: las subidas de
+    // imagen/video son asíncronas y tardan segundos. Si el cliente sube fotos
+    // de dos slides seguidos, ambas capturarían el mismo `data` viejo y la
+    // segunda en resolver pisaría a la primera (la foto "no se actualizaba").
+    // Leyendo siempre `prev` cada subida se mergea sobre el estado más reciente.
     const updateVehicle = (index: number, field: keyof Vehicle, value: any) => {
-        const vehicles = [...data.vehicles];
-        vehicles[index] = { ...vehicles[index], [field]: value };
-        setData({ ...data, vehicles });
+        setData((prev) => {
+            const vehicles = [...prev.vehicles];
+            vehicles[index] = { ...vehicles[index], [field]: value };
+            return { ...prev, vehicles };
+        });
     };
 
     const uploadKey = (i: number, field: MediaField) => `${i}.${field}`;
