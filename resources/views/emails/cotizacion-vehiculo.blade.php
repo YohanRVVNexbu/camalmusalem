@@ -11,6 +11,12 @@
             <span class="summary-label">Vehículo</span>
             <span class="summary-value">{{ $cotizacion->vehicle_nombre }}</span>
         </div>
+        @if ($cotizacion->color)
+        <div class="summary-row">
+            <span class="summary-label">Color de interés</span>
+            <span class="summary-value">{{ $cotizacion->color }}</span>
+        </div>
+        @endif
         @if ($cotizacion->vehicle_precio)
         <div class="summary-row">
             <span class="summary-label">Precio referencial</span>
