@@ -93,9 +93,13 @@ function DescargasSection({ page, s }: { page: string; s: SectionProp }) {
 
     const submit = (e: React.FormEvent) => {
         e.preventDefault();
+        // OJO: la key del archivo va SIN el prefijo `data` (igual que el resto
+        // de las secciones con ítems: pasos.i.img, members.i.img, items.i.img).
+        // Con `data[items][i][file]` el backend lo guardaba en data.data.items[i]
+        // y la página pública nunca lo veía (mostraba "Próximamente").
         const fileMap: Record<string, File | null> = {};
         Object.entries(files).forEach(([idx, f]) => {
-            if (f) fileMap[`data[items][${idx}][file]`] = f;
+            if (f) fileMap[`items[${idx}][file]`] = f;
         });
         submitSection(page, 'compliance_descargas', data, visible, fileMap, setProcessing);
     };
