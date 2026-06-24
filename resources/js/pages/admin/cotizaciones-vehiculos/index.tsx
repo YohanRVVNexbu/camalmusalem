@@ -13,6 +13,7 @@ type Cotizacion = {
     vehicle_nombre: string;
     vehicle_precio: string | null;
     color: string | null;
+    color_code: string | null;
     nombre: string;
     email: string;
     telefono: string;
@@ -156,7 +157,7 @@ export default function CotizacionesVehiculosIndex({
                                         </div>
                                         <p className="font-medium">
                                             {c.vehicle_nombre}{c.vehicle_precio ? ` — ${c.vehicle_precio}` : ''}
-                                            {c.color && <span className="text-muted-foreground font-normal"> · Color: {c.color}</span>}
+                                            {c.color && <span className="text-muted-foreground font-normal"> · Color: {c.color}{c.color_code ? ` (cód. ${c.color_code})` : ''}</span>}
                                         </p>
                                         {(c.branch || c.version?.option_code || c.version?.material_code) && (
                                             <p className="text-xs text-muted-foreground">
