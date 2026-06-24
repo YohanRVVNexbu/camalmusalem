@@ -3,7 +3,7 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
-import { formatCLP, lowestPrice } from '@/lib/format';
+import { formatCLP } from '@/lib/format';
 import { ShortsCarousel } from '@/components/landing/shorts';
 import { Modal360 } from '@/components/nuevos/modal-360';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -189,10 +189,20 @@ const VERSION_TABS: { key: VersionTab; label: string }[] = [
 ];
 
 // Precio "desde" de la versión: el MÁS BAJO entre sus filas de precio (lista +
-// bonos). El cliente pidió que el titular de cada card muestre el menor (con
-// bonos), no el precio de lista. Cae a `price` si la versión no tiene filas.
-function versionDesdePrice(ver: { price?: string | null; pricing?: { label: string; value: string }[] }): string | null {
-    return lowestPrice(...(ver.pricing ?? []).map((r) => r.value)) ?? ver.price ?? null;
+// bonos) + la etiqueta del bono que lo genera. El cliente pidió que el titular
+// de cada card muestre el menor (con bonos) y debajo diga qué bono incluye
+// (ej. "Incluye Bono Financiamiento R9"), igual que el "Desde" del hero.
+function versionDesde(ver: { price?: string | null; pricing?: { label: string; value: string }[] }): { price: string | null; bonoLabel: string | null } {
+    const parsed = (ver.pricing ?? [])
+        .map((r) => ({ label: r.label, n: Number(String(r.value ?? '').replace(/[^0-9]/g, '')) }))
+        .filter((r) => r.n > 0);
+    if (!parsed.length) return { price: ver.price ?? null, bonoLabel: null };
+    const min = parsed.reduce((a, b) => (b.n < a.n ? b : a));
+    // Solo etiquetamos si el menor proviene de un bono (no del precio de lista).
+    const bonoLabel = /bono/i.test(min.label)
+        ? `Incluye ${min.label.replace(/^precio\s+/i, '')}`
+        : null;
+    return { price: String(min.n), bonoLabel };
 }
 
 type HighlightSlide = { image: string; title: string; subtitle: string };
@@ -517,6 +527,7 @@ function VersionsSection({
                         {versions.map((ver, i) => {
                             const isActive = i === selectedVersion;
                             const rows = getTabRows(ver);
+                            const desde = versionDesde(ver);
                             return (
                                 <div
                                     key={ver.name}
@@ -535,8 +546,8 @@ function VersionsSection({
                                             )}
                                             <span className="text-xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{ver.name}</span>
                                         </div>
-                                        <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{formatCLP(versionDesdePrice(ver))}</span>
-                                        <span className="text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>{ver.bonus}</span>
+                                        <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{formatCLP(desde.price)}</span>
+                                        <span className="text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>{desde.bonoLabel ?? ver.bonus}</span>
                                     </div>
 
                                     {/* Tab bar with arrows */}
@@ -647,6 +658,7 @@ function VersionsSection({
                     {versions.map((ver, i) => {
                         const isSelected = selectedVersion === i;
                         const rows = getTabRows(ver);
+                        const desde = versionDesde(ver);
                         return (
                             <div
                                 key={ver.name}
@@ -674,8 +686,8 @@ function VersionsSection({
                                             )}
                                             <span className="text-xl font-semibold uppercase leading-none text-black">{ver.name}</span>
                                         </div>
-                                        <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(versionDesdePrice(ver))}</span>
-                                        <span className="text-sm leading-none text-black/60">{ver.bonus}</span>
+                                        <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(desde.price)}</span>
+                                        <span className="text-sm leading-none text-black/60">{desde.bonoLabel ?? ver.bonus}</span>
                                     </div>
 
                                     <div className="flex w-full items-center gap-4">
