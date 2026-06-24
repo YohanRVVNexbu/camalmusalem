@@ -77,8 +77,10 @@ function tiktokId(url: string): string | null {
 export function embedSrc(url: string): string | null {
     switch (detectPlatform(url)) {
         case 'youtube': {
+            // youtube-nocookie: no setea cookies de tracking hasta que el
+            // usuario reproduce (modo privacidad mejorada).
             const id = youtubeId(url);
-            return id ? `https://www.youtube.com/embed/${id}?autoplay=1&loop=1&playlist=${id}` : null;
+            return id ? `https://www.youtube-nocookie.com/embed/${id}?autoplay=1&loop=1&playlist=${id}` : null;
         }
         case 'instagram': {
             const ref = instagramRef(url);

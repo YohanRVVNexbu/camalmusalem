@@ -19,6 +19,18 @@ class PagesController extends Controller
         return $section->data ?? [];
     }
 
+    public function cookies()
+    {
+        // La política de cookies es legal: se muestra siempre, sin gate de
+        // is_visible (a diferencia de las secciones de marketing).
+        $policy = SiteSection::where('section', 'cookies_policy')->first();
+
+        return Inertia::render('cookies', [
+            'footer'         => $this->section('footer'),
+            'cookies_policy' => $policy->data ?? [],
+        ]);
+    }
+
     public function programas()
     {
         return Inertia::render('programas', [

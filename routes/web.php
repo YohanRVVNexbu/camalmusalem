@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\ComplianceController;
 use App\Http\Controllers\ContactoController;
+use App\Http\Controllers\CookieConsentController;
 use App\Http\Controllers\CotizacionAccesorioController;
 use App\Http\Controllers\CotizacionMerchController;
 use App\Http\Controllers\CotizacionRepuestoController;
@@ -51,6 +52,10 @@ Route::get('/noticias', [PagesController::class, 'noticias'])->name('noticias');
 Route::get('/noticias/{slug}', [PagesController::class, 'noticiaShow'])->name('noticias.show');
 Route::get('/contacto', [PagesController::class, 'contacto'])->name('contacto');
 Route::post('/contacto', [ContactoController::class, 'store'])->name('contacto.store');
+
+// Cookies — página de política (editable desde admin) y registro de consentimiento.
+Route::get('/politica-de-cookies', [PagesController::class, 'cookies'])->name('cookies.politica');
+Route::post('/cookies/consentimiento', [CookieConsentController::class, 'store'])->name('cookies.consentimiento');
 
 // Compliance — Ley 20.393 (Prevención del Delito) y Ley 21.643 (Ley Karin).
 // La ruta vieja /prevencion-delito hace 301 a la nueva porque el cliente

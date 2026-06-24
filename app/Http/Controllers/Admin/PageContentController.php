@@ -26,6 +26,7 @@ class PageContentController extends Controller
         'accesorios'   => ['accesorios_hero', 'accesorios_seccion', 'accesorios_whatsapp'],
         'mantencion'   => ['mantencion_hero', 'mantencion_carrusel', 'mantencion_reserva'],
         'compliance'   => ['compliance_hero', 'compliance_descargas', 'compliance_canales'],
+        'cookies'      => ['cookies_banner', 'cookies_policy'],
         'banner-cta'   => ['contact_cta_banner'],
         'whatsapp'     => ['whatsapp_button'],
     ];
@@ -47,6 +48,7 @@ class PageContentController extends Controller
             ['slug' => 'accesorios', 'title' => 'Accesorios y Merch',  'icon' => '👕'],
             ['slug' => 'mantencion', 'title' => 'Agendar Mantención',  'icon' => '🛠️'],
             ['slug' => 'compliance', 'title' => 'Compliance (legales)', 'icon' => '⚖️'],
+            ['slug' => 'cookies',    'title' => 'Cookies (banner + política)', 'icon' => '🍪'],
             ['slug' => 'banner-cta', 'title' => 'Banner Contáctanos (global)', 'icon' => '📣'],
             ['slug' => 'whatsapp',   'title' => 'Botón WhatsApp (flotante)',   'icon' => '💬'],
         ];

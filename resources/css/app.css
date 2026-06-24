@@ -243,3 +243,23 @@
     width: 100%;
     height: auto;
 }
+
+/* ── Banner de cookies (vanilla-cookieconsent) — tema Toyota Musalem ────────
+   Botones primarios negros, acento rojo Toyota en los toggles, tipografía y
+   bordes redondeados acordes al resto del sitio. */
+#cc-main {
+    --cc-font-family: 'Toyota Type', 'Instrument Sans', system-ui, sans-serif;
+    --cc-btn-border-radius: 60px;
+    --cc-modal-border-radius: 20px;
+    --cc-btn-primary-bg: #000000;
+    --cc-btn-primary-color: #ffffff;
+    --cc-btn-primary-hover-bg: #1f1f1f;
+    --cc-btn-primary-hover-color: #ffffff;
+    --cc-btn-secondary-bg: #eaeaf1;
+    --cc-btn-secondary-color: #000000;
+    --cc-btn-secondary-hover-bg: #dcdce5;
+    --cc-toggle-on-bg: #eb0a1e;
+    --cc-toggle-readonly-bg: #b8b8c2;
+    --cc-link-color: #000000;
+}
+

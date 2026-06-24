@@ -117,7 +117,7 @@ export default function Shorts({ footer, shorts_hero, videos = [] }: { footer: a
                             </svg>
                         </button>
                         <iframe
-                            src={`https://www.youtube.com/embed/${activeVideo.id}?autoplay=1&loop=1`}
+                            src={`https://www.youtube-nocookie.com/embed/${activeVideo.id}?autoplay=1&loop=1`}
                             className="h-[80vh] w-[45vh] rounded-2xl"
                             allow="autoplay; encrypted-media"
                             allowFullScreen

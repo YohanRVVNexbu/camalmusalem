@@ -28,6 +28,30 @@ class PageSectionsSeeder extends Seeder
     {
         return [
 
+            // ─── COOKIES (banner de consentimiento + página de política) ──────
+            'cookies_banner' => [
+                'title'          => 'Usamos cookies',
+                'description'    => 'Utilizamos cookies propias y de terceros para el funcionamiento del sitio y para analizar el tráfico. Puedes aceptar todas, rechazarlas o configurar tus preferencias. Más información en nuestra Política de Cookies.',
+                'accept_label'   => 'Aceptar todo',
+                'reject_label'   => 'Rechazar',
+                'settings_label' => 'Configurar',
+                'save_label'     => 'Guardar preferencias',
+                'prefs_title'        => 'Preferencias de cookies',
+                'necessary_title'    => 'Cookies necesarias',
+                'necessary_desc'     => 'Imprescindibles para que el sitio funcione (sesión, seguridad). No se pueden desactivar.',
+                'analytics_title'    => 'Cookies analíticas',
+                'analytics_desc'     => 'Nos ayudan a entender cómo se usa el sitio (Google Analytics) para mejorarlo. Datos agregados y anónimos.',
+                'marketing_title'    => 'Cookies de marketing',
+                'marketing_desc'     => 'Permiten contenido de terceros (por ejemplo videos de YouTube) y medir campañas.',
+                'policy_url'         => '/politica-de-cookies',
+                'policy_link_label'  => 'Política de Cookies',
+            ],
+            'cookies_policy' => [
+                'title'         => 'Política de Cookies',
+                'updated_label' => 'Última actualización: junio 2026',
+                'content'       => "¿Qué son las cookies?\nLas cookies son pequeños archivos que se almacenan en tu dispositivo cuando visitas un sitio web. Sirven para que el sitio funcione, recordar tus preferencias y obtener información estadística sobre su uso.\n\n¿Qué cookies utilizamos?\n• Necesarias: imprescindibles para el funcionamiento del sitio (sesión y seguridad). No requieren tu consentimiento.\n• Analíticas: Google Analytics, para entender de forma agregada y anónima cómo se usa el sitio.\n• Marketing/terceros: contenido incrustado como videos de YouTube y medición de campañas.\n\nGestión del consentimiento\nAl ingresar puedes aceptar todas las cookies, rechazarlas o configurar tus preferencias. Puedes cambiar tu decisión en cualquier momento desde el enlace \"Configurar cookies\" del pie de página.\n\nContacto\nSi tienes dudas sobre esta política, escríbenos a contacto@camalmusalem.cl.",
+            ],
+
             // ─── KINTO ───────────────────────────────────────────────────────
             'kinto_hero' => [
                 'hero_image'  => '',

@@ -62,7 +62,29 @@ class HandleInertiaRequests extends Middleware
             'horariosAtencion' => fn () => $this->horariosAtencion(),
             'postventaMenuImages' => fn () => $this->postventaMenuImages(),
             'crossReferenceIva' => fn () => $this->crossReferenceIva(),
+            'cookieConsent' => fn () => $this->cookieConsent(),
         ];
+    }
+
+    /**
+     * Textos del banner de consentimiento de cookies (editables desde
+     * /admin/paginas/cookies) + la versión de política vigente. Se comparte
+     * global porque el banner aparece en TODAS las vistas públicas.
+     *
+     * `policy_version` se deriva de un campo editable; al cambiarlo, el banner
+     * vuelve a aparecer aunque el usuario ya hubiera aceptado (re-consentimiento).
+     */
+    private function cookieConsent(): ?array
+    {
+        $section = SiteSection::where('section', 'cookies_banner')->first();
+        if (! $section || ! $section->is_visible) {
+            return null;
+        }
+
+        $data = $section->data ?? [];
+        $data['policy_version'] = (string) ($data['policy_version'] ?? '1');
+
+        return $data;
     }
 
     /**

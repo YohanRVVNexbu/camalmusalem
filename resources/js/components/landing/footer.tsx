@@ -119,6 +119,20 @@ export function Footer({ data }: { data: FooterData }) {
                                     </a>
                                 );
                             })}
+                            {/* Cookies — fijos (legales), independientes del admin de legal_links */}
+                            <a
+                                href="/politica-de-cookies"
+                                className="text-sm leading-normal text-[rgba(35,31,32,0.80)] transition hover:text-black"
+                            >
+                                Política de Cookies
+                            </a>
+                            <button
+                                type="button"
+                                onClick={() => (window as unknown as { openCookiePreferences?: () => void }).openCookiePreferences?.()}
+                                className="cursor-pointer text-left text-sm leading-normal text-[rgba(35,31,32,0.80)] transition hover:text-black"
+                            >
+                                Configurar cookies
+                            </button>
                         </div>
                     </div>
                 </div>

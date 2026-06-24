@@ -9,6 +9,21 @@
              Acepta GA4 / Google Ads (ID "G-…" / "AW-…", snippet gtag.js) o GTM
              (ID "GTM-…", contenedor). Va lo más arriba posible del <head>. --}}
         @if ($googleTagId = config('services.google_tag.id'))
+        {{-- Google Consent Mode v2 — por defecto TODO denegado hasta que el
+             usuario acepte en el banner de cookies. El banner llama luego a
+             gtag('consent','update', …). Debe ir ANTES de cargar GTM/gtag para
+             que ningún tag dispare cookies sin consentimiento. --}}
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied',
+            wait_for_update: 500
+          });
+        </script>
             @if (str_starts_with($googleTagId, 'GTM-'))
         <!-- Google Tag Manager -->
         <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
@@ -21,8 +36,7 @@
         <!-- Google tag (gtag.js) -->
         <script async src="https://www.googletagmanager.com/gtag/js?id={{ $googleTagId }}"></script>
         <script>
-          window.dataLayer = window.dataLayer || [];
-          function gtag(){dataLayer.push(arguments);}
+          {{-- dataLayer y gtag() ya están definidos arriba (consent default). --}}
           gtag('js', new Date());
           gtag('config', '{{ $googleTagId }}');
         </script>
