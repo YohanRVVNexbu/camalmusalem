@@ -117,11 +117,17 @@ export default function NuevoCotizar({ vehicle, footer }: { vehicle: Vehicle; fo
             return;
         }
         setSubmitting(true);
+        // El código y color interior solo existen para los colores de Salesforce
+        // (los del 360 inyectados no traen código). Salesforce necesita el CÓDIGO
+        // en el campo estructurado; el nombre es solo para mostrar.
+        const selectedColor = colores.find((c) => c.externalColor === color);
         router.post('/cotizaciones/vehiculo', {
             tipo: 'nuevo',
             vehicle_id: vehicle.id,
             version_id: activeVersion?.id ?? null,
             color: color || null,
+            color_code: selectedColor?.externalCodeColor || null,
+            color_internal: selectedColor?.internalColor || null,
             branch_id: branchId || null,
             nombre,
             email,

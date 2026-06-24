@@ -20,6 +20,8 @@ class CotizacionVehiculo extends Model
         'branch_id',
         'version_id',
         'color',
+        'color_code',
+        'color_internal',
         'vehicle_nombre',
         'vehicle_precio',
         'nombre',
@@ -33,6 +35,7 @@ class CotizacionVehiculo extends Model
         'salesforce_opportunity_id',
         'salesforce_quote_id',
         'salesforce_response',
+        'salesforce_request',
         'sync_last_error',
         'sync_attempts',
     ];
@@ -41,6 +44,7 @@ class CotizacionVehiculo extends Model
         'leido' => 'boolean',
         'synced_at' => 'datetime',
         'salesforce_response' => 'array',
+        'salesforce_request' => 'array',
         'sync_attempts' => 'integer',
     ];
 

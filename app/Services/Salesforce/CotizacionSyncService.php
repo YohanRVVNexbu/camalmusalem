@@ -63,6 +63,10 @@ class CotizacionSyncService
 
         $payload = $this->buildPayload($cot, $version, $branch);
 
+        // Guardamos el request EXACTO que se envía al API (evidencia/auditoría).
+        // Se persiste antes de la llamada para tenerlo aunque la API falle.
+        $cot->update(['salesforce_request' => $payload]);
+
         try {
             $response = $this->client->createQuote($branch->salesforce_dealer_id, $payload);
             $this->markSynced($cot, $response);
@@ -115,14 +119,37 @@ class CotizacionSyncService
         $descripcionPartes = [
             "Cotización web Toyota Musalem — Sucursal: {$branch->name}",
         ];
-        // El Create Quote API todavía no tiene un campo estructurado para el
-        // color, así que lo mandamos dentro de la descripción (workaround
-        // acordado con Globant hasta que agreguen el campo).
+        // Además del campo estructurado (abajo), dejamos el color en la
+        // descripción como respaldo legible para el asesor.
         if ($cot->color) {
-            $descripcionPartes[] = "Color de interés: {$cot->color}";
+            $descripcionPartes[] = "Color de interés: {$cot->color}".($cot->color_code ? " ({$cot->color_code})" : '');
         }
         if ($cot->comentarios) {
             $descripcionPartes[] = "Comentarios cliente: {$cot->comentarios}";
+        }
+
+        // Producto (vehículo). Salesforce espera el código alfanumérico (col E
+        // "Opción" del Excel — "Número antiguo de material" en SAP), tipo
+        // `BZ4XLTD42-25PC`. NO el ID numérico SAP (`70002066`).
+        $product = [
+            'version'      => $version->option_code,
+            'price'        => (int) ($version->msrp_clp ?? 0),
+            'typeMaterial' => 'vehicle',
+        ];
+
+        // Color ESTRUCTURADO. Solo se envía cuando el cliente eligió un color
+        // del catálogo de Salesforce (que trae código). El API matchea por el
+        // CÓDIGO externo ("Id Externo Color"); el nombre es para mostrar.
+        // OJO: los nombres exactos de estos campos están PENDIENTES de
+        // confirmación por Globant — el doc de integración que tenemos
+        // (PATCH Create Opportunities) no documenta el color. Ajustar acá
+        // cuando confirmen el contrato.
+        if ($cot->color_code) {
+            $product['externalColor']     = $cot->color;
+            $product['externalColorCode'] = $cot->color_code;
+            if ($cot->color_internal) {
+                $product['internalColor'] = $cot->color_internal;
+            }
         }
 
         return [
@@ -145,17 +172,7 @@ class CotizacionSyncService
                 'paymentType' => 'Otros Creditos',
                 'description' => implode(' | ', $descripcionPartes),
             ],
-            'products' => [
-                [
-                    // Salesforce espera el código alfanumérico (col E "Opción"
-                    // del Excel — "Número antiguo de material" en SAP), tipo
-                    // `BZ4XLTD42-25PC`. NO el ID numérico SAP (`70002066`),
-                    // ese se usa solo internamente como key de import.
-                    'version'      => $version->option_code,
-                    'price'        => (int) ($version->msrp_clp ?? 0),
-                    'typeMaterial' => 'vehicle',
-                ],
-            ],
+            'products' => [$product],
         ];
     }
 
