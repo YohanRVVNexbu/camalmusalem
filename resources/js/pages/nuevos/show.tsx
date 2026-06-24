@@ -3,7 +3,7 @@ import { BranchesSection } from '@/components/landing/branches-section';
 import { Footer } from '@/components/landing/footer';
 import { Navbar } from '@/components/landing/navbar';
 import { ContactCtaBanner } from '@/components/landing/contact-cta-banner';
-import { formatCLP } from '@/lib/format';
+import { formatCLP, lowestPrice } from '@/lib/format';
 import { ShortsCarousel } from '@/components/landing/shorts';
 import { Modal360 } from '@/components/nuevos/modal-360';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
@@ -187,6 +187,13 @@ const VERSION_TABS: { key: VersionTab; label: string }[] = [
     { key: 'seguridad', label: 'Seguridad' },
     { key: 'rendimiento', label: 'Rendimiento' },
 ];
+
+// Precio "desde" de la versión: el MÁS BAJO entre sus filas de precio (lista +
+// bonos). El cliente pidió que el titular de cada card muestre el menor (con
+// bonos), no el precio de lista. Cae a `price` si la versión no tiene filas.
+function versionDesdePrice(ver: { price?: string | null; pricing?: { label: string; value: string }[] }): string | null {
+    return lowestPrice(...(ver.pricing ?? []).map((r) => r.value)) ?? ver.price ?? null;
+}
 
 type HighlightSlide = { image: string; title: string; subtitle: string };
 type MediaItem = { type: 'image' | 'video' | 'youtube'; url: string };
@@ -528,7 +535,7 @@ function VersionsSection({
                                             )}
                                             <span className="text-xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{ver.name}</span>
                                         </div>
-                                        <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{formatCLP(ver.price)}</span>
+                                        <span className="text-2xl font-semibold uppercase leading-none text-black" style={{ fontFamily: '"Toyota Type"' }}>{formatCLP(versionDesdePrice(ver))}</span>
                                         <span className="text-sm leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>{ver.bonus}</span>
                                     </div>
 
@@ -667,7 +674,7 @@ function VersionsSection({
                                             )}
                                             <span className="text-xl font-semibold uppercase leading-none text-black">{ver.name}</span>
                                         </div>
-                                        <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(ver.price)}</span>
+                                        <span className="text-2xl font-semibold uppercase leading-none text-black">{formatCLP(versionDesdePrice(ver))}</span>
                                         <span className="text-sm leading-none text-black/60">{ver.bonus}</span>
                                     </div>
 
