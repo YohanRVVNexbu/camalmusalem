@@ -119,10 +119,11 @@ class CotizacionSyncService
         $descripcionPartes = [
             "Cotización web Toyota Musalem — Sucursal: {$branch->name}",
         ];
-        // Además del campo estructurado (abajo), dejamos el color en la
-        // descripción como respaldo legible para el asesor.
+        // Mientras Globant habilita el campo estructurado de color, lo enviamos
+        // de forma PROMINENTE dentro del comentario/descripción para que el
+        // asesor lo vea sí o sí en la oportunidad. Va primero, en mayúsculas.
         if ($cot->color) {
-            $descripcionPartes[] = "Color de interés: {$cot->color}".($cot->color_code ? " ({$cot->color_code})" : '');
+            $descripcionPartes[] = "*** COLOR SELECCIONADO: {$cot->color}".($cot->color_code ? " (cód. {$cot->color_code})" : '').' ***';
         }
         if ($cot->comentarios) {
             $descripcionPartes[] = "Comentarios cliente: {$cot->comentarios}";
