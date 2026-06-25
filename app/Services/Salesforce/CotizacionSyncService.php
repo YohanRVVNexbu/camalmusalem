@@ -137,20 +137,23 @@ class CotizacionSyncService
             'typeMaterial' => 'vehicle',
         ];
 
-        // Color ESTRUCTURADO. Solo se envía cuando el cliente eligió un color
-        // del catálogo de Salesforce (que trae código). El API matchea por el
-        // CÓDIGO externo ("Id Externo Color"); el nombre es para mostrar.
-        // OJO: los nombres exactos de estos campos están PENDIENTES de
-        // confirmación por Globant — el doc de integración que tenemos
-        // (PATCH Create Opportunities) no documenta el color. Ajustar acá
-        // cuando confirmen el contrato.
-        if ($cot->color_code) {
-            $product['externalColor']     = $cot->color;
-            $product['externalColorCode'] = $cot->color_code;
-            if ($cot->color_internal) {
-                $product['internalColor'] = $cot->color_internal;
-            }
-        }
+        // Color ESTRUCTURADO — DESACTIVADO temporalmente.
+        // Mulesoft rechaza el request con 400 (Bad Request) cuando enviamos
+        // estos campos con nombres adivinados (externalColor/externalColorCode/
+        // internalColor), porque NO coinciden con su esquema. El doc de
+        // integración que tenemos no documenta el color. Hasta que Globant
+        // confirme los nombres/nivel/formato exactos, NO los enviamos para no
+        // romper la sincronización (el color sigue yendo en quote.description).
+        // El código del color queda guardado en BD ($cot->color_code) listo
+        // para reactivar esto en cuanto confirmen el contrato.
+        //
+        // if ($cot->color_code) {
+        //     $product['externalColor']     = $cot->color;
+        //     $product['externalColorCode'] = $cot->color_code;
+        //     if ($cot->color_internal) {
+        //         $product['internalColor'] = $cot->color_internal;
+        //     }
+        // }
 
         return [
             'client' => [

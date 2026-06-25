@@ -19,7 +19,7 @@
         @endif
         @if ($cotizacion->vehicle_precio)
         <div class="summary-row">
-            <span class="summary-label">Precio referencial</span>
+            <span class="summary-label">{{ $cotizacion->tipo === 'nuevo' ? 'Precio desde' : 'Precio referencial' }}</span>
             <span class="summary-value">{{ $cotizacion->vehicle_precio }}</span>
         </div>
         @endif

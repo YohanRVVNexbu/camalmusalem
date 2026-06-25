@@ -59,7 +59,19 @@ class CotizacionVehiculoController extends Controller
             $nombre = $version
                 ? trim($modelName.' — '.$version->trim_name)
                 : $modelName;
-            $precio = $version?->msrp_clp ? '$'.number_format($version->msrp_clp, 0, ',', '.') : null;
+            // Precio "desde" (lo que ve el cliente en el sitio): lista menos los
+            // bonos acumulados (marca + financiamiento tradicional + R9), igual
+            // que CatalogPresenter::computeDesde. Es el valor que el cliente pidió
+            // mostrar en el correo, no el precio de lista.
+            if ($version && $version->msrp_clp) {
+                $bonos = (int) $version->bono_marca
+                    + (int) $version->bono_financiamiento_tradicional
+                    + (int) $version->bono_financiamiento_r9;
+                $desde = max(0, (int) $version->msrp_clp - $bonos);
+                $precio = '$'.number_format($desde, 0, ',', '.');
+            } else {
+                $precio = null;
+            }
         } else {
             $seminuevo = Seminuevo::find($request->vehicle_id);
             $nombre = $seminuevo ? "{$seminuevo->brand} {$seminuevo->model} {$seminuevo->year}" : 'Seminuevo';
