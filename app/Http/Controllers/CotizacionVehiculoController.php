@@ -95,35 +95,40 @@ class CotizacionVehiculoController extends Controller
             'comentarios'    => $request->comentarios,
         ]);
 
-        try {
-            // Acuse de recibo al cliente
-            Mail::to($cotizacion->email)->send(new CotizacionVehiculoMail($cotizacion));
-
-            // Notificación al equipo interno: nuevos → info@..., seminuevos → seminuevos@...
-            $teamKey = $cotizacion->tipo === 'nuevo' ? 'vehiculos_nuevos' : 'vehiculos_seminuevos';
-            if ($team = NotificationRouter::for($teamKey)) {
-                Mail::to($team)->send(new CotizacionVehiculoMail($cotizacion));
-            }
-        } catch (\Throwable $e) {
-            Log::warning('No se pudo enviar el correo de cotización vehículo: '.$e->getMessage());
-        }
-
-        // Cotizaciones de vehículo NUEVO se sincronizan a Salesforce vía
-        // Mulesoft de forma SÍNCRONA inmediatamente después del email. Si
-        // falla por cualquier motivo, la cotización queda con sync_status
-        // `pending` o `failed` y el comando `salesforce:sync-pending` la
-        // reintenta automáticamente cada cierto tiempo. No bloqueamos la
-        // respuesta al usuario por errores de Salesforce.
-        if ($cotizacion->tipo === 'nuevo') {
+        // El post-procesamiento (correos + Salesforce) se DIFIERE para después
+        // de enviar la respuesta al usuario. Antes corría síncrono y dejaba el
+        // formulario pegado en "Enviando…": el SMTP (puerto 2525) y el API de
+        // Mulesoft (OAuth + PATCH + reintentos) pueden tardar decenas de
+        // segundos. Con terminating(), el cliente recibe la confirmación al
+        // instante y esto corre en segundo plano del mismo request (FPM/LiteSpeed
+        // ya envió la respuesta). La cotización queda guardada igual; si el
+        // sync a Salesforce falla o no alcanza a correr, queda en `pending` y el
+        // scheduler `salesforce:sync-pending` la reintenta.
+        app()->terminating(function () use ($cotizacion) {
             try {
-                app(CotizacionSyncService::class)->syncOne($cotizacion);
+                // Acuse de recibo al cliente
+                Mail::to($cotizacion->email)->send(new CotizacionVehiculoMail($cotizacion));
+
+                // Notificación al equipo interno: nuevos → info@..., seminuevos → seminuevos@...
+                $teamKey = $cotizacion->tipo === 'nuevo' ? 'vehiculos_nuevos' : 'vehiculos_seminuevos';
+                if ($team = NotificationRouter::for($teamKey)) {
+                    Mail::to($team)->send(new CotizacionVehiculoMail($cotizacion));
+                }
             } catch (\Throwable $e) {
-                Log::warning('Salesforce sync inicial falló (se reintentará por scheduler)', [
-                    'cotizacion_id' => $cotizacion->id,
-                    'error'         => $e->getMessage(),
-                ]);
+                Log::warning('No se pudo enviar el correo de cotización vehículo: '.$e->getMessage());
             }
-        }
+
+            if ($cotizacion->tipo === 'nuevo') {
+                try {
+                    app(CotizacionSyncService::class)->syncOne($cotizacion);
+                } catch (\Throwable $e) {
+                    Log::warning('Salesforce sync diferida falló (se reintentará por scheduler)', [
+                        'cotizacion_id' => $cotizacion->id,
+                        'error'         => $e->getMessage(),
+                    ]);
+                }
+            }
+        });
 
         return back()->with('success', 'true');
     }
