@@ -138,23 +138,15 @@ class CotizacionSyncService
             'typeMaterial' => 'vehicle',
         ];
 
-        // Color ESTRUCTURADO — DESACTIVADO temporalmente.
-        // Mulesoft rechaza el request con 400 (Bad Request) cuando enviamos
-        // estos campos con nombres adivinados (externalColor/externalColorCode/
-        // internalColor), porque NO coinciden con su esquema. El doc de
-        // integración que tenemos no documenta el color. Hasta que Globant
-        // confirme los nombres/nivel/formato exactos, NO los enviamos para no
-        // romper la sincronización (el color sigue yendo en quote.description).
-        // El código del color queda guardado en BD ($cot->color_code) listo
-        // para reactivar esto en cuanto confirmen el contrato.
-        //
-        // if ($cot->color_code) {
-        //     $product['externalColor']     = $cot->color;
-        //     $product['externalColorCode'] = $cot->color_code;
-        //     if ($cot->color_internal) {
-        //         $product['internalColor'] = $cot->color_internal;
-        //     }
-        // }
+        // Color ESTRUCTURADO. Globant confirmó (jun 2026) que el campo es
+        // `colorVehicle` dentro de products[], y el valor es el CÓDIGO externo
+        // del color (extenalCodeColor del endpoint GET .../colors), que nosotros
+        // guardamos en `color_code`. Ej.: { ..., "colorVehicle": "040" }.
+        // Solo se envía si el cliente eligió un color del catálogo (que trae
+        // código); los colores del visor 360 sin código no lo incluyen.
+        if ($cot->color_code) {
+            $product['colorVehicle'] = $cot->color_code;
+        }
 
         return [
             'client' => [
