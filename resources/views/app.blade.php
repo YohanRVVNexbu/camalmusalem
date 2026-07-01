@@ -43,6 +43,40 @@
             @endif
         @endif
 
+        {{-- Pixel de Meta (Facebook/Instagram Ads). Se inyecta solo si
+             META_PIXEL_ID está en el .env. A diferencia de Google, Meta no
+             tiene un "Consent Mode" integrado — por eso el pixel NUNCA se
+             carga de entrada: queda a la espera del evento que dispara el
+             banner de cookies (cookie-consent.tsx) y solo se activa si el
+             visitante aceptó la categoría "marketing". Si rechaza, fbq nunca
+             se define y no se envía nada a Meta. --}}
+        @if ($metaPixelId = config('services.meta_pixel.id'))
+        <!-- Meta Pixel (gated por consentimiento de cookies) -->
+        <script>
+          (function () {
+            var pixelId = '{{ $metaPixelId }}';
+            var loaded = false;
+            function loadMetaPixel() {
+              if (loaded) return;
+              loaded = true;
+              !function(f,b,e,v,n,t,s)
+              {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+              n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+              if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+              n.queue=[];t=b.createElement(e);t.async=!0;
+              t.src=v;s=b.getElementsByTagName(e)[0];
+              s.parentNode.insertBefore(t,s)}(window, document,'script',
+              'https://connect.facebook.net/en_US/fbevents.js');
+              fbq('init', pixelId);
+              fbq('track', 'PageView');
+            }
+            window.addEventListener('cookie-consent-changed', function (e) {
+              if (e.detail && e.detail.marketing) loadMetaPixel();
+            });
+          })();
+        </script>
+        @endif
+
         {{-- Favicons con cache-busting. El ?v= se incrementa cuando cambia
              el archivo para forzar al navegador a refrescar (los favicons
              son ultra-cacheados — sin esto el cliente sigue viendo el viejo). --}}

@@ -52,6 +52,16 @@ return [
     ],
 
     /*
+     * Pixel de Meta (Facebook/Instagram Ads). Solo se inyecta el snippet si
+     * META_PIXEL_ID está definido en el .env. El pixel se activa vía JS solo
+     * cuando el visitante acepta la categoría "marketing" del banner de
+     * cookies (ver app.blade.php) — no se dispara antes.
+     */
+    'meta_pixel' => [
+        'id' => env('META_PIXEL_ID'),
+    ],
+
+    /*
      * Integración Salesforce Toyota (Mulesoft Dealer Experience API).
      * Crea oportunidades en Salesforce cuando un cliente cotiza un vehículo
      * nuevo desde la web. Documentación: "Documentos de Integración - PATCH
