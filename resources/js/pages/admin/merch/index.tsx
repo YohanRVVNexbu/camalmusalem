@@ -24,6 +24,7 @@ type MerchItem = {
     status: string;
     is_visible: boolean;
     order: number;
+    images: string[] | null;
 };
 
 export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
@@ -81,6 +82,7 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
                                 <TableHead>Categoría</TableHead>
                                 <TableHead>Talla</TableHead>
                                 <TableHead>Precio</TableHead>
+                                <TableHead>Fotos</TableHead>
                                 <TableHead>Estado</TableHead>
                                 <TableHead>Visible</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
@@ -97,6 +99,11 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
                                     </TableCell>
                                     <TableCell>{m.size ?? '—'}</TableCell>
                                     <TableCell>{m.price ?? '—'}</TableCell>
+                                    <TableCell>
+                                        {(m.images?.length ?? 0) > 0
+                                            ? <Badge variant="outline" className="border-green-300 bg-green-50 text-green-700">{m.images!.length} foto{m.images!.length === 1 ? '' : 's'}</Badge>
+                                            : <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">Sin fotos</Badge>}
+                                    </TableCell>
                                     <TableCell>
                                         <Badge variant={m.status === 'disponible' ? 'default' : 'secondary'}>{m.status}</Badge>
                                     </TableCell>
@@ -117,7 +124,7 @@ export default function MerchIndex({ merch }: { merch: MerchItem[] }) {
                             ))}
                             {filtered.length === 0 && (
                                 <TableRow>
-                                    <TableCell colSpan={8} className="py-8 text-center text-muted-foreground">{query ? 'No se encontró merch para tu búsqueda.' : 'No hay merch.'}</TableCell>
+                                    <TableCell colSpan={9} className="py-8 text-center text-muted-foreground">{query ? 'No se encontró merch para tu búsqueda.' : 'No hay merch.'}</TableCell>
                                 </TableRow>
                             )}
                         </TableBody>

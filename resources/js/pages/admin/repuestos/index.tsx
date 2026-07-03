@@ -16,6 +16,7 @@ import AdminLayout from '@/layouts/admin-layout';
 type Repuesto = {
     id: number; name: string; sku: string | null; price: string | null;
     category: string; stock_la_serena: boolean; stock_ovalle: boolean; is_visible: boolean; order: number;
+    images: string[] | null;
 };
 
 export default function RepuestosIndex({ repuestos }: { repuestos: Repuesto[] }) {
@@ -61,6 +62,7 @@ export default function RepuestosIndex({ repuestos }: { repuestos: Repuesto[] })
                                 <TableHead>Categoría</TableHead>
                                 <TableHead>Precio</TableHead>
                                 <TableHead>Stock</TableHead>
+                                <TableHead>Fotos</TableHead>
                                 <TableHead>Estado</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
                             </TableRow>
@@ -78,6 +80,11 @@ export default function RepuestosIndex({ repuestos }: { repuestos: Repuesto[] })
                                             {r.stock_ovalle && <Badge variant="outline" className="text-xs">Ovalle</Badge>}
                                         </div>
                                     </TableCell>
+                                    <TableCell>
+                                        {(r.images?.length ?? 0) > 0
+                                            ? <Badge variant="outline" className="border-green-300 bg-green-50 text-green-700">{r.images!.length} foto{r.images!.length === 1 ? '' : 's'}</Badge>
+                                            : <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">Sin fotos</Badge>}
+                                    </TableCell>
                                     <TableCell><Badge variant={r.is_visible ? 'default' : 'secondary'}>{r.is_visible ? 'Visible' : 'Oculto'}</Badge></TableCell>
                                     <TableCell className="text-right">
                                         <div className="flex justify-end gap-2">
@@ -92,7 +99,7 @@ export default function RepuestosIndex({ repuestos }: { repuestos: Repuesto[] })
                                 </TableRow>
                             ))}
                             {filtered.length === 0 && (
-                                <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">{query ? 'No se encontraron repuestos para tu búsqueda.' : 'No hay repuestos.'}</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={8} className="py-8 text-center text-muted-foreground">{query ? 'No se encontraron repuestos para tu búsqueda.' : 'No hay repuestos.'}</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>

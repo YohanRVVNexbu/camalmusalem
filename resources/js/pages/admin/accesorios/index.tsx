@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import AdminLayout from '@/layouts/admin-layout';
 
-type Accesorio = { id: number; name: string; price: string | null; category: string; is_visible: boolean; order: number; };
+type Accesorio = { id: number; name: string; price: string | null; category: string; is_visible: boolean; order: number; images: string[] | null; };
 
 export default function AccesoriosIndex({ accesorios }: { accesorios: Accesorio[] }) {
     const { flash } = usePage<{ flash: { success?: string; error?: string } }>().props;
@@ -56,6 +56,7 @@ export default function AccesoriosIndex({ accesorios }: { accesorios: Accesorio[
                                 <TableHead>Nombre</TableHead>
                                 <TableHead>Categoría</TableHead>
                                 <TableHead>Precio</TableHead>
+                                <TableHead>Fotos</TableHead>
                                 <TableHead>Estado</TableHead>
                                 <TableHead>Orden</TableHead>
                                 <TableHead className="text-right">Acciones</TableHead>
@@ -67,6 +68,11 @@ export default function AccesoriosIndex({ accesorios }: { accesorios: Accesorio[
                                     <TableCell className="font-medium">{a.name}</TableCell>
                                     <TableCell>{a.category}</TableCell>
                                     <TableCell>{a.price ?? '—'}</TableCell>
+                                    <TableCell>
+                                        {(a.images?.length ?? 0) > 0
+                                            ? <Badge variant="outline" className="border-green-300 bg-green-50 text-green-700">{a.images!.length} foto{a.images!.length === 1 ? '' : 's'}</Badge>
+                                            : <Badge variant="outline" className="border-red-300 bg-red-50 text-red-700">Sin fotos</Badge>}
+                                    </TableCell>
                                     <TableCell><Badge variant={a.is_visible ? 'default' : 'secondary'}>{a.is_visible ? 'Visible' : 'Oculto'}</Badge></TableCell>
                                     <TableCell>{a.order}</TableCell>
                                     <TableCell className="text-right">
@@ -82,7 +88,7 @@ export default function AccesoriosIndex({ accesorios }: { accesorios: Accesorio[
                                 </TableRow>
                             ))}
                             {filtered.length === 0 && (
-                                <TableRow><TableCell colSpan={6} className="py-8 text-center text-muted-foreground">{query ? 'No se encontraron accesorios para tu búsqueda.' : 'No hay accesorios.'}</TableCell></TableRow>
+                                <TableRow><TableCell colSpan={7} className="py-8 text-center text-muted-foreground">{query ? 'No se encontraron accesorios para tu búsqueda.' : 'No hay accesorios.'}</TableCell></TableRow>
                             )}
                         </TableBody>
                     </Table>
