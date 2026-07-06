@@ -286,7 +286,17 @@ export default function Repuestos({ footer, repuestos_hero, repuestos_seccion, r
                                     )}
 
                                     {/* Info */}
-                                    <div className="flex flex-col gap-5 px-5 py-5">
+                                    <div className="flex flex-col gap-3 px-5 py-5">
+                                        <div className="flex items-center gap-2 px-2.5">
+                                            <span className="rounded-full bg-[#EAEAF1] px-2 py-1 text-xs leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                                Repuesto
+                                            </span>
+                                            {item.category && (
+                                                <span className="rounded-full bg-[#EAEAF1] px-2 py-1 text-xs leading-none text-black/60" style={{ fontFamily: '"Toyota Type"' }}>
+                                                    {item.category}
+                                                </span>
+                                            )}
+                                        </div>
                                         <span
                                             className="line-clamp-2 px-2.5 text-base font-semibold leading-[120%] text-black lg:text-lg"
                                             style={{ fontFamily: '"Toyota Type"' }}
