@@ -1,5 +1,5 @@
 import { Head, Link, router, usePage } from '@inertiajs/react';
-import { ArrowLeft, FileSpreadsheet, Upload } from 'lucide-react';
+import { ArrowLeft, FileSpreadsheet, RotateCcw, Upload } from 'lucide-react';
 import { useMemo, useRef, useState } from 'react';
 
 import { Badge } from '@/components/ui/badge';
@@ -13,23 +13,32 @@ import { formatCLP } from '@/lib/format';
 
 type Branch = { id: number; name: string };
 
+type IgnoredMaterial = {
+    id: number;
+    material_code: string;
+    linea: string | null;
+    version_name: string | null;
+    created_at: string;
+};
+
 type PreviewRow = {
     excel_row: number;
     linea: string;
     version: string;
     material: string;
     precio: number | null;
-    action: 'create' | 'update' | 'skip';
+    action: 'create' | 'update' | 'ignored' | 'skip';
 };
 
 type PreviewData = {
     rows: PreviewRow[];
-    stats: { create: number; update: number; skip: number };
+    stats: { create: number; update: number; ignored: number; skip: number };
 };
 
 export default function VehicleVersionsBulkImport() {
-    const { props } = usePage<{ branches: Branch[]; errors?: Record<string, string> }>();
+    const { props } = usePage<{ branches: Branch[]; ignoredMaterials: IgnoredMaterial[]; errors?: Record<string, string> }>();
     const branches = props.branches ?? [];
+    const ignoredMaterials = props.ignoredMaterials ?? [];
     const errors = props.errors ?? {};
 
     const [selectedBranches, setSelectedBranches] = useState<number[]>([]);
@@ -39,20 +48,40 @@ export default function VehicleVersionsBulkImport() {
     const [loadingPreview, setLoadingPreview] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [previewError, setPreviewError] = useState<string | null>(null);
+    const [reactivatingId, setReactivatingId] = useState<number | null>(null);
+    // Materiales "Crear" que quedarán tildados al confirmar. Por defecto todos
+    // tildados (mismo comportamiento de siempre) — el cliente destilda a mano
+    // las versiones descontinuadas que no quiere publicar.
+    const [selectedCreate, setSelectedCreate] = useState<Set<string>>(new Set());
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const canPreview = !!file;
     const canSubmit = !!file && selectedBranches.length > 0 && !!preview && preview.stats.create + preview.stats.update > 0;
 
+    const createRows = useMemo(() => preview?.rows.filter((r) => r.action === 'create') ?? [], [preview]);
+
     const toggleBranch = (id: number) => {
         setSelectedBranches((prev) => (prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]));
     };
+
+    const toggleCreateMaterial = (material: string) => {
+        setSelectedCreate((prev) => {
+            const next = new Set(prev);
+            if (next.has(material)) next.delete(material);
+            else next.add(material);
+            return next;
+        });
+    };
+
+    const selectAllCreate = () => setSelectedCreate(new Set(createRows.map((r) => r.material)));
+    const deselectAllCreate = () => setSelectedCreate(new Set());
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const f = e.target.files?.[0] ?? null;
         setFile(f);
         setPreview(null);
         setPreviewError(null);
+        setSelectedCreate(new Set());
     };
 
     const fetchPreview = async () => {
@@ -91,6 +120,9 @@ export default function VehicleVersionsBulkImport() {
             if (!res.ok) throw new Error(`Error ${res.status}`);
             const data = (await res.json()) as PreviewData;
             setPreview(data);
+            // Por defecto, todas las versiones "Crear" quedan tildadas — el
+            // cliente destilda a mano las que no quiere publicar este mes.
+            setSelectedCreate(new Set(data.rows.filter((r) => r.action === 'create').map((r) => r.material)));
         } catch (err) {
             setPreviewError(err instanceof Error ? err.message : 'No se pudo leer el archivo.');
         } finally {
@@ -105,9 +137,24 @@ export default function VehicleVersionsBulkImport() {
         fd.append('file', file);
         fd.append('update_names', updateNames ? '1' : '0');
         selectedBranches.forEach((id) => fd.append('branch_ids[]', String(id)));
+        // FormData no puede expresar "array vacío" (si no hay entradas, la key
+        // simplemente no viaja) — por eso mandamos un flag aparte para que el
+        // backend siempre sepa que debe FILTRAR por selección, incluso cuando
+        // `selectedCreate` quedó vacío (0 versiones nuevas a crear este mes).
+        fd.append('filter_creates', '1');
+        selectedCreate.forEach((material) => fd.append('create_materials[]', material));
         router.post('/admin/vehicle-versions/bulk-import', fd, {
             forceFormData: true,
             onFinish: () => setSubmitting(false),
+        });
+    };
+
+    const reactivateMaterial = (m: IgnoredMaterial) => {
+        setReactivatingId(m.id);
+        router.delete(`/admin/vehicle-versions/ignored-materials/${m.id}`, {
+            preserveScroll: true,
+            preserveState: true,
+            onFinish: () => setReactivatingId(null),
         });
     };
 
@@ -128,8 +175,8 @@ export default function VehicleVersionsBulkImport() {
                         <h1 className="text-2xl font-semibold">Importar lista de precios</h1>
                         <p className="text-sm text-muted-foreground">
                             Sube el Excel "Lista de Precios sugeridos" de Toyota. Las versiones existentes actualizan precio
-                            y bonos (y opcionalmente su nombre, ver casilla al confirmar); las nuevas se crean con datos
-                            básicos para completar a mano después.
+                            y bonos (y opcionalmente su nombre, ver casilla al confirmar) sin importar la selección; las
+                            versiones nuevas se crean solo si las dejás tildadas en el paso 3.
                         </p>
                     </div>
                     <Button asChild variant="outline">
@@ -222,11 +269,16 @@ export default function VehicleVersionsBulkImport() {
 
                         <div className="mb-4 flex flex-wrap gap-3 text-sm">
                             <div className="rounded-md bg-green-50 px-3 py-2 text-green-800">
-                                <strong>{preview.stats.create}</strong> versiones nuevas se crearán
+                                <strong>{selectedCreate.size}</strong> de {preview.stats.create} versiones nuevas se crearán
                             </div>
                             <div className="rounded-md bg-blue-50 px-3 py-2 text-blue-800">
                                 <strong>{preview.stats.update}</strong> existentes actualizan precio
                             </div>
+                            {preview.stats.ignored > 0 && (
+                                <div className="rounded-md bg-gray-100 px-3 py-2 text-gray-600">
+                                    <strong>{preview.stats.ignored}</strong> ya estaban ignoradas (ver lista abajo)
+                                </div>
+                            )}
                             {preview.stats.skip > 0 && (
                                 <div className="rounded-md bg-yellow-50 px-3 py-2 text-yellow-800">
                                     <strong>{preview.stats.skip}</strong> filas se ignorarán (datos faltantes)
@@ -234,11 +286,24 @@ export default function VehicleVersionsBulkImport() {
                             )}
                         </div>
 
+                        {createRows.length > 0 && (
+                            <div className="mb-3 flex items-center gap-2">
+                                <span className="text-xs text-muted-foreground">Versiones nuevas:</span>
+                                <Button type="button" size="sm" variant="outline" onClick={selectAllCreate}>
+                                    Seleccionar todo
+                                </Button>
+                                <Button type="button" size="sm" variant="outline" onClick={deselectAllCreate}>
+                                    Deseleccionar todo
+                                </Button>
+                            </div>
+                        )}
+
                         <div className="max-h-96 overflow-y-auto rounded-md border">
                             <Table>
                                 <TableHeader className="sticky top-0 bg-card">
                                     <TableRow>
                                         <TableHead className="w-16">Fila</TableHead>
+                                        <TableHead className="w-12">Crear</TableHead>
                                         <TableHead className="w-24">Acción</TableHead>
                                         <TableHead>Modelo</TableHead>
                                         <TableHead>Versión</TableHead>
@@ -252,10 +317,21 @@ export default function VehicleVersionsBulkImport() {
                                             <TableCell className="text-xs text-muted-foreground">{r.excel_row}</TableCell>
                                             <TableCell>
                                                 {r.action === 'create' && (
+                                                    <Checkbox
+                                                        checked={selectedCreate.has(r.material)}
+                                                        onCheckedChange={() => toggleCreateMaterial(r.material)}
+                                                    />
+                                                )}
+                                            </TableCell>
+                                            <TableCell>
+                                                {r.action === 'create' && (
                                                     <Badge className="bg-green-600">Crear</Badge>
                                                 )}
                                                 {r.action === 'update' && (
                                                     <Badge className="bg-blue-600">Actualizar</Badge>
+                                                )}
+                                                {r.action === 'ignored' && (
+                                                    <Badge variant="outline" className="text-muted-foreground">Ignorado</Badge>
                                                 )}
                                                 {r.action === 'skip' && <Badge variant="outline">Ignorar</Badge>}
                                             </TableCell>
@@ -269,10 +345,15 @@ export default function VehicleVersionsBulkImport() {
                             </Table>
                             {preview.rows.length > 100 && (
                                 <p className="border-t bg-muted/30 p-2 text-center text-xs text-muted-foreground">
-                                    Mostrando 100 de {preview.rows.length} filas. Se importarán todas al confirmar.
+                                    Mostrando 100 de {preview.rows.length} filas. Se importarán/evaluarán todas al confirmar.
                                 </p>
                             )}
                         </div>
+
+                        <p className="mt-2 text-xs text-muted-foreground">
+                            Las filas "Crear" que dejes destildadas NO se crean — y quedan guardadas como ignoradas para que
+                            el próximo mes no se vuelvan a ofrecer (podés revertirlo desde la lista de abajo).
+                        </p>
 
                         <label className="mt-4 flex cursor-pointer items-start gap-3 rounded-md border border-input bg-muted/30 p-3">
                             <Checkbox
@@ -299,6 +380,57 @@ export default function VehicleVersionsBulkImport() {
                                 <Upload className="mr-1 size-4" />
                                 {submitting ? 'Importando…' : 'Confirmar importación'}
                             </Button>
+                        </div>
+                    </section>
+                )}
+
+                {/* Materiales ignorados permanentemente */}
+                {ignoredMaterials.length > 0 && (
+                    <section className="rounded-lg border bg-card p-5">
+                        <header className="mb-3">
+                            <h2 className="text-base font-semibold">Versiones ignoradas ({ignoredMaterials.length})</h2>
+                            <p className="text-sm text-muted-foreground">
+                                Estas versiones aparecieron alguna vez como "Crear" y las destildaste — ya no se ofrecen en
+                                el preview. Si querés volver a venderlas, reactivalas acá (y volvé a "Previsualizar" el
+                                Excel de este mes para verlas de nuevo como "Crear").
+                            </p>
+                        </header>
+                        <div className="rounded-md border">
+                            <Table>
+                                <TableHeader>
+                                    <TableRow>
+                                        <TableHead>Modelo</TableHead>
+                                        <TableHead>Versión</TableHead>
+                                        <TableHead>Material</TableHead>
+                                        <TableHead>Ignorado desde</TableHead>
+                                        <TableHead className="text-right">Acción</TableHead>
+                                    </TableRow>
+                                </TableHeader>
+                                <TableBody>
+                                    {ignoredMaterials.map((m) => (
+                                        <TableRow key={m.id}>
+                                            <TableCell className="font-medium">{m.linea || <span className="text-muted-foreground">—</span>}</TableCell>
+                                            <TableCell className="text-sm">{m.version_name || <span className="text-muted-foreground">—</span>}</TableCell>
+                                            <TableCell className="font-mono text-xs">{m.material_code}</TableCell>
+                                            <TableCell className="text-xs text-muted-foreground">
+                                                {new Date(m.created_at).toLocaleDateString('es-CL')}
+                                            </TableCell>
+                                            <TableCell className="text-right">
+                                                <Button
+                                                    type="button"
+                                                    size="sm"
+                                                    variant="outline"
+                                                    disabled={reactivatingId === m.id}
+                                                    onClick={() => reactivateMaterial(m)}
+                                                >
+                                                    <RotateCcw className="mr-1 size-3.5" />
+                                                    {reactivatingId === m.id ? 'Reactivando…' : 'Reactivar'}
+                                                </Button>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
                         </div>
                     </section>
                 )}

@@ -10,6 +10,7 @@ use App\Models\Drivetrain;
 use App\Models\Feature;
 use App\Models\FeatureCategory;
 use App\Models\FuelType;
+use App\Models\IgnoredPriceListMaterial;
 use App\Models\PowertrainType;
 use App\Models\TransmissionType;
 use App\Models\VehicleModel;
@@ -226,6 +227,8 @@ class VehicleVersionController extends Controller
                 ->where('is_active', true)
                 ->orderBy('display_order')
                 ->get(['id', 'name']),
+            'ignoredMaterials' => IgnoredPriceListMaterial::orderByDesc('created_at')
+                ->get(['id', 'material_code', 'linea', 'version_name', 'created_at']),
         ]);
     }
 
@@ -244,15 +247,34 @@ class VehicleVersionController extends Controller
             'branch_ids' => ['required', 'array', 'min:1'],
             'branch_ids.*' => ['integer', 'exists:branches,id'],
             'update_names' => ['boolean'],
+            // FormData no puede mandar "array vacío" (si no hay filas tildadas,
+            // la key create_materials[] simplemente no viaja), así que el
+            // frontend siempre manda este flag aparte para indicar "debes
+            // filtrar por selección" incluso cuando no seleccionó ninguna.
+            'filter_creates' => ['boolean'],
+            'create_materials' => ['nullable', 'array'],
+            'create_materials.*' => ['string'],
         ]);
 
         $result = (new ListaPreciosMayo2026Importer)->import(
             $request->file('file'),
             array_map('intval', $request->input('branch_ids', [])),
             $request->boolean('update_names'),
+            $request->boolean('filter_creates') ? $request->input('create_materials', []) : null,
         );
 
         return redirect('/admin/vehicle-versions')->with('success', $result->toFlashMessage());
+    }
+
+    /**
+     * Reactiva un material previamente ignorado: lo saca de la lista, así el
+     * próximo import lo vuelve a ofrecer como "Crear" en el preview.
+     */
+    public function reactivateIgnoredMaterial(IgnoredPriceListMaterial $ignoredMaterial)
+    {
+        $ignoredMaterial->delete();
+
+        return back()->with('success', 'Material reactivado — volverá a aparecer como "Crear" en el próximo import.');
     }
 
     private function formProps(?VehicleVersion $version): array

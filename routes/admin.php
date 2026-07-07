@@ -128,6 +128,10 @@ Route::middleware('admin')->group(function () {
     Route::get('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImport'])->name('admin.vehicle-versions.bulk-import');
     Route::post('vehicle-versions/bulk-import/preview', [VehicleVersionController::class, 'bulkImportPreview'])->name('admin.vehicle-versions.bulk-import.preview');
     Route::post('vehicle-versions/bulk-import', [VehicleVersionController::class, 'bulkImportStore'])->name('admin.vehicle-versions.bulk-import.store');
+    // Reactivar un material que el cliente había ignorado (descontinuado) en
+    // un import anterior — vuelve a ofrecerse como "Crear" el próximo mes.
+    Route::delete('vehicle-versions/ignored-materials/{ignoredMaterial}', [VehicleVersionController::class, 'reactivateIgnoredMaterial'])
+        ->name('admin.vehicle-versions.ignored-materials.reactivate');
     // Subida UNITARIA de fotos del visor 360 por versión (una por request),
     // mismo patrón que el de modelos para esquivar el MaxReqBodySize de LSWS.
     Route::post('vehicle-versions/{vehicleVersion}/photos-360', [VehicleVersionController::class, 'uploadPhoto360'])

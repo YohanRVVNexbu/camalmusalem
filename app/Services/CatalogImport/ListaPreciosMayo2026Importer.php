@@ -4,6 +4,7 @@ namespace App\Services\CatalogImport;
 
 use App\Models\Branch;
 use App\Models\Brand;
+use App\Models\IgnoredPriceListMaterial;
 use App\Models\VehicleModel;
 use App\Models\VehicleVersion;
 use Illuminate\Support\Facades\DB;
@@ -46,8 +47,17 @@ class ListaPreciosMayo2026Importer
      * @param  array<int>  $branchIds  Sucursales a vincular con las versiones importadas
      * @param  bool  $updateNames  Si true, pisa el trim_name de versiones existentes
      *                             con el nombre comercial (col D) del Excel.
+     * @param  array<string>|null  $createMaterials  Códigos Material que el cliente
+     *                             dejó marcados para CREAR en el preview. Si es null,
+     *                             se crean todas las versiones nuevas (comportamiento
+     *                             clásico, usado por ejemplo desde el comando de
+     *                             muestra). Si es un array, cualquier fila "crear" cuyo
+     *                             material NO esté en la lista se guarda en
+     *                             `ignored_price_list_materials` en vez de crearse —
+     *                             así el próximo mes el importador ya no la vuelve a
+     *                             ofrecer como "Crear" (ver preview()).
      */
-    public function import(UploadedFile $file, array $branchIds, bool $updateNames = false): ImportResult
+    public function import(UploadedFile $file, array $branchIds, bool $updateNames = false, ?array $createMaterials = null): ImportResult
     {
         $result = new ImportResult;
 
@@ -77,6 +87,11 @@ class ListaPreciosMayo2026Importer
                 'is_active' => true,
             ])->id;
         }
+
+        // Materiales ya marcados como "no crear" en meses anteriores. Si el
+        // caller no pasó $createMaterials (null), no filtramos nada — mantiene
+        // el comportamiento clásico para otros usos (ej. GenerateSampleExcels).
+        $ignoredSet = array_flip(IgnoredPriceListMaterial::pluck('material_code')->all());
 
         $sheet = IOFactory::load($file->getPathname())->getActiveSheet();
         $row = self::HEADER_ROW + 1;
@@ -123,7 +138,8 @@ class ListaPreciosMayo2026Importer
             ];
 
             DB::transaction(function () use (
-                $material, $opcion, $linea, $clasif, $versionD, $priceData, $brandId, $validBranchIds, $updateNames, $result
+                $material, $opcion, $linea, $clasif, $versionD, $priceData, $brandId, $validBranchIds,
+                $updateNames, $result, $ignoredSet, $createMaterials
             ) {
                 $existing = VehicleVersion::query()->where('material_code', $material)->first();
 
@@ -134,6 +150,8 @@ class ListaPreciosMayo2026Importer
                     // manuales del cliente. Salvo que $updateNames esté activo:
                     // ahí también pisa el trim_name con el nombre comercial (col
                     // D). El slug NO se toca para no romper URLs existentes.
+                    // Esto SIEMPRE se aplica, sin importar $createMaterials —
+                    // el filtro de selección solo aplica a versiones NUEVAS.
                     $updateData = [
                         ...$priceData,
                         'option_code' => $opcion !== '' ? $opcion : $existing->option_code,
@@ -142,37 +160,59 @@ class ListaPreciosMayo2026Importer
                         $updateData['trim_name'] = $versionD;
                     }
                     $existing->update($updateData);
-                    $version = $existing;
+                    $existing->branches()->syncWithoutDetaching($validBranchIds);
                     $result->updated++;
-                } else {
-                    $model = VehicleModel::query()->firstOrCreate(
-                        ['name' => $linea],
-                        [
-                            'brand_id' => $brandId,
-                            'slug' => Str::slug($linea),
-                            'body_type' => $this->mapBodyType($clasif),
-                            'is_active' => true,
-                        ]
-                    );
 
-                    $trim = $versionD !== '' ? $versionD : $material;
-                    $version = VehicleVersion::create([
-                        ...$priceData,
-                        'material_code' => $material,
-                        'option_code' => $opcion !== '' ? $opcion : null,
-                        'vehicle_model_id' => $model->id,
-                        'trim_name' => $trim,
-                        'slug' => Str::slug($trim.'-'.$material),
-                        'model_year' => $this->inferYear($trim),
-                        'powertrain_type' => $this->inferPowertrain($linea, $trim),
-                        'drivetrain' => $this->inferDrivetrain($trim),
-                        'transmission_type' => $this->inferTransmission($trim),
-                        'is_active' => true,
-                    ]);
-                    $result->created++;
+                    return;
                 }
 
+                // Versión nueva (no existe todavía en el sitio).
+                if (isset($ignoredSet[$material])) {
+                    // Ya estaba ignorada de un mes anterior — no se vuelve a
+                    // preguntar, no se crea, no se toca la BD.
+                    $result->ignored++;
+
+                    return;
+                }
+
+                if ($createMaterials !== null && ! in_array($material, $createMaterials, true)) {
+                    // El cliente destildó esta fila en el preview: se guarda
+                    // como ignorada para que el próximo mes ya no se ofrezca.
+                    IgnoredPriceListMaterial::updateOrCreate(
+                        ['material_code' => $material],
+                        ['linea' => $linea, 'version_name' => $versionD !== '' ? $versionD : null]
+                    );
+                    $result->newlyIgnored++;
+
+                    return;
+                }
+
+                $model = VehicleModel::query()->firstOrCreate(
+                    ['name' => $linea],
+                    [
+                        'brand_id' => $brandId,
+                        'slug' => Str::slug($linea),
+                        'body_type' => $this->mapBodyType($clasif),
+                        'is_active' => true,
+                    ]
+                );
+
+                $trim = $versionD !== '' ? $versionD : $material;
+                $version = VehicleVersion::create([
+                    ...$priceData,
+                    'material_code' => $material,
+                    'option_code' => $opcion !== '' ? $opcion : null,
+                    'vehicle_model_id' => $model->id,
+                    'trim_name' => $trim,
+                    'slug' => Str::slug($trim.'-'.$material),
+                    'model_year' => $this->inferYear($trim),
+                    'powertrain_type' => $this->inferPowertrain($linea, $trim),
+                    'drivetrain' => $this->inferDrivetrain($trim),
+                    'transmission_type' => $this->inferTransmission($trim),
+                    'is_active' => true,
+                ]);
                 $version->branches()->syncWithoutDetaching($validBranchIds);
+                $result->created++;
             });
 
             $row++;
@@ -183,9 +223,10 @@ class ListaPreciosMayo2026Importer
 
     /**
      * Pre-procesa el Excel sin guardar nada. Devuelve filas con su acción
-     * estimada (create / update) para que el frontend muestre el preview.
+     * estimada (create / update / ignored / skip) para que el frontend
+     * muestre el preview con checkboxes en las de "create".
      *
-     * @return array{rows: array<int,array<string,mixed>>, stats: array{create:int, update:int, skip:int}}
+     * @return array{rows: array<int,array<string,mixed>>, stats: array{create:int, update:int, ignored:int, skip:int}}
      */
     public function preview(UploadedFile $file): array
     {
@@ -193,12 +234,17 @@ class ListaPreciosMayo2026Importer
         $row = self::HEADER_ROW + 1;
         $emptyStreak = 0;
         $rows = [];
-        $stats = ['create' => 0, 'update' => 0, 'skip' => 0];
+        $stats = ['create' => 0, 'update' => 0, 'ignored' => 0, 'skip' => 0];
 
         $existingMaterials = VehicleVersion::query()
             ->whereNotNull('material_code')
             ->pluck('id', 'material_code')
             ->all();
+
+        // Materiales que el cliente ya destildó en un import anterior — se
+        // muestran aparte como "ignorado" (con opción de reactivar desde la
+        // página, no desde este checkbox).
+        $ignoredSet = array_flip(IgnoredPriceListMaterial::pluck('material_code')->all());
 
         while ($row <= self::HEADER_ROW + self::MAX_DATA_ROWS) {
             $linea = trim((string) $sheet->getCell('C'.$row)->getValue());
@@ -216,9 +262,16 @@ class ListaPreciosMayo2026Importer
             $emptyStreak = 0;
 
             $precio = $this->int($sheet->getCell('F'.$row)->getValue());
-            $action = $material === '' || $linea === ''
-                ? 'skip'
-                : (isset($existingMaterials[$material]) ? 'update' : 'create');
+
+            if ($material === '' || $linea === '') {
+                $action = 'skip';
+            } elseif (isset($existingMaterials[$material])) {
+                $action = 'update';
+            } elseif (isset($ignoredSet[$material])) {
+                $action = 'ignored';
+            } else {
+                $action = 'create';
+            }
 
             $stats[$action]++;
 
