@@ -138,17 +138,14 @@ class CotizacionSyncService
             'typeMaterial' => 'vehicle',
         ];
 
-        // Color ESTRUCTURADO — DESACTIVADO.
-        // Globant indicó usar `colorVehicle` dentro de products[], pero el API
-        // desplegado RECHAZA ese campo con 400 ("extraneous key [colorVehicle]
-        // is not permitted") en AMBOS ambientes (QAS y PRD) — su indicación aún
-        // no coincide con el esquema en vivo. Hasta que lo habiliten de verdad,
-        // NO lo enviamos para no romper la sincronización. El color sigue yendo
-        // en quote.description (respaldo legible) y el código queda guardado en
-        // BD ($cot->color_code) para reactivar esto en 1 línea.
-        // if ($cot->color_code) {
-        //     $product['colorVehicle'] = $cot->color_code;
-        // }
+        // Color ESTRUCTURADO. Globant lo habilitó en el esquema del endpoint
+        // (confirmado en PRD el 2026-07-08: PATCH con colorVehicle → 200,
+        // crea además un registro "ColorVehicle" en la respuesta). El valor es
+        // el CÓDIGO externo del color (extenalCodeColor del endpoint de
+        // colores), guardado en $cot->color_code.
+        if ($cot->color_code) {
+            $product['colorVehicle'] = $cot->color_code;
+        }
 
         return [
             'client' => [
