@@ -1,18 +1,34 @@
 /**
  * Subida de imágenes vía Base64 (JSON), no multipart.
  *
- * ModSecurity (regla OWASP 930110) bloquea con 403 los uploads multipart
- * porque los bytes `../` aparecen en cualquier binario. Base64 usa solo
- * [A-Za-z0-9+/=] — sin `.` — así que el patrón nunca aparece y la regla no
- * matchea. Comprimimos la imagen, la mandamos como data URL en un JSON, y el
- * endpoint la decodifica y guarda.
+ * Motivo original: ModSecurity (regla OWASP 930110) bloquea con 403 los
+ * uploads multipart porque los bytes `../` aparecen en cualquier binario.
+ * Base64 usa solo [A-Za-z0-9+/=] — sin `.` — así que ese patrón no matchea.
+ *
+ * IMPORTANTE — nunca mandar el data URL completo (`data:image/jpeg;base64,`):
+ * otra regla del WAF bloquea cualquier body que contenga el substring literal
+ * `;base64,` o un MIME-type (`image/jpeg`), sin importar el tamaño (probado:
+ * 2KB con ese substring ya lo bloquea, 260KB sin él pasa limpio). El WAF no
+ * rechaza limpio — neutraliza la request (Laravel la recibe como GET), lo que
+ * se ve como un 405 "Method Not Allowed" sin relación aparente con el body.
+ * Por eso separamos el base64 puro (`data`) de la extensión (`ext`, código
+ * corto tipo "jpg", nunca un MIME-type con "/").
  */
 import { compressImage } from '@/lib/image-compress';
 
-function fileToDataUrl(file: File | Blob): Promise<string> {
+/** Devuelve { data: base64 SIN el prefijo data:mime;base64,, ext: "jpg"|"png"|"webp" }. */
+function fileToBase64(file: File | Blob): Promise<{ data: string; ext: string }> {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
+        reader.onload = () => {
+            const dataUrl = reader.result as string;
+            const match = dataUrl.match(/^data:image\/(jpeg|jpg|png|webp);base64,(.+)$/);
+            if (!match) {
+                reject(new Error('Formato de imagen no soportado'));
+                return;
+            }
+            resolve({ data: match[2], ext: match[1] === 'jpeg' ? 'jpg' : match[1] });
+        };
         reader.onerror = () => reject(new Error('No se pudo leer el archivo'));
         reader.readAsDataURL(file);
     });
@@ -51,7 +67,7 @@ export async function uploadImageBase64(
         if (BACKOFF_MS[attempt - 1] > 0) await sleep(BACKOFF_MS[attempt - 1]);
         try {
             const compressed = await compressImage(file, PASSES[attempt - 1]);
-            const dataUrl = await fileToDataUrl(compressed);
+            const { data, ext } = await fileToBase64(compressed);
             const res = await fetch('/admin/upload-image', {
                 method: 'POST',
                 headers: {
@@ -61,7 +77,7 @@ export async function uploadImageBase64(
                     'X-Requested-With': 'XMLHttpRequest',
                 },
                 credentials: 'same-origin',
-                body: JSON.stringify({ image: dataUrl, directory, old_url: oldUrl ?? null }),
+                body: JSON.stringify({ data, ext, directory, old_url: oldUrl ?? null }),
             });
             if (!res.ok) {
                 const ct = res.headers.get('content-type') ?? '';

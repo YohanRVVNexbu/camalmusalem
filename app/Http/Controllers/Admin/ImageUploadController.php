@@ -11,29 +11,35 @@ use Illuminate\Support\Str;
 /**
  * Subida de imágenes vía Base64 (JSON), no multipart.
  *
- * Motivo: ModSecurity (regla OWASP 930110, Path Traversal) bloquea con 403
- * los uploads multipart de imágenes porque los bytes `../` / `..\` aparecen
- * estadísticamente en cualquier binario. Base64 usa solo [A-Za-z0-9+/=] —
- * nunca contiene `.`, así que el patrón es imposible y la regla no matchea.
- * El cliente comprime + codifica en Base64; acá decodificamos y guardamos.
+ * Motivo original: ModSecurity (regla OWASP 930110, Path Traversal) bloquea
+ * con 403 los uploads multipart porque los bytes `../` aparecen
+ * estadísticamente en cualquier binario. Base64 usa solo [A-Za-z0-9+/=] — sin
+ * `.` — así que ese patrón nunca matchea.
+ *
+ * Formato del payload — SIN el prefijo `data:mime;base64,`: otra regla del
+ * WAF (probablemente OWASP CRS, detección de payloads tipo "PHP object
+ * injection"/data-URI) bloquea cualquier request cuyo body contenga el
+ * substring literal `;base64,` o un MIME-type (`image/jpeg`), sin importar el
+ * tamaño — confirmado con pruebas: 2KB con ese substring ya lo bloquea, 260KB
+ * sin él pasa limpio. El WAF no devuelve 403 limpio: neutraliza la request
+ * (Laravel la recibe como si fuera GET), lo que se veía como
+ * "MethodNotAllowedHttpException" sin relación aparente con el body.
+ * Por eso mandamos el base64 puro (`data`) y la extensión aparte (`ext`,
+ * código corto tipo "jpg", nunca un MIME-type con "/").
  */
 class ImageUploadController extends Controller
 {
     public function store(Request $request, SiteSettingsService $settings)
     {
         $request->validate([
-            'image' => ['required', 'string'],          // data URL base64
+            'data' => ['required', 'string'],            // base64 puro, sin prefijo data URI
+            'ext' => ['required', 'string', 'in:jpg,jpeg,png,webp'],
             'directory' => ['nullable', 'string', 'max:120'],
             'old_url' => ['nullable', 'string', 'max:500'],
         ]);
 
-        // data:image/webp;base64,XXXX
-        if (! preg_match('#^data:image/(jpeg|jpg|png|webp);base64,(.+)$#', $request->input('image'), $m)) {
-            return response()->json(['error' => 'Formato de imagen inválido.'], 422);
-        }
-
-        $ext = $m[1] === 'jpeg' ? 'jpg' : $m[1];
-        $binary = base64_decode($m[2], true);
+        $ext = $request->input('ext') === 'jpeg' ? 'jpg' : $request->input('ext');
+        $binary = base64_decode($request->input('data'), true);
         if ($binary === false) {
             return response()->json(['error' => 'Base64 inválido.'], 422);
         }
