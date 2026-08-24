@@ -36,5 +36,21 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // El admin es 100% dinámico/autenticado — nunca debe cachearse. Un
+        // GET de prueba contra /admin/upload-image quedó cacheado por
+        // LiteSpeed (LSCache) en el origen y se sirvió después ante POSTs
+        // reales, dando 405 "GET not supported" pese a que el navegador
+        // mandaba POST. Esto corre para CUALQUIER excepción (incluida la de
+        // ruteo, que ocurre antes de que exista una ruta/middleware de grupo
+        // — por eso no alcanza con ponerlo solo en AdminMiddleware).
+        // X-LiteSpeed-Cache-Control es el header que LSCache respeta por
+        // encima de cualquier regla de caché configurada en el panel.
+        $exceptions->respond(function ($response, \Throwable $e, $request) {
+            if ($request->is('admin') || $request->is('admin/*')) {
+                $response->headers->set('X-LiteSpeed-Cache-Control', 'no-cache');
+                $response->headers->set('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            }
+
+            return $response;
+        });
     })->create();
